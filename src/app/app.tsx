@@ -1,5 +1,6 @@
 import { RouterProvider } from "react-router";
 
+import { SplashScreen } from "@capacitor/splash-screen";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
@@ -17,6 +18,13 @@ export function App() {
   // Прелоадер в index.html показывался, пока грузился бандл. Как только
   // React смонтировался и отрисовал первый роут — плавно убираем его.
   useEffect(() => {
+    // В нативной Capacitor-сборке (launchAutoHide: false, см.
+    // capacitor.config.ts) нативный сплэш держится поверх WebView, пока мы
+    // явно его не скроем — ровно к этому моменту наш HTML-прелоадер уже
+    // отрисован под ним, и скрытие сплэша просто открывает его. В обычном
+    // вебе SplashScreen — no-op заглушка.
+    SplashScreen.hide().catch(() => {});
+
     const preloader = document.getElementById("app-preloader");
     if (!preloader) return;
 
