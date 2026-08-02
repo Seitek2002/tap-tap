@@ -244,10 +244,18 @@ export const SettingsPage = () => {
         </div>
 
         <div className="mt-5 divide-y divide-[#E4E7EC] overflow-hidden rounded-2xl border border-[#E4E7EC] bg-white text-center mx-4">
-          <button type="button" className="w-full py-4 font-medium text-red-500">
+          <button
+            type="button"
+            data-haptic="heavy"
+            className="w-full py-4 font-medium text-red-500"
+          >
             Выйти
           </button>
-          <button type="button" className="w-full py-4 font-medium text-[#1C1E24]">
+          <button
+            type="button"
+            data-haptic="heavy"
+            className="w-full py-4 font-medium text-[#1C1E24]"
+          >
             Удалить аккаунт
           </button>
         </div>

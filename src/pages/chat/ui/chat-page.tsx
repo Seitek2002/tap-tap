@@ -287,6 +287,7 @@ export const ChatPage = () => {
         </div>
         <button
           type="button"
+          data-haptic="heavy"
           onClick={confirmUnmatch}
           className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
@@ -313,6 +314,7 @@ export const ChatPage = () => {
         </div>
         <button
           type="button"
+          data-haptic="heavy"
           onClick={confirmBlock}
           className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
@@ -337,6 +339,7 @@ export const ChatPage = () => {
             <button
               key={reason}
               type="button"
+              data-haptic="heavy"
               onClick={() => setReportChatId(null)}
               className="w-full py-4 text-center text-[#1C1E24]"
             >

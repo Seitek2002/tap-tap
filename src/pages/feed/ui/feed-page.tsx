@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
+import { NotificationType, triggerNotificationHaptic } from "@/shared/lib/haptics";
 import { BottomNav } from "@/widgets/bottom-nav";
 
 import { GUIDE_PROFILE, PROFILES, type Profile } from "../model/profiles";
@@ -47,6 +48,7 @@ export const FeedPage = () => {
       setLikeCount(nextCount);
       if (nextCount >= LIKE_LIMIT) setIsLimitReached(true);
       if (nextCount === MATCH_ON_LIKE_NUMBER && swiped) {
+        triggerNotificationHaptic(NotificationType.Success);
         setMatchedProfile(swiped);
       }
       if (nextCount === TOAST_MATCH_ON_LIKE_NUMBER && swiped) {

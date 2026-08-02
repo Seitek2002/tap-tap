@@ -28,6 +28,12 @@ import {
 
 import guideHand from "@/shared/assets/icons/guide-hand.svg";
 import guideScroll from "@/shared/assets/icons/guide-scroll.svg";
+import {
+  ImpactStyle,
+  NotificationType,
+  triggerHaptic,
+  triggerNotificationHaptic,
+} from "@/shared/lib/haptics";
 import { cn } from "@/shared/lib/utils";
 
 import type { Profile } from "../model/profiles";
@@ -129,7 +135,10 @@ export const SwipeCard = ({
     scrollProgress.set(Math.min(event.currentTarget.scrollTop / 120, 1));
   };
 
+  // Свайп-решение (лайк/дизлайк) — заметнее обычного тычка по кнопке, но не
+  // такой сильный, как у деструктивных подтверждений (разлайк/блок).
   const flyOut = (direction: SwipeDirection) => {
+    triggerHaptic(ImpactStyle.Medium);
     animate(x, direction === "right" ? 700 : -700, {
       duration: 0.3,
       onComplete: () => onSwipe(direction, profile.id),
@@ -139,6 +148,7 @@ export const SwipeCard = ({
   // Лайк: если лимит исчерпан — показываем экран лимита и возвращаем карточку.
   const like = () => {
     if (likesLocked) {
+      triggerNotificationHaptic(NotificationType.Warning);
       onLikeBlocked();
       animate(x, 0, { damping: 30, stiffness: 300, type: "spring" });
     } else {
@@ -409,6 +419,7 @@ export const SwipeCard = ({
         <div className="relative flex items-center justify-between">
           <motion.button
             type="button"
+            data-haptic="medium"
             onClick={onRewind}
             style={{
               backgroundColor: btnBg,
@@ -422,6 +433,7 @@ export const SwipeCard = ({
           </motion.button>
           <motion.button
             type="button"
+            data-haptic="none"
             onClick={() => flyOut("left")}
             style={{
               backgroundColor: btnBg,
@@ -435,6 +447,7 @@ export const SwipeCard = ({
           </motion.button>
           <motion.button
             type="button"
+            data-haptic="none"
             onClick={like}
             style={{
               backgroundColor: btnBg,

@@ -1,4 +1,4 @@
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 
 // В нативной Capacitor-сборке дёргает Taptic Engine (iOS) / вибромотор
 // (Android) через @capacitor/haptics. В обычном вебе плагин сам подставляет
@@ -7,12 +7,20 @@ import { Haptics, ImpactStyle } from "@capacitor/haptics";
 // Важно: navigator.vibrate в принципе не поддерживается в iOS Safari/WKWebView
 // без Capacitor — это ограничение платформы, а не баг, и обойти веб-способом
 // его нельзя (см. MDN: Vibration API browser compatibility).
-export const triggerHaptic = (style: ImpactStyle = ImpactStyle.Light) => {
-  Haptics.impact({ style }).catch(() => {
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  });
+const vibrateFallback = (durationMs: number) => {
+  if (typeof navigator !== "undefined" && navigator.vibrate) {
+    navigator.vibrate(durationMs);
+  }
 };
 
-export { ImpactStyle };
+export const triggerHaptic = (style: ImpactStyle = ImpactStyle.Light) => {
+  Haptics.impact({ style }).catch(() => vibrateFallback(10));
+};
+
+// Для более значимых событий (совпадение, подтверждение удаления/блокировки,
+// ошибка) — отдельный вид вибро-паттерна вместо обычного «тычка».
+export const triggerNotificationHaptic = (type: NotificationType) => {
+  Haptics.notification({ type }).catch(() => vibrateFallback(25));
+};
+
+export { ImpactStyle, NotificationType };

@@ -119,6 +119,7 @@ export const LikesPage = () => {
               <button
                 key={item.key}
                 type="button"
+                data-haptic="medium"
                 onClick={() => setTab(item.key)}
                 className="flex justify-center h-12.5 w-1/2 pt-4"
               >

@@ -220,6 +220,7 @@ export const HideFromContactsPage = () => {
               <button
                 key={item.key}
                 type="button"
+                data-haptic="medium"
                 onClick={() => setTab(item.key)}
                 className="relative flex-1 rounded-full py-2 text-sm font-medium"
               >

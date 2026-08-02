@@ -106,6 +106,7 @@ export const NearbyPage = () => {
             <button
               key={item.key}
               type="button"
+              data-haptic="medium"
               onClick={() => setTab(item.key)}
               className="flex flex-col items-center gap-2 pt-1 pb-3"
             >

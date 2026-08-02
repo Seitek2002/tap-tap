@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router";
 
 import { ROUTES } from "@/shared/config";
+import { NotificationType, triggerNotificationHaptic } from "@/shared/lib/haptics";
 import { isAndroid } from "@/shared/lib/platform";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
@@ -205,6 +206,7 @@ export const ChatRoomPage = () => {
 
     const allowedFiles = files.filter(isAllowedFile);
     if (allowedFiles.length < files.length) {
+      triggerNotificationHaptic(NotificationType.Error);
       toast.error("Можно отправлять только картинки и документы (PDF)");
     }
     if (allowedFiles.length === 0) return;
@@ -421,6 +423,7 @@ export const ChatRoomPage = () => {
             <motion.button
               key="send"
               type="submit"
+              data-haptic="medium"
               aria-label="Отправить"
               initial={{ opacity: 0, scale: 0.4 }}
               animate={{ opacity: 1, scale: 1 }}
