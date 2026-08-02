@@ -55,7 +55,27 @@ const ALLOWED_FILE_TYPES = [
   "image/avif",
 ];
 const ALLOWED_FILE_TYPES_ACCEPT = ALLOWED_FILE_TYPES.join(",");
-const isAllowedFile = (file: File) => ALLOWED_FILE_TYPES.includes(file.type);
+const ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "avif"];
+const ALLOWED_FILE_EXTENSIONS = ["pdf", ...ALLOWED_IMAGE_EXTENSIONS];
+// Сколько вложений можно накопить в одном сообщении, пока не отправил.
+const MAX_ATTACHMENTS = 10;
+
+const getFileExtension = (file: File) =>
+  file.name.split(".").pop()?.toLowerCase() ?? "";
+
+// Некоторые файловые провайдеры (особенно на Android) отдают File без MIME
+// (file.type === "") — тогда сверяемся по расширению, иначе такие файлы
+// ошибочно попадали бы в "не тот тип", хотя по факту могут быть валидными.
+const isAllowedFile = (file: File) =>
+  file.size > 0 &&
+  (file.type
+    ? ALLOWED_FILE_TYPES.includes(file.type)
+    : ALLOWED_FILE_EXTENSIONS.includes(getFileExtension(file)));
+
+const isImageFile = (file: File) =>
+  file.type
+    ? file.type.startsWith("image/")
+    : ALLOWED_IMAGE_EXTENSIONS.includes(getFileExtension(file));
 
 const MessageBubble = ({
   message,
@@ -164,6 +184,25 @@ export const ChatRoomPage = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  // Object URL живёт, пока явно не отозван (removeAttachment) — если уйти со
+  // страницы с неотправленными фото-вложениями, они не отзовутся сами собой
+  // и останутся висеть в памяти. Ref держит актуальный список специально для
+  // cleanup при размонтировании, а не для рендера.
+  const pendingAttachmentsRef = useRef(pendingAttachments);
+  useEffect(() => {
+    pendingAttachmentsRef.current = pendingAttachments;
+  }, [pendingAttachments]);
+
+  useEffect(() => {
+    return () => {
+      for (const attachment of pendingAttachmentsRef.current) {
+        if (attachment.kind === "image") {
+          URL.revokeObjectURL(attachment.imageUrl);
+        }
+      }
+    };
+  }, []);
+
   const sendMessage = (event: FormEvent) => {
     event.preventDefault();
     const text = draft.trim();
@@ -213,15 +252,23 @@ export const ChatRoomPage = () => {
     }
     if (allowedFiles.length === 0) return;
 
-    setPendingAttachments((prev) => [
-      ...prev,
-      ...allowedFiles.map((file, index) => {
-        const id = prev.length + index + 1;
-        return file.type.startsWith("image/")
-          ? { id, imageUrl: URL.createObjectURL(file), kind: "image" as const }
-          : { fileName: file.name, id, kind: "file" as const };
-      }),
-    ]);
+    setPendingAttachments((prev) => {
+      const freeSlots = Math.max(0, MAX_ATTACHMENTS - prev.length);
+      if (freeSlots < allowedFiles.length) {
+        triggerNotificationHaptic(NotificationType.Error);
+        toast.error(`Можно прикрепить не больше ${MAX_ATTACHMENTS} файлов за раз`);
+      }
+
+      return [
+        ...prev,
+        ...allowedFiles.slice(0, freeSlots).map((file, index) => {
+          const id = prev.length + index + 1;
+          return isImageFile(file)
+            ? { id, imageUrl: URL.createObjectURL(file), kind: "image" as const }
+            : { fileName: file.name, id, kind: "file" as const };
+        }),
+      ];
+    });
   };
 
   const removeAttachment = (id: number) => {
