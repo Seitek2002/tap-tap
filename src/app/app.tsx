@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
 
+import { useHapticTaps } from "@/shared/lib/use-haptic-taps";
 import { queryClient } from "@/shared/config";
 
 import { router } from "./router";
@@ -11,6 +12,8 @@ import { router } from "./router";
 const PRELOADER_FADE_MS = 300;
 
 export function App() {
+  useHapticTaps();
+
   // Прелоадер в index.html показывался, пока грузился бандл. Как только
   // React смонтировался и отрисовал первый роут — плавно убираем его.
   useEffect(() => {
