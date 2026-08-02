@@ -2,12 +2,14 @@ import { useState } from "react";
 
 import { Heart, Lock, X } from "lucide-react";
 import { motion } from "motion/react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
 import { useBounce } from "@/shared/lib/use-bounce";
 import { cn } from "@/shared/lib/utils";
+import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
 
 import {
   LIKED_YOU,
@@ -109,6 +111,12 @@ export const LikesPage = () => {
   const [tab, setTab] = useState<TabKey>("likedYou");
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 
+  // Бэкенда нет — просто имитируем сетевой запрос под спиннером.
+  const handleRefresh = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    toast.success("Обновлено");
+  };
+
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       <div className="px-2.5 pt-[max(1rem,env(safe-area-inset-top))]">
@@ -147,7 +155,10 @@ export const LikesPage = () => {
       </div>
 
       {/* Прокручиваемая часть */}
-      <div className="flex-1 overflow-y-auto px-4 pb-24">
+      <PullToRefresh
+        onRefresh={handleRefresh}
+        className="flex-1 overflow-y-auto px-4 pb-24"
+      >
         {tab === "likedYou" ? (
           <>
             <p className="mt-6 text-xs text-[#6B7280] text-center">
@@ -183,7 +194,7 @@ export const LikesPage = () => {
             </button>
           </div>
         )}
-      </div>
+      </PullToRefresh>
 
       <BottomNav />
 

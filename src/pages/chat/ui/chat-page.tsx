@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
@@ -17,6 +18,7 @@ import emptyChatIllustration from "@/shared/assets/images/empty-chat-illustratio
 import { useClickAway } from "@/shared/lib/use-click-away";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
+import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
 
 import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
 import { REPORT_REASONS } from "../model/report-reasons";
@@ -75,6 +77,12 @@ export const ChatPage = () => {
   const reportFromBlock = () => {
     setReportChatId(blockChatId);
     setBlockChatId(null);
+  };
+
+  // Бэкенда нет — просто имитируем сетевой запрос под спиннером.
+  const handleRefresh = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    toast.success("Обновлено");
   };
 
   return (
@@ -177,7 +185,10 @@ export const ChatPage = () => {
           По этому фильтру ничего не нашлось
         </p>
       ) : (
-        <div className="flex-1 divide-y divide-[#E4E7EC] overflow-y-auto">
+        <PullToRefresh
+          onRefresh={handleRefresh}
+          className="flex-1 divide-y divide-[#E4E7EC] overflow-y-auto"
+        >
           <AnimatePresence mode="popLayout">
             {visibleChats.map((chat) => (
               // Строка внутри — горизонтальный скролл: контент занимает всю
@@ -270,7 +281,7 @@ export const ChatPage = () => {
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </PullToRefresh>
       )}
 
       <Modal
