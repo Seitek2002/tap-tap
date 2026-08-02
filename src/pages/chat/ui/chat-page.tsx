@@ -1,0 +1,294 @@
+import {
+  AlignJustify,
+  Ban,
+  Flag,
+  Heart,
+  HeartCrack,
+  Search,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+
+import { BottomNav } from "@/widgets/bottom-nav";
+
+import emptyChatIllustration from "@/shared/assets/images/empty-chat-illustration.png";
+import { cn } from "@/shared/lib/utils";
+import { Modal } from "@/shared/ui/modal";
+
+import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
+import { REPORT_REASONS } from "../model/report-reasons";
+
+export const ChatPage = () => {
+  const navigate = useNavigate();
+
+  // Локальная копия — «Отменить лайк»/«Заблокировать» из подтверждения
+  // реально убирают переписку из списка, без бэкенда.
+  const [chats, setChats] = useState(CHATS);
+  const [unmatchChatId, setUnmatchChatId] = useState<null | number>(null);
+  const [blockChatId, setBlockChatId] = useState<null | number>(null);
+  const [reportChatId, setReportChatId] = useState<null | number>(null);
+  const unmatchChat = chats.find((chat) => chat.id === unmatchChatId);
+  const blockChat = chats.find((chat) => chat.id === blockChatId);
+
+  const confirmUnmatch = () => {
+    setChats((prev) => prev.filter((chat) => chat.id !== unmatchChatId));
+    setUnmatchChatId(null);
+  };
+
+  const confirmBlock = () => {
+    setChats((prev) => prev.filter((chat) => chat.id !== blockChatId));
+    setBlockChatId(null);
+  };
+
+  const reportFromUnmatch = () => {
+    setReportChatId(unmatchChatId);
+    setUnmatchChatId(null);
+  };
+
+  const reportFromBlock = () => {
+    setReportChatId(blockChatId);
+    setBlockChatId(null);
+  };
+
+  return (
+    <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
+      {/* Верхний бар */}
+      <header className="flex items-center justify-between px-4 pt-4 pb-3">
+        <h1 className="text-2xl font-extrabold">Чаты</h1>
+        <button
+          type="button"
+          aria-label="Поиск"
+          className="flex size-9 items-center justify-center text-[#1C1E24]"
+        >
+          <Search className="size-6" />
+        </button>
+      </header>
+
+      {/* Лайки и пары */}
+      <div className="px-4 pb-2">
+        <h2 className="text-sm font-bold text-[#6B7280]">Лайки и пары</h2>
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {LIKES_AND_MATCHES.map((photo, index) => (
+            <div key={index} className="relative mb-2 w-16 shrink-0">
+              <img
+                src={photo}
+                alt=""
+                className={cn(
+                  "size-16 rounded-full object-cover",
+                  index === 0
+                    ? "border-2 border-primary"
+                    : "border-2 border-transparent",
+                )}
+              />
+              {index === 0 && (
+                <span className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold whitespace-nowrap text-white">
+                  <Heart className="size-2.5 fill-current" />
+                  99+
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Сообщения */}
+      <div className="flex items-center justify-between px-4 pt-2 pb-1">
+        <h2 className="text-base font-bold">Сообщения</h2>
+        <button
+          type="button"
+          aria-label="Список"
+          className="flex size-8 items-center justify-center text-[#1C1E24]"
+        >
+          <AlignJustify className="size-5" />
+        </button>
+      </div>
+
+      {chats.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
+          <img src={emptyChatIllustration} alt="" className="mb-6 w-55.25" />
+          <h2 className="text-lg font-bold">Чат пустой</h2>
+          <p className="mt-1 text-sm text-[#6B7280]">
+            После взаимной симпатии
+            <br />
+            вы сможете общаться здесь
+          </p>
+        </div>
+      ) : (
+        <div className="flex-1 divide-y divide-[#E4E7EC] overflow-y-auto">
+          <AnimatePresence mode="popLayout">
+            {chats.map((chat) => (
+              // Строка внутри — горизонтальный скролл: контент занимает всю
+              // видимую ширину, кнопки действий лежат правее и открываются
+              // скроллом/свайпом (без drag-логики, просто overflow-x-auto).
+              // layout + popLayout — при удалении строка выезжает дальше
+              // вправо и гаснет, а соседние строки сразу сдвигаются вверх,
+              // не дожидаясь конца анимации ухода.
+              <motion.div
+                key={chat.id}
+                layout
+                exit={{ opacity: 0, x: 120 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="relative overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+              <div className="flex w-full">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/chat/${chat.id}`)}
+                  className="flex w-full shrink-0 items-center gap-3 px-4 py-3 text-left"
+                >
+                  <div className="relative shrink-0">
+                    <img
+                      src={chat.photo}
+                      alt=""
+                      className="size-14 rounded-full object-cover"
+                    />
+                    {chat.unread && (
+                      <span className="absolute top-0 right-0 size-3 rounded-full bg-red-500 ring-2 ring-[#FAF9FD]" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="truncate font-bold">{chat.name}</h3>
+                      {chat.yourTurn && (
+                        <span className="shrink-0 rounded-full bg-[#1C1E24] px-2.5 py-1 text-[10px] font-bold whitespace-nowrap text-white">
+                          Твоя очередь
+                        </span>
+                      )}
+                    </div>
+                    <p className="truncate text-sm text-[#6B7280]">
+                      {chat.lastMessage}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Доп. функции — пока без обработчиков, добавим позже */}
+                <div className="flex shrink-0 items-center gap-3 pr-4">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setUnmatchChatId(chat.id)}
+                      className="flex py-1.5 w-18 items-center justify-center rounded-2xl bg-primary text-white"
+                    >
+                      <HeartCrack size={16} />
+                    </button>
+                    <span className="text-xs whitespace-nowrap text-[#1C1E24]">
+                      Отменить лайк
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setBlockChatId(chat.id)}
+                      className="flex py-1.5 w-18 items-center justify-center rounded-2xl bg-[#1C1E24] text-white"
+                    >
+                      <Ban size={16} />
+                    </button>
+                    <span className="text-xs whitespace-nowrap text-[#1C1E24]">
+                      Заблокировать
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setReportChatId(chat.id)}
+                      className="flex py-1.5 w-18 items-center justify-center rounded-2xl bg-red-500 text-white"
+                    >
+                      <Flag size={16} />
+                    </button>
+                    <span className="text-xs whitespace-nowrap text-[#1C1E24]">
+                      Пожаловаться
+                    </span>
+                  </div>
+                </div>
+              </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+
+      <Modal
+        isOpen={unmatchChatId !== null}
+        onClose={() => setUnmatchChatId(null)}
+      >
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h2 className="text-lg font-bold">
+            Удалить пару с {unmatchChat?.name}?
+          </h2>
+          <p className="text-sm text-[#6B7280]">
+            Ваша пара будет аннулирована и удалится чат у обоих
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={confirmUnmatch}
+          className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Отменить лайк
+        </button>
+        <button
+          type="button"
+          onClick={reportFromUnmatch}
+          className="mt-4 w-full text-center text-sm font-semibold text-red-500"
+        >
+          Пожаловаться
+        </button>
+      </Modal>
+
+      <Modal isOpen={blockChatId !== null} onClose={() => setBlockChatId(null)}>
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h2 className="text-lg font-bold">
+            Заблокировать {blockChat?.name}?
+          </h2>
+          <p className="text-sm text-[#6B7280]">
+            Мы скроем ваш профиль друг от друга,
+            <br />а общение станет недоступно.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={confirmBlock}
+          className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Заблокировать
+        </button>
+        <button
+          type="button"
+          onClick={reportFromBlock}
+          className="mt-4 w-full text-center text-sm font-semibold text-red-500"
+        >
+          Пожаловаться
+        </button>
+      </Modal>
+
+      <Modal
+        isOpen={reportChatId !== null}
+        onClose={() => setReportChatId(null)}
+      >
+        <h2 className="text-center text-lg font-bold">Укажи причину жалобы</h2>
+        <div className="mt-2 divide-y divide-[#E4E7EC]">
+          {REPORT_REASONS.map((reason) => (
+            <button
+              key={reason}
+              type="button"
+              onClick={() => setReportChatId(null)}
+              className="w-full py-4 text-center text-[#1C1E24]"
+            >
+              {reason}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setReportChatId(null)}
+          className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Отмена
+        </button>
+      </Modal>
+
+      <BottomNav />
+    </div>
+  );
+};

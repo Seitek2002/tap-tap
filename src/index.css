@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/* Nunito Sans — self-hosted (в бандле, работает офлайн, без CDN Google).
+   Только нужные субсеты (latin + cyrillic) и начертания 400/600/700/800,
+   чтобы не тащить в сборку vietnamese и *-ext. */
+@import "@fontsource/nunito-sans/latin-400.css";
+@import "@fontsource/nunito-sans/cyrillic-400.css";
+@import "@fontsource/nunito-sans/latin-600.css";
+@import "@fontsource/nunito-sans/cyrillic-600.css";
+@import "@fontsource/nunito-sans/latin-700.css";
+@import "@fontsource/nunito-sans/cyrillic-700.css";
+@import "@fontsource/nunito-sans/latin-800.css";
+@import "@fontsource/nunito-sans/cyrillic-800.css";
+
+@theme {
+  --font-sans: "Nunito Sans", system-ui, sans-serif;
+
+  /* Brand — акцент проекта */
+  --color-primary: #7c3aed;
+  --color-primary-dark: #6d28d9;
+  --color-primary-tint: #f5f3ff;
+
+  /* Text */
+  --color-foreground: #191a1b;
+  --color-secondary: #686f72;
+  --color-muted: #838a8d;
+
+  /* Surfaces */
+  --color-background: #f2f3f5;
+
+  /* Borders */
+  --color-border: #e5e6e8;
+  --color-border-soft: #e3e4e5;
+
+  /* Overlay */
+  --color-overlay: #0d0d12;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+}
+
+/* ── Modal animations (@starting-style + data-state) ─────────────────────── */
+
+.modal-overlay {
+  opacity: 1;
+  transition: opacity 200ms ease;
+}
+
+@starting-style {
+  .modal-overlay {
+    opacity: 0;
+  }
+}
+
+.modal-overlay[data-state="closed"] {
+  opacity: 0;
+}
+
+.modal-panel {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+@starting-style {
+  .modal-panel {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+}
+
+.modal-panel[data-state="closed"] {
+  opacity: 0;
+  transform: scale(0.95) translateY(6px);
+}
+
+.modal-sheet {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 200ms ease,
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@starting-style {
+  .modal-sheet {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+.modal-sheet[data-state="closed"] {
+  opacity: 0;
+  transform: translateY(100%);
+}

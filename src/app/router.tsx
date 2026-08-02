@@ -1,0 +1,150 @@
+import { createHashRouter } from "react-router";
+
+import { Anketa1Page } from "@/pages/anketa/1";
+import { Anketa2Page } from "@/pages/anketa/2";
+import { Anketa3Page } from "@/pages/anketa/3";
+import { Anketa4Page } from "@/pages/anketa/4";
+import { Anketa5Page } from "@/pages/anketa/5";
+import { Anketa6Page } from "@/pages/anketa/6";
+import { Anketa7Page } from "@/pages/anketa/7";
+import { Anketa8Page } from "@/pages/anketa/8";
+import { Anketa9Page } from "@/pages/anketa/9";
+import { Anketa10Page } from "@/pages/anketa/10";
+import { Anketa11Page } from "@/pages/anketa/11";
+import { Anketa12Page } from "@/pages/anketa/12";
+import { AuthPage } from "@/pages/auth";
+import { ChatPage, ChatProfilePage, ChatRoomPage } from "@/pages/chat";
+import { ComponentsPage } from "@/pages/components";
+import { FeedPage, NearbyPage } from "@/pages/feed";
+import { FiltersPage } from "@/pages/filters";
+import { LikesPage } from "@/pages/likes";
+import { NumberVerificationPage } from "@/pages/number-verification";
+import {
+  AddContactManuallyPage,
+  HideFromContactsPage,
+  NotificationsPage,
+  ProfilePage,
+  SettingsPage,
+} from "@/pages/profile";
+import { WelcomePage } from "@/pages/welcome";
+
+import { ROUTES } from "@/shared/config";
+
+// createHashRouter, а не browser: в Capacitor WebView перезагрузка на любом
+// маршруте не улетает в 404 и не требует серверного rewrite.
+// Пока верстаем — старт прямо с "/" (welcome). Позже здесь появится
+// проверка сессии (есть токен → в ленту, иначе → на welcome).
+export const router = createHashRouter([
+  {
+    element: <WelcomePage />,
+    path: "/",
+  },
+  {
+    element: <FeedPage />,
+    path: ROUTES.feed,
+  },
+  {
+    element: <NearbyPage />,
+    path: ROUTES.nearby,
+  },
+  {
+    element: <FiltersPage />,
+    path: ROUTES.filters,
+  },
+  {
+    element: <LikesPage />,
+    path: ROUTES.likes,
+  },
+  {
+    element: <ProfilePage />,
+    path: ROUTES.profile,
+  },
+  {
+    element: <SettingsPage />,
+    path: ROUTES.profileSettings,
+  },
+  {
+    element: <NotificationsPage />,
+    path: ROUTES.profileNotifications,
+  },
+  {
+    element: <HideFromContactsPage />,
+    path: ROUTES.profileHideFromContacts,
+  },
+  {
+    element: <AddContactManuallyPage />,
+    path: ROUTES.profileAddContactManually,
+  },
+  {
+    element: <ChatPage />,
+    path: ROUTES.chat,
+  },
+  {
+    element: <ChatRoomPage />,
+    path: ROUTES.chatRoom,
+  },
+  {
+    element: <ChatProfilePage />,
+    path: ROUTES.chatProfile,
+  },
+  {
+    element: <ComponentsPage />,
+    path: ROUTES.components,
+  },
+  {
+    element: <AuthPage />,
+    path: ROUTES.auth,
+  },
+  {
+    element: <NumberVerificationPage />,
+    path: ROUTES.numberVerification,
+  },
+  {
+    element: <Anketa1Page />,
+    path: ROUTES.anketa1,
+  },
+  {
+    element: <Anketa2Page />,
+    path: ROUTES.anketa2,
+  },
+  {
+    element: <Anketa3Page />,
+    path: ROUTES.anketa3,
+  },
+  {
+    element: <Anketa4Page />,
+    path: ROUTES.anketa4,
+  },
+  {
+    element: <Anketa5Page />,
+    path: ROUTES.anketa5,
+  },
+  {
+    element: <Anketa6Page />,
+    path: ROUTES.anketa6,
+  },
+  {
+    element: <Anketa7Page />,
+    path: ROUTES.anketa7,
+  },
+  {
+    element: <Anketa8Page />,
+    path: ROUTES.anketa8,
+  },
+  {
+    element: <Anketa9Page />,
+    path: ROUTES.anketa9,
+  },
+  {
+    element: <Anketa10Page />,
+    path: ROUTES.anketa10,
+  },
+  {
+    element: <Anketa11Page />,
+    path: ROUTES.anketa11,
+  },
+  {
+    element: <Anketa12Page />,
+    path: ROUTES.anketa12,
+  },
+]);
