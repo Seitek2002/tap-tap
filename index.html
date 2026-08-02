@@ -8,8 +8,188 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>tap-tap</title>
+    <style>
+      /*
+        Прелоадер живёт вне сборки Tailwind нарочно: он должен отрисоваться
+        до того, как загрузится/выполнится основной JS-бандл (а на iOS
+        Safari — ещё и до применения любых внешних стилей), поэтому все
+        значения захардкожены и не используют системные шрифты проекта.
+        Только transform/opacity — никаких backdrop-filter и т.п., чтобы
+        анимация не спотыкалась в WebView/Safari.
+      */
+      #app-preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #faf9fd;
+        transition: opacity 300ms ease;
+      }
+      #app-preloader.app-preloader--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .app-preloader__badge {
+        width: 96px;
+        height: 96px;
+        border-radius: 24px;
+        background: #f43f5e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: inset(100% 0 0 0);
+        -webkit-clip-path: inset(100% 0 0 0);
+        animation:
+          app-preloader-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+          app-preloader-pulse 1.6s ease-in-out 0.6s infinite;
+      }
+      .app-preloader__flame {
+        width: 48px;
+        height: 48px;
+        opacity: 0;
+        animation:
+          app-preloader-flame-in 0.4s ease-out 0.3s forwards,
+          app-preloader-flicker 1.4s ease-in-out 0.7s infinite;
+      }
+      .app-preloader__title {
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1c1e24;
+      }
+      .app-preloader__letter {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(10px);
+        animation: app-preloader-letter-in 0.4s cubic-bezier(0.4, 0, 0.2, 1)
+          forwards;
+      }
+      .app-preloader__letter:nth-child(1) {
+        animation-delay: 0.55s;
+      }
+      .app-preloader__letter:nth-child(2) {
+        animation-delay: 0.61s;
+      }
+      .app-preloader__letter:nth-child(3) {
+        animation-delay: 0.67s;
+      }
+      .app-preloader__letter:nth-child(4) {
+        animation-delay: 0.73s;
+      }
+      .app-preloader__letter:nth-child(5) {
+        animation-delay: 0.79s;
+      }
+      .app-preloader__letter:nth-child(6) {
+        animation-delay: 0.85s;
+      }
+      .app-preloader__letter:nth-child(7) {
+        animation-delay: 0.91s;
+      }
+      @keyframes app-preloader-reveal {
+        from {
+          clip-path: inset(100% 0 0 0);
+          -webkit-clip-path: inset(100% 0 0 0);
+        }
+        to {
+          clip-path: inset(0 0 0 0);
+          -webkit-clip-path: inset(0 0 0 0);
+        }
+      }
+      @keyframes app-preloader-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 rgba(244, 63, 94, 0.4);
+        }
+        50% {
+          transform: scale(1.06);
+          box-shadow: 0 0 22px rgba(244, 63, 94, 0.35);
+        }
+      }
+      @keyframes app-preloader-flame-in {
+        from {
+          opacity: 0;
+          transform: scale(0.6);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes app-preloader-flicker {
+        0%,
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+        50% {
+          transform: scale(1.08) rotate(-3deg);
+        }
+      }
+      @keyframes app-preloader-letter-in {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .app-preloader__badge,
+        .app-preloader__flame,
+        .app-preloader__letter {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+          clip-path: none !important;
+          -webkit-clip-path: none !important;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        #app-preloader {
+          background: #18181b;
+        }
+        .app-preloader__title {
+          color: #f4f4f5;
+        }
+      }
+    </style>
   </head>
   <body class="max-w-150 mx-auto">
+    <div id="app-preloader">
+      <div class="app-preloader__badge">
+        <svg
+          class="app-preloader__flame"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"
+          />
+        </svg>
+      </div>
+      <p class="app-preloader__title">
+        <span class="app-preloader__letter">T</span>
+        <span class="app-preloader__letter">a</span>
+        <span class="app-preloader__letter">p</span>
+        <span class="app-preloader__letter">-</span>
+        <span class="app-preloader__letter">T</span>
+        <span class="app-preloader__letter">a</span>
+        <span class="app-preloader__letter">p</span>
+      </p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

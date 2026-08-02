@@ -2,12 +2,30 @@ import { RouterProvider } from "react-router";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
 
 import { queryClient } from "@/shared/config";
 
 import { router } from "./router";
 
+const PRELOADER_FADE_MS = 300;
+
 export function App() {
+  // Прелоадер в index.html показывался, пока грузился бандл. Как только
+  // React смонтировался и отрисовал первый роут — плавно убираем его.
+  useEffect(() => {
+    const preloader = document.getElementById("app-preloader");
+    if (!preloader) return;
+
+    preloader.classList.add("app-preloader--hidden");
+    const timeout = setTimeout(
+      () => preloader.remove(),
+      PRELOADER_FADE_MS,
+    );
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

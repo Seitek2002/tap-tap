@@ -13,16 +13,14 @@ export function WelcomePage() {
   const goLogin = () => void navigate(ROUTES.auth);
 
   return (
-    <div className="flex h-dvh flex-col bg-white px-6 pb-10 pt-[max(2rem,env(safe-area-inset-top))] dark:bg-[#6B7280]">
+    <div className="flex h-dvh flex-col bg-white px-6 pb-10 pt-[max(2rem,env(safe-area-inset-top))]">
       <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
         <div className="flex size-24 items-center justify-center rounded-3xl bg-rose-500 text-white">
           <Flame className="size-12" strokeWidth={1.5} />
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-[#6B7280] dark:text-[#6B7280]">
-            Tap-Tap
-          </h1>
-          <p className="max-w-xs text-base text-[#6B7280] dark:text-[#6B7280]">
+          <h1 className="text-3xl font-bold text-[#1C1E24]">Tap-Tap</h1>
+          <p className="max-w-xs text-base text-[#6B7280]">
             Знакомься с людьми рядом. Свайп вправо — если понравился.
           </p>
         </div>
@@ -39,7 +37,7 @@ export function WelcomePage() {
         <button
           type="button"
           onClick={goLogin}
-          className="w-full rounded-full border border-[#6B7280] py-4 text-base font-semibold text-[#6B7280] transition-transform active:scale-[0.98] dark:border-[#6B7280] dark:text-[#6B7280]"
+          className="w-full rounded-full border border-[#6B7280] py-4 text-base font-semibold text-[#6B7280] transition-transform active:scale-[0.98]"
         >
           Войти
         </button>
