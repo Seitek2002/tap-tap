@@ -40,6 +40,13 @@
   html {
     font-family: var(--font-sans);
   }
+
+  /* Убираем системную серую подсветку тапа на iOS/Android WebView — у нас
+     своя обратная связь на нажатие (active:scale-*, вибро-отклик), а её
+     подсветка поверх выглядит как баг, а не как часть дизайна. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* ── Modal animations (@starting-style + data-state) ─────────────────────── */
