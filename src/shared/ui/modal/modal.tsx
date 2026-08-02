@@ -1,5 +1,11 @@
 import { X } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import {
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 
 import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
@@ -14,6 +20,9 @@ type ModalProps = {
 };
 
 const DURATION = 200;
+// Ниже этого сдвига по Y (px) отпускание пальца закрывает шторку, а не
+// возвращает её на место.
+const SWIPE_DISMISS_THRESHOLD = 120;
 
 export const Modal = ({ children, isOpen, onClose, title }: ModalProps) => {
   const [isRendered, setIsRendered] = useState(isOpen);
@@ -58,6 +67,34 @@ export const Modal = ({ children, isOpen, onClose, title }: ModalProps) => {
   useScrollLock(isRendered);
   const keyboardInset = useKeyboardInset();
 
+  // Свайп-вниз для закрытия боттомшита: тянуть можно только за хендл-бар
+  // сверху (не за весь шит), чтобы не конфликтовать со скроллом контента
+  // внутри. Пока идёт драг — двигаем шит инлайн-стилем напрямую под пальцем
+  // (transition: none), а по отпусканию либо чистим инлайн-стиль (тогда
+  // возврат на место анимирует уже CSS-переход modal-sheet), либо зовём
+  // onClose() — и в закрытое положение шит уезжает тем же CSS-переходом.
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartYRef = useRef(0);
+
+  const handleDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
+    dragStartYRef.current = event.clientY;
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleDragMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    setDragY(Math.max(0, event.clientY - dragStartYRef.current));
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (dragY > SWIPE_DISMISS_THRESHOLD) onClose();
+    setDragY(0);
+  };
+
   if (!mounted || !isRendered) return null;
 
   const state = isClosing ? "closed" : "open";
@@ -77,8 +114,21 @@ export const Modal = ({ children, isOpen, onClose, title }: ModalProps) => {
       <div
         className="modal-sheet relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-xl sm:hidden"
         data-state={state}
+        style={
+          isDragging
+            ? { transform: `translateY(${dragY}px)`, transition: "none" }
+            : undefined
+        }
       >
-        <div className="mx-auto mt-3 h-1.5 w-10 shrink-0 rounded-full bg-[#E4E7EC]" />
+        <div
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+          className="flex shrink-0 touch-none justify-center py-3"
+        >
+          <div className="h-1.5 w-10 rounded-full bg-[#E4E7EC]" />
+        </div>
         {title && (
           <div className="flex items-center justify-between border-b border-border-soft p-5">
             <h2 className="text-xl font-semibold text-foreground">{title}</h2>
