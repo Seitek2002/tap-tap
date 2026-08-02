@@ -24,6 +24,7 @@ import { useNavigate, useParams } from "react-router";
 
 import { ROUTES } from "@/shared/config";
 import { NotificationType, triggerNotificationHaptic } from "@/shared/lib/haptics";
+import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { isAndroid } from "@/shared/lib/platform";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
@@ -140,6 +141,7 @@ export const ChatRoomPage = () => {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
   const chat = CHATS.find((item) => String(item.id) === chatId);
+  const keyboardInset = useKeyboardInset();
 
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [draft, setDraft] = useState("");
@@ -294,7 +296,14 @@ export const ChatRoomPage = () => {
   };
 
   return (
-    <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
+    <div
+      className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]"
+      style={
+        keyboardInset > 0
+          ? { height: `calc(100dvh - ${keyboardInset}px)` }
+          : undefined
+      }
+    >
       <header className="flex items-center gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
         <button
           type="button"

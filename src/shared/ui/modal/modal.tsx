@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { useMounted } from "@/shared/lib/use-mounted";
 import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 
@@ -55,13 +56,17 @@ export const Modal = ({ children, isOpen, onClose, title }: ModalProps) => {
   }, [isOpen, onClose]);
 
   useScrollLock(isRendered);
+  const keyboardInset = useKeyboardInset();
 
   if (!mounted || !isRendered) return null;
 
   const state = isClosing ? "closed" : "open";
 
   return createPortal(
-    <div className="fixed inset-0 z-100 flex items-end justify-center sm:items-center">
+    <div
+      className="fixed inset-0 z-100 flex items-end justify-center sm:items-center"
+      style={{ paddingBottom: keyboardInset }}
+    >
       <div
         className="modal-overlay absolute inset-0 bg-black/40 backdrop-blur-sm"
         data-state={state}
