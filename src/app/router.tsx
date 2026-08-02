@@ -30,129 +30,138 @@ import { WelcomePage } from "@/pages/welcome";
 
 import { ROUTES } from "@/shared/config";
 
+import { PageTransition } from "./page-transition";
+
 // createHashRouter, а не browser: в Capacitor WebView перезагрузка на любом
 // маршруте не улетает в 404 и не требует серверного rewrite.
 // Пока верстаем — старт прямо с "/" (welcome). Позже здесь появится
 // проверка сессии (есть токен → в ленту, иначе → на welcome).
+// Корневой pathless layout-роут — не участвует в матчинге URL, только
+// оборачивает все страницы в PageTransition для анимации между ними.
 export const router = createHashRouter([
   {
-    element: <WelcomePage />,
-    path: "/",
-  },
-  {
-    element: <FeedPage />,
-    path: ROUTES.feed,
-  },
-  {
-    element: <NearbyPage />,
-    path: ROUTES.nearby,
-  },
-  {
-    element: <NearbyProfilePage />,
-    path: ROUTES.nearbyProfile,
-  },
-  {
-    element: <FiltersPage />,
-    path: ROUTES.filters,
-  },
-  {
-    element: <LikesPage />,
-    path: ROUTES.likes,
-  },
-  {
-    element: <LikeProfilePage />,
-    path: ROUTES.likeProfile,
-  },
-  {
-    element: <ProfilePage />,
-    path: ROUTES.profile,
-  },
-  {
-    element: <SettingsPage />,
-    path: ROUTES.profileSettings,
-  },
-  {
-    element: <NotificationsPage />,
-    path: ROUTES.profileNotifications,
-  },
-  {
-    element: <HideFromContactsPage />,
-    path: ROUTES.profileHideFromContacts,
-  },
-  {
-    element: <AddContactManuallyPage />,
-    path: ROUTES.profileAddContactManually,
-  },
-  {
-    element: <ChatPage />,
-    path: ROUTES.chat,
-  },
-  {
-    element: <ChatRoomPage />,
-    path: ROUTES.chatRoom,
-  },
-  {
-    element: <ChatProfilePage />,
-    path: ROUTES.chatProfile,
-  },
-  {
-    element: <ComponentsPage />,
-    path: ROUTES.components,
-  },
-  {
-    element: <AuthPage />,
-    path: ROUTES.auth,
-  },
-  {
-    element: <NumberVerificationPage />,
-    path: ROUTES.numberVerification,
-  },
-  {
-    element: <Anketa1Page />,
-    path: ROUTES.anketa1,
-  },
-  {
-    element: <Anketa2Page />,
-    path: ROUTES.anketa2,
-  },
-  {
-    element: <Anketa3Page />,
-    path: ROUTES.anketa3,
-  },
-  {
-    element: <Anketa4Page />,
-    path: ROUTES.anketa4,
-  },
-  {
-    element: <Anketa5Page />,
-    path: ROUTES.anketa5,
-  },
-  {
-    element: <Anketa6Page />,
-    path: ROUTES.anketa6,
-  },
-  {
-    element: <Anketa7Page />,
-    path: ROUTES.anketa7,
-  },
-  {
-    element: <Anketa8Page />,
-    path: ROUTES.anketa8,
-  },
-  {
-    element: <Anketa9Page />,
-    path: ROUTES.anketa9,
-  },
-  {
-    element: <Anketa10Page />,
-    path: ROUTES.anketa10,
-  },
-  {
-    element: <Anketa11Page />,
-    path: ROUTES.anketa11,
-  },
-  {
-    element: <Anketa12Page />,
-    path: ROUTES.anketa12,
+    children: [
+      {
+        element: <WelcomePage />,
+        path: "/",
+      },
+      {
+        element: <FeedPage />,
+        path: ROUTES.feed,
+      },
+      {
+        element: <NearbyPage />,
+        path: ROUTES.nearby,
+      },
+      {
+        element: <NearbyProfilePage />,
+        path: ROUTES.nearbyProfile,
+      },
+      {
+        element: <FiltersPage />,
+        path: ROUTES.filters,
+      },
+      {
+        element: <LikesPage />,
+        path: ROUTES.likes,
+      },
+      {
+        element: <LikeProfilePage />,
+        path: ROUTES.likeProfile,
+      },
+      {
+        element: <ProfilePage />,
+        path: ROUTES.profile,
+      },
+      {
+        element: <SettingsPage />,
+        path: ROUTES.profileSettings,
+      },
+      {
+        element: <NotificationsPage />,
+        path: ROUTES.profileNotifications,
+      },
+      {
+        element: <HideFromContactsPage />,
+        path: ROUTES.profileHideFromContacts,
+      },
+      {
+        element: <AddContactManuallyPage />,
+        path: ROUTES.profileAddContactManually,
+      },
+      {
+        element: <ChatPage />,
+        path: ROUTES.chat,
+      },
+      {
+        element: <ChatRoomPage />,
+        path: ROUTES.chatRoom,
+      },
+      {
+        element: <ChatProfilePage />,
+        path: ROUTES.chatProfile,
+      },
+      {
+        element: <ComponentsPage />,
+        path: ROUTES.components,
+      },
+      {
+        element: <AuthPage />,
+        path: ROUTES.auth,
+      },
+      {
+        element: <NumberVerificationPage />,
+        path: ROUTES.numberVerification,
+      },
+      {
+        element: <Anketa1Page />,
+        path: ROUTES.anketa1,
+      },
+      {
+        element: <Anketa2Page />,
+        path: ROUTES.anketa2,
+      },
+      {
+        element: <Anketa3Page />,
+        path: ROUTES.anketa3,
+      },
+      {
+        element: <Anketa4Page />,
+        path: ROUTES.anketa4,
+      },
+      {
+        element: <Anketa5Page />,
+        path: ROUTES.anketa5,
+      },
+      {
+        element: <Anketa6Page />,
+        path: ROUTES.anketa6,
+      },
+      {
+        element: <Anketa7Page />,
+        path: ROUTES.anketa7,
+      },
+      {
+        element: <Anketa8Page />,
+        path: ROUTES.anketa8,
+      },
+      {
+        element: <Anketa9Page />,
+        path: ROUTES.anketa9,
+      },
+      {
+        element: <Anketa10Page />,
+        path: ROUTES.anketa10,
+      },
+      {
+        element: <Anketa11Page />,
+        path: ROUTES.anketa11,
+      },
+      {
+        element: <Anketa12Page />,
+        path: ROUTES.anketa12,
+      },
+    ],
+    element: <PageTransition />,
   },
 ]);
