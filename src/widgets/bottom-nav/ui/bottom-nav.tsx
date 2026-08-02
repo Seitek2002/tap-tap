@@ -17,7 +17,7 @@ export const BottomNav = () => {
   const { pathname } = useLocation();
 
   return (
-    <nav className="grid grid-cols-5 px-2 pt-2 pb-6">
+    <nav className="grid grid-cols-5 px-2 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       {TABS.map(({ icon: Icon, label, route }) => {
         const active = route === pathname;
         return (

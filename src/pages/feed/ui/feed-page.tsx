@@ -71,7 +71,7 @@ export const FeedPage = () => {
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       {/* Верхний бар */}
-      <header className="flex items-center justify-between px-4 pt-2.5 pb-2.5">
+      <header className="flex items-center justify-between px-4 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2.5">
         <h1 className="text-2xl font-extrabold">TapTap</h1>
         <div className="flex items-center gap-2.5">
           <button

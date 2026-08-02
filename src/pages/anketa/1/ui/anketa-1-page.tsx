@@ -24,7 +24,7 @@ export const Anketa1Page = () => {
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       {/* Верхняя прокручиваемая часть */}
-      <div className="flex-1 overflow-y-auto px-4 pt-4">
+      <div className="flex-1 overflow-y-auto px-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <div className="flex justify-end">
           <button
             type="button"
@@ -59,7 +59,7 @@ export const Anketa1Page = () => {
       </div>
 
       {/* Нижняя панель */}
-      <div className="space-y-3 px-4 pt-4 pb-8">
+      <div className="space-y-3 px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         {/* Предупреждение и согласие — только когда статус «В браке» */}
         {isMarried && (
           <>

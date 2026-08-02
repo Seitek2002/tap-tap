@@ -57,7 +57,7 @@ export const NumberVerificationPage = () => {
 
   return (
     <div className="flex h-dvh flex-col bg-[#7C3AED] text-white">
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <h1 className="text-3xl font-bold text-white">
           👋 Добро пожаловать в <span className="text-[#F4B740]">TapTap</span>{" "}
           знакомства

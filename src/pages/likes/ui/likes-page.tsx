@@ -111,7 +111,7 @@ export const LikesPage = () => {
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
-      <div className="px-2.5">
+      <div className="px-2.5 pt-[max(1rem,env(safe-area-inset-top))]">
         <div className="flex">
           {TABS.map((item) => {
             const active = tab === item.key;

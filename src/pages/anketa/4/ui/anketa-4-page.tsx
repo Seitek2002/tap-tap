@@ -30,7 +30,7 @@ export const Anketa4Page = () => {
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       {/* Верхняя прокручиваемая часть */}
-      <div className="flex-1 overflow-y-auto px-4 pt-4">
+      <div className="flex-1 overflow-y-auto px-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -104,7 +104,7 @@ export const Anketa4Page = () => {
       </div>
 
       {/* Нижняя панель */}
-      <div className="px-4 pt-4 pb-8">
+      <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={goNext}

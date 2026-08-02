@@ -76,7 +76,7 @@ export const NearbyProfilePage = () => {
           type="button"
           onClick={() => navigate(-1)}
           aria-label="Закрыть"
-          className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-black/30 text-white"
+          className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 flex size-9 items-center justify-center rounded-full bg-black/30 text-white"
         >
           <X className="size-5" />
         </button>

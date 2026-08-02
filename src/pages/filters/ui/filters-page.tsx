@@ -298,7 +298,7 @@ export const FiltersPage = () => {
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       {/* Шапка */}
-      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-4 pt-4 pb-3">
+      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
         <button
           type="button"
           onClick={() => navigate(-1)}

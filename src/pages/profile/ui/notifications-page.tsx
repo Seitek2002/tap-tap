@@ -100,7 +100,7 @@ export const NotificationsPage = () => {
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       <div className="flex-1 overflow-y-auto pb-4">
-        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <header className="flex items-center gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
