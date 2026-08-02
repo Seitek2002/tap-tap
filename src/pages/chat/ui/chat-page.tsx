@@ -1,23 +1,34 @@
 import {
   AlignJustify,
   Ban,
+  Check,
   Flag,
   Heart,
   HeartCrack,
   Search,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
 import emptyChatIllustration from "@/shared/assets/images/empty-chat-illustration.png";
+import { useClickAway } from "@/shared/lib/use-click-away";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
 
 import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
 import { REPORT_REASONS } from "../model/report-reasons";
+
+const CHAT_FILTERS = [
+  { key: "all", label: "Все" },
+  { key: "unread", label: "Непрочитанные" },
+  { key: "online", label: "Онлайн" },
+  { key: "waiting", label: "Ждут ответ" },
+] as const;
+
+type ChatFilterKey = (typeof CHAT_FILTERS)[number]["key"];
 
 export const ChatPage = () => {
   const navigate = useNavigate();
@@ -30,6 +41,21 @@ export const ChatPage = () => {
   const [reportChatId, setReportChatId] = useState<null | number>(null);
   const unmatchChat = chats.find((chat) => chat.id === unmatchChatId);
   const blockChat = chats.find((chat) => chat.id === blockChatId);
+
+  const [filter, setFilter] = useState<ChatFilterKey>("all");
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  useClickAway(filterMenuRef, () => {
+    if (isFilterMenuOpen) setIsFilterMenuOpen(false);
+  });
+
+  const visibleChats = chats.filter((chat) => {
+    if (filter === "unread") return chat.unread;
+    if (filter === "online") return chat.online;
+    if (filter === "waiting") return chat.yourTurn;
+    return true;
+  });
 
   const confirmUnmatch = () => {
     setChats((prev) => prev.filter((chat) => chat.id !== unmatchChatId));
@@ -95,13 +121,45 @@ export const ChatPage = () => {
       {/* Сообщения */}
       <div className="flex items-center justify-between px-4 pt-2 pb-1">
         <h2 className="text-base font-bold">Сообщения</h2>
-        <button
-          type="button"
-          aria-label="Список"
-          className="flex size-8 items-center justify-center text-[#1C1E24]"
-        >
-          <AlignJustify className="size-5" />
-        </button>
+        <div className="relative" ref={filterMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsFilterMenuOpen((open) => !open)}
+            aria-label="Фильтр"
+            className="flex size-8 items-center justify-center text-[#1C1E24]"
+          >
+            <AlignJustify className="size-5" />
+          </button>
+
+          <AnimatePresence>
+            {isFilterMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-full right-0 z-30 mt-2 w-56 overflow-hidden rounded-2xl bg-white shadow-xl"
+              >
+                {CHAT_FILTERS.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => {
+                      setFilter(option.key);
+                      setIsFilterMenuOpen(false);
+                    }}
+                    className="flex w-full items-center justify-between px-4 py-3.5 text-left text-sm"
+                  >
+                    {option.label}
+                    {filter === option.key && (
+                      <Check className="size-4 shrink-0 text-[#1C1E24]" />
+                    )}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {chats.length === 0 ? (
@@ -114,10 +172,14 @@ export const ChatPage = () => {
             вы сможете общаться здесь
           </p>
         </div>
+      ) : visibleChats.length === 0 ? (
+        <p className="flex-1 px-8 pt-10 text-center text-sm text-[#6B7280]">
+          По этому фильтру ничего не нашлось
+        </p>
       ) : (
         <div className="flex-1 divide-y divide-[#E4E7EC] overflow-y-auto">
           <AnimatePresence mode="popLayout">
-            {chats.map((chat) => (
+            {visibleChats.map((chat) => (
               // Строка внутри — горизонтальный скролл: контент занимает всю
               // видимую ширину, кнопки действий лежат правее и открываются
               // скроллом/свайпом (без drag-логики, просто overflow-x-auto).
@@ -145,6 +207,9 @@ export const ChatPage = () => {
                     />
                     {chat.unread && (
                       <span className="absolute top-0 right-0 size-3 rounded-full bg-red-500 ring-2 ring-[#FAF9FD]" />
+                    )}
+                    {chat.online && (
+                      <span className="absolute right-0 bottom-0 size-3 rounded-full bg-green-500 ring-2 ring-[#FAF9FD]" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">

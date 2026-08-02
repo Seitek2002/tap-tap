@@ -9,6 +9,7 @@ export type Chat = {
   id: number;
   lastMessage: string;
   name: string;
+  online: boolean;
   photo: string;
   unread: boolean;
   yourTurn: boolean;
@@ -28,6 +29,7 @@ export const CHATS: Chat[] = [
     id: 1,
     lastMessage: "Привет! Я тоже люблю кошек",
     name: "Айдай",
+    online: true,
     photo: person1,
     unread: true,
     yourTurn: false,
@@ -36,6 +38,7 @@ export const CHATS: Chat[] = [
     id: 2,
     lastMessage: "Хочу устроить пикник в парке, кто присоединится?",
     name: "Асия",
+    online: false,
     photo: personNight,
     unread: true,
     yourTurn: false,
@@ -44,6 +47,7 @@ export const CHATS: Chat[] = [
     id: 3,
     lastMessage: "Завтра на встрече обсудим новый проект",
     name: "Тимур",
+    online: true,
     photo: personZalkar,
     unread: false,
     yourTurn: true,
@@ -52,6 +56,7 @@ export const CHATS: Chat[] = [
     id: 4,
     lastMessage: "Нашла интересный рецепт, поделюсь на выходных",
     name: "Лейла",
+    online: false,
     photo: personDastan,
     unread: false,
     yourTurn: false,
@@ -60,6 +65,7 @@ export const CHATS: Chat[] = [
     id: 5,
     lastMessage: "Планирую поездку в горы, кто хочет пойти?",
     name: "Данияр",
+    online: false,
     photo: personEmir,
     unread: false,
     yourTurn: false,
@@ -68,6 +74,7 @@ export const CHATS: Chat[] = [
     id: 6,
     lastMessage: "Обожаю осенние прогулки, а ты?",
     name: "Гульнара",
+    online: true,
     photo: personSeitek,
     unread: false,
     yourTurn: true,
