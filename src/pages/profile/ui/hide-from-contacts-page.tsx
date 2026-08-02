@@ -146,6 +146,20 @@ export const HideFromContactsPage = () => {
   );
   const groupedList = groupByLetter(filteredList);
 
+  // «Выбрать всех» — только для вкладки «Контакты»: выделяет (или снимает,
+  // если уже выбраны все) все контакты, видимые с учётом текущего поиска.
+  const allContactsSelected =
+    tab === "contacts" &&
+    filteredList.length > 0 &&
+    filteredList.every((contact) => selectedContactIds.includes(contact.id));
+
+  const selectAllContacts = () => {
+    if (tab !== "contacts") return;
+    setSelectedContactIds(
+      allContactsSelected ? [] : filteredList.map((contact) => contact.id),
+    );
+  };
+
   const scrollToLetter = (letter: string) => {
     sectionRefs.current[letter]?.scrollIntoView({
       behavior: "smooth",
@@ -170,8 +184,18 @@ export const HideFromContactsPage = () => {
           >
             <ChevronLeft className="size-5" />
           </button>
-          <button type="button" className="text-sm text-[#6B7280]">
-            Выбрать всех
+          <button
+            type="button"
+            onClick={selectAllContacts}
+            disabled={tab !== "contacts" || filteredList.length === 0}
+            className={cn(
+              "text-sm font-medium",
+              tab === "contacts" && filteredList.length > 0
+                ? "text-[#1C1E24]"
+                : "text-[#6B7280]",
+            )}
+          >
+            {allContactsSelected ? "Снять выбор" : "Выбрать всех"}
           </button>
         </header>
 

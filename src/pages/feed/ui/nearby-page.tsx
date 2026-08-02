@@ -1,4 +1,5 @@
 import { Heart, Settings2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -6,6 +7,7 @@ import { BottomNav } from "@/widgets/bottom-nav";
 
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
+import { useBounce } from "@/shared/lib/use-bounce";
 import { cn } from "@/shared/lib/utils";
 
 import { NEARBY_PROFILES } from "../model/nearby";
@@ -17,6 +19,61 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
+
+// У каждой карточки — свой независимый scale, поэтому лайк вынесен в
+// отдельный компонент (у .map()-колбэка нельзя вызывать хуки напрямую).
+const AllTabLikeButton = ({
+  liked,
+  onClick,
+}: {
+  liked: boolean;
+  onClick: () => void;
+}) => {
+  const { bounce, scale } = useBounce();
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        onClick();
+        bounce();
+      }}
+      aria-label="Лайк"
+      className={liked ? "text-primary" : "text-[#1C1E24]"}
+    >
+      <motion.span style={{ scale }} className="flex">
+        <Heart className={cn("size-6", liked && "fill-current")} />
+      </motion.span>
+    </button>
+  );
+};
+
+const ForYouLikeButton = ({
+  liked,
+  onClick,
+}: {
+  liked: boolean;
+  onClick: () => void;
+}) => {
+  const { bounce, scale } = useBounce();
+
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+        bounce();
+      }}
+      aria-label="Лайк"
+      className="absolute right-4 bottom-4 flex size-9 items-center justify-center rounded-full bg-white/23 backdrop-blur-[4.3px]"
+    >
+      <motion.span style={{ scale }} className="flex">
+        <NearbyLikeIcon className="size-9" filled={liked} />
+      </motion.span>
+    </button>
+  );
+};
 
 export const NearbyPage = () => {
   const navigate = useNavigate();
@@ -104,25 +161,25 @@ export const NearbyPage = () => {
                     key={profile.id}
                     className="overflow-hidden rounded-3xl bg-white"
                   >
-                    <img
-                      src={profile.photo}
-                      alt=""
-                      className="aspect-3/4 w-full object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/nearby/${profile.id}`)}
+                      className="block w-full"
+                    >
+                      <img
+                        src={profile.photo}
+                        alt=""
+                        className="aspect-3/4 w-full object-cover"
+                      />
+                    </button>
                     <div className="flex items-center justify-between p-3">
                       <span className="font-bold">
                         {profile.name}, {profile.age}
                       </span>
-                      <button
-                        type="button"
+                      <AllTabLikeButton
+                        liked={liked}
                         onClick={() => toggleLike(profile.id)}
-                        aria-label="Лайк"
-                        className={liked ? "text-primary" : "text-[#1C1E24]"}
-                      >
-                        <Heart
-                          className={cn("size-6", liked && "fill-current")}
-                        />
-                      </button>
+                      />
                     </div>
                   </div>
                 );
@@ -148,7 +205,10 @@ export const NearbyPage = () => {
                     className="overflow-hidden rounded-3xl bg-white"
                   >
                     <div className="p-1">
-                      <div className="relative aspect-335/269 overflow-hidden rounded-2xl">
+                      <div
+                        onClick={() => navigate(`/nearby/${profile.id}`)}
+                        className="relative aspect-335/269 overflow-hidden rounded-2xl"
+                      >
                         <img
                           src={profile.photo}
                           alt=""
@@ -159,14 +219,10 @@ export const NearbyPage = () => {
                             {profile.name}, {profile.age}
                           </span>
                         </div>
-                        <button
-                          type="button"
+                        <ForYouLikeButton
+                          liked={liked}
                           onClick={() => toggleLike(profile.id)}
-                          aria-label="Лайк"
-                          className="absolute right-4 bottom-4 flex size-9 items-center justify-center rounded-full bg-white/23 backdrop-blur-[4.3px]"
-                        >
-                          <NearbyLikeIcon className="size-9" filled={liked} />
-                        </button>
+                        />
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2 p-4 pt-3">

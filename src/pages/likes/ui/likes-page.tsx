@@ -1,9 +1,12 @@
 import { useState } from "react";
 
 import { Heart, Lock, X } from "lucide-react";
+import { motion } from "motion/react";
+import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { useBounce } from "@/shared/lib/use-bounce";
 import { cn } from "@/shared/lib/utils";
 
 import {
@@ -36,35 +39,57 @@ const ProfilePhoto = ({ profile }: { profile: LikeProfile }) => (
   </div>
 );
 
-const ProfileCard = ({ profile }: { profile: LikeProfile }) => (
-  <div className="overflow-hidden rounded-3xl">
-    <ProfilePhoto profile={profile} />
-  </div>
-);
+const ProfileCard = ({ profile }: { profile: LikeProfile }) => {
+  const navigate = useNavigate();
+
+  return (
+    <button
+      type="button"
+      onClick={() => navigate(`/likes/${profile.id}`)}
+      className="overflow-hidden rounded-3xl text-left"
+    >
+      <ProfilePhoto profile={profile} />
+    </button>
+  );
+};
 
 // Открытая карточка «Лайкнули тебя»: фото и панель ♥/✕ — единый скруглённый
 // блок без зазора между ними, с разделителем между кнопками.
-const LikeActionCard = ({ profile }: { profile: LikeProfile }) => (
-  <div className="overflow-hidden rounded-3xl bg-white">
-    <ProfilePhoto profile={profile} />
-    <div className="flex divide-x divide-[#E4E7EC]">
+const LikeActionCard = ({ profile }: { profile: LikeProfile }) => {
+  const navigate = useNavigate();
+  const { bounce, scale } = useBounce();
+
+  return (
+    <div className="overflow-hidden rounded-3xl bg-white">
       <button
         type="button"
-        className="flex flex-1 items-center justify-center py-3.5 text-[#1C1E24]"
-        aria-label="Нравится"
+        onClick={() => navigate(`/likes/${profile.id}`)}
+        className="block w-full text-left"
       >
-        <Heart className="size-6" />
+        <ProfilePhoto profile={profile} />
       </button>
-      <button
-        type="button"
-        className="flex flex-1 items-center justify-center py-3.5 text-[#1C1E24]"
-        aria-label="Пропустить"
-      >
-        <X className="size-6" />
-      </button>
+      <div className="flex divide-x divide-[#E4E7EC]">
+        <button
+          type="button"
+          onClick={bounce}
+          className="flex flex-1 items-center justify-center py-3.5 text-[#1C1E24]"
+          aria-label="Нравится"
+        >
+          <motion.span style={{ scale }} className="flex">
+            <Heart className="size-6" />
+          </motion.span>
+        </button>
+        <button
+          type="button"
+          className="flex flex-1 items-center justify-center py-3.5 text-[#1C1E24]"
+          aria-label="Пропустить"
+        >
+          <X className="size-6" />
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const LockedCard = ({ profile }: { profile: LikeProfile }) => (
   <div className="relative aspect-[3/4] overflow-hidden rounded-3xl bg-[#E4E7EC]">

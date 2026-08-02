@@ -15,9 +15,9 @@ import { Anketa12Page } from "@/pages/anketa/12";
 import { AuthPage } from "@/pages/auth";
 import { ChatPage, ChatProfilePage, ChatRoomPage } from "@/pages/chat";
 import { ComponentsPage } from "@/pages/components";
-import { FeedPage, NearbyPage } from "@/pages/feed";
+import { FeedPage, NearbyPage, NearbyProfilePage } from "@/pages/feed";
 import { FiltersPage } from "@/pages/filters";
-import { LikesPage } from "@/pages/likes";
+import { LikeProfilePage, LikesPage } from "@/pages/likes";
 import { NumberVerificationPage } from "@/pages/number-verification";
 import {
   AddContactManuallyPage,
@@ -48,12 +48,20 @@ export const router = createHashRouter([
     path: ROUTES.nearby,
   },
   {
+    element: <NearbyProfilePage />,
+    path: ROUTES.nearbyProfile,
+  },
+  {
     element: <FiltersPage />,
     path: ROUTES.filters,
   },
   {
     element: <LikesPage />,
     path: ROUTES.likes,
+  },
+  {
+    element: <LikeProfilePage />,
+    path: ROUTES.likeProfile,
   },
   {
     element: <ProfilePage />,
