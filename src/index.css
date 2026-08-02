@@ -47,6 +47,18 @@
   * {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Долгий тап по кнопкам/навигации/тогглам не должен вызывать системное
+     меню «Copy/Look Up» — это ломает ощущение нативного интерфейса. Текст
+     сообщений/био/описаний сюда не входит — его копировать можно и нужно. */
+  button,
+  [role="button"],
+  a,
+  label {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 
 /* ── Modal animations (@starting-style + data-state) ─────────────────────── */
