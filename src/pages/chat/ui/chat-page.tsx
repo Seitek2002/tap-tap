@@ -1,6 +1,6 @@
-import { AlignJustify, Check, Heart, Search } from "lucide-react";
+import { AlignJustify, Check, Heart, Search, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
@@ -45,11 +45,42 @@ export const ChatPage = () => {
   // мессенджеров: открыть новую значит закрыть предыдущую.
   const [openChatId, setOpenChatId] = useState<null | number>(null);
 
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen) searchInputRef.current?.focus();
+  }, [isSearchOpen]);
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    searchInputRef.current?.blur();
+  };
+
+  // Крестик: если есть текст — просто очищает поле, курсор остаётся в
+  // инпуте. Если поле уже пустое — закрывает поиск целиком.
+  const handleSearchClear = () => {
+    if (searchQuery) {
+      setSearchQuery("");
+      searchInputRef.current?.focus();
+    } else {
+      closeSearch();
+    }
+  };
+
   useClickAway(filterMenuRef, () => {
     if (isFilterMenuOpen) setIsFilterMenuOpen(false);
   });
 
   const visibleChats = chats.filter((chat) => {
+    if (
+      searchQuery.trim() &&
+      !chat.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    ) {
+      return false;
+    }
     if (filter === "unread") return chat.unread;
     if (filter === "online") return chat.online;
     if (filter === "waiting") return chat.yourTurn;
@@ -85,15 +116,57 @@ export const ChatPage = () => {
   return (
     <div className="flex h-dvh flex-col overflow-x-hidden bg-[#FAF9FD] text-[#1C1E24]">
       {/* Верхний бар */}
-      <header className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
-        <h1 className="text-2xl font-extrabold">Чаты</h1>
-        <button
-          type="button"
-          aria-label="Поиск"
-          className="flex size-9 items-center justify-center text-[#1C1E24]"
-        >
-          <Search className="size-6" />
-        </button>
+      <header className="px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
+        <div className="relative h-9">
+          <AnimatePresence initial={false}>
+            {isSearchOpen ? (
+              <motion.div
+                key="search"
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 24 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="absolute inset-0 flex items-center gap-2 rounded-full bg-[#F2F1F3] px-4"
+              >
+                <Search className="size-5 shrink-0 text-[#6B7280]" />
+                <input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Найти"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-[#1C1E24] outline-none placeholder:text-[#6B7280]"
+                />
+                <button
+                  type="button"
+                  onClick={handleSearchClear}
+                  aria-label="Очистить"
+                  className="flex size-5 shrink-0 items-center justify-center text-[#6B7280]"
+                >
+                  <X className="size-4" />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="title"
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="absolute inset-0 flex items-center justify-between"
+              >
+                <h1 className="text-2xl font-extrabold">Чаты</h1>
+                <button
+                  type="button"
+                  onClick={() => setIsSearchOpen(true)}
+                  aria-label="Поиск"
+                  className="flex size-9 items-center justify-center text-[#1C1E24]"
+                >
+                  <Search className="size-6" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </header>
 
       {/* Лайки и пары */}
@@ -125,7 +198,7 @@ export const ChatPage = () => {
 
       {/* Сообщения */}
       <div className="flex items-center justify-between px-4 pt-2 pb-1">
-        <h2 className="text-base font-bold">Сообщения</h2>
+        <h2 className="text-base font-medium">Сообщения</h2>
         <div className="relative" ref={filterMenuRef}>
           <button
             type="button"
