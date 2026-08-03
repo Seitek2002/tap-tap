@@ -34,7 +34,7 @@ const ProfilePhoto = ({ profile }: { profile: LikeProfile }) => (
       className="absolute inset-0 size-full object-cover"
     />
     <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent p-3 pt-8">
-      <span className="text-base font-bold text-white">
+      <span className="text-base font-medium text-white">
         {profile.name}, {profile.age}
       </span>
     </div>
