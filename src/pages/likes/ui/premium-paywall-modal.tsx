@@ -150,7 +150,7 @@ export const PremiumPaywallModal = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65 }}
             >
-              <div className="">
+              <div>
                 <div
                   className="flex overflow-hidden rounded-[20px] h-24.25 items-center justify-center border-t border-[#CF6AB7]/64 px-4 pt-2.5 pb-9.75 -mb-9"
                   style={{
