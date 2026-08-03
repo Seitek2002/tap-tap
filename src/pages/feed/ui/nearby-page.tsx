@@ -40,10 +40,10 @@ const AllTabLikeButton = ({
         bounce();
       }}
       aria-label="Лайк"
-      className={liked ? "text-primary" : "text-[#1C1E24]"}
+      className={liked ? "text-red-500" : "text-[#1C1E24]"}
     >
       <motion.span style={{ scale }} className="flex">
-        <Heart className={cn("size-6", liked && "fill-current")} />
+        <Heart className={cn("size-5", liked && "fill-current")} />
       </motion.span>
     </button>
   );
@@ -149,7 +149,7 @@ export const NearbyPage = () => {
               </p>
               <button
                 type="button"
-                className="mt-4 flex items-center gap-1.5 rounded-full bg-[#1C1E24] px-4 py-2.5 text-sm font-bold text-white"
+                className="mt-4 flex items-center ml-auto gap-1.5 rounded-full bg-[#1C1E24] px-4 py-2.5 text-sm font-bold text-white"
               >
                 <img src={boostIcon} alt="" className="size-3.5" />
                 Быть первым
@@ -162,7 +162,7 @@ export const NearbyPage = () => {
                 return (
                   <div
                     key={profile.id}
-                    className="overflow-hidden rounded-3xl bg-white"
+                    className="overflow-hidden rounded-3xl bg-white border border-[#E4E7EC] p-1"
                   >
                     <button
                       type="button"
@@ -172,11 +172,11 @@ export const NearbyPage = () => {
                       <img
                         src={profile.photo}
                         alt=""
-                        className="aspect-3/4 w-full object-cover"
+                        className="aspect-3/4 w-full object-cover rounded-2xl"
                       />
                     </button>
-                    <div className="flex items-center justify-between p-3">
-                      <span className="font-bold">
+                    <div className="flex items-center justify-between px-2.5 py-2">
+                      <span className="text-sm font-medium">
                         {profile.name}, {profile.age}
                       </span>
                       <AllTabLikeButton
