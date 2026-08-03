@@ -4,6 +4,7 @@ export type Message = {
   imageUrl?: string;
   kind: "file" | "image" | "text";
   seen?: boolean;
+  sending?: boolean;
   text?: string;
   type: "incoming" | "outgoing";
 };

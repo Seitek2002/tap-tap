@@ -7,6 +7,7 @@ import { ROUTES } from "@/shared/config";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
 import { RangeSlider, Slider } from "@/shared/ui/slider";
+import { Spinner } from "@/shared/ui/spinner";
 import { Toggle } from "@/shared/ui/toggle";
 
 import {
@@ -81,9 +82,16 @@ export const SettingsPage = () => {
   const [hideStatus, setHideStatus] = useState(false);
   const [hideActivity, setHideActivity] = useState(false);
 
+  // Бэкенда нет — имитируем сетевой раунд-трип: галочка на кнопке "Готово"
+  // на мгновение сменяется спиннером, и только потом всплывает тост.
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSave = () => {
-    toast.success("Изменения сохранены");
-    navigate(-1);
+    setIsSaving(true);
+    setTimeout(() => {
+      toast.success("Изменения сохранены");
+      navigate(-1);
+    }, 500);
   };
 
   const handlePremiumClick = () => {
@@ -98,10 +106,11 @@ export const SettingsPage = () => {
           <button
             type="button"
             onClick={handleSave}
+            disabled={isSaving}
             aria-label="Готово"
-            className="flex size-9 items-center justify-center rounded-full border border-[#E4E7EC]"
+            className="flex size-9 items-center justify-center rounded-full border border-[#E4E7EC] disabled:opacity-60"
           >
-            <Check className="size-5" />
+            {isSaving ? <Spinner className="size-5" /> : <Check className="size-5" />}
           </button>
         </header>
 

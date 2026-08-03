@@ -12,6 +12,7 @@ import { useClickAway } from "@/shared/lib/use-click-away";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
 import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
 import { REPORT_REASONS } from "../model/report-reasons";
@@ -26,8 +27,32 @@ const CHAT_FILTERS = [
 
 type ChatFilterKey = (typeof CHAT_FILTERS)[number]["key"];
 
+// Карточки данных (список чатов) — скелетон формы контента, пока не пришёл
+// реальный список. Бэкенда нет, поэтому имитируем короткой задержкой на
+// монтировании.
+const CHAT_ROW_SKELETON_COUNT = 6;
+
+const ChatRowSkeleton = () => (
+  <div className="flex items-center gap-3 px-4 py-3">
+    <Skeleton className="size-14 shrink-0 rounded-full" />
+    <div className="min-w-0 flex-1 space-y-2">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-3.5 w-40" />
+    </div>
+  </div>
+);
+
 export const ChatPage = () => {
   const navigate = useNavigate();
+
+  // Бэкенда нет — имитируем короткую загрузку списка чатов при заходе на
+  // страницу скелетонами вместо реальных строк.
+  const [isLoadingChats, setIsLoadingChats] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingChats(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Локальная копия — «Отменить лайк»/«Заблокировать» из подтверждения
   // реально убирают переписку из списка, без бэкенда.
@@ -241,7 +266,13 @@ export const ChatPage = () => {
         </div>
       </div>
 
-      {chats.length === 0 ? (
+      {isLoadingChats ? (
+        <div className="flex-1 divide-y divide-[#E4E7EC] overflow-y-auto">
+          {Array.from({ length: CHAT_ROW_SKELETON_COUNT }).map((_, index) => (
+            <ChatRowSkeleton key={index} />
+          ))}
+        </div>
+      ) : chats.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
           <img src={emptyChatIllustration} alt="" className="mb-6 w-55.25" />
           <h2 className="text-lg font-bold">Чат пустой</h2>

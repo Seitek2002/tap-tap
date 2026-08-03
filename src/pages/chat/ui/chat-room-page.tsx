@@ -28,6 +28,7 @@ import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { isAndroid } from "@/shared/lib/platform";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { CHATS } from "../model/chats";
 import {
@@ -87,6 +88,20 @@ const MessageBubble = ({
   const isOutgoing = message.type === "outgoing";
   const { imageUrl } = message;
 
+  // Мелкое действие (отправка) — спиннер, а не скелетон: это статус-строка
+  // под уже отрисованным сообщением, а не заглушка на месте контента.
+  const status = message.sending ? (
+    <span className="flex items-center gap-1 text-xs text-[#6B7280]">
+      <Spinner className="size-3" />
+      Отправка...
+    </span>
+  ) : message.seen ? (
+    <span className="flex items-center gap-1 text-xs text-[#6B7280]">
+      <Check className="text-primary size-3.5" />
+      Просмотрено
+    </span>
+  ) : null;
+
   if (message.kind === "image") {
     return (
       <div
@@ -108,12 +123,7 @@ const MessageBubble = ({
             <ImageIcon className="size-8" />
           </div>
         )}
-        {message.seen && (
-          <span className="flex items-center gap-1 text-xs text-[#6B7280]">
-            <Check className="text-primary size-3.5" />
-            Просмотрено
-          </span>
-        )}
+        {status}
       </div>
     );
   }
@@ -122,23 +132,31 @@ const MessageBubble = ({
     return (
       <div
         className={cn(
-          "flex max-w-[75%] items-center gap-3 rounded-2xl px-3 py-3",
-          isOutgoing
-            ? "bg-primary self-end text-white"
-            : "self-start bg-[#EFEDF6] text-[#1C1E24]",
+          "flex flex-col gap-1",
+          isOutgoing ? "self-end items-end" : "self-start items-start",
         )}
       >
         <div
           className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-xl",
-            isOutgoing ? "bg-white/20" : "bg-white",
+            "flex max-w-[75%] items-center gap-3 rounded-2xl px-3 py-3",
+            isOutgoing
+              ? "bg-primary self-end text-white"
+              : "self-start bg-[#EFEDF6] text-[#1C1E24]",
           )}
         >
-          <File className="size-5" />
+          <div
+            className={cn(
+              "flex size-11 shrink-0 items-center justify-center rounded-xl",
+              isOutgoing ? "bg-white/20" : "bg-white",
+            )}
+          >
+            <File className="size-5" />
+          </div>
+          <span className="min-w-0 truncate text-sm font-medium">
+            {message.fileName}
+          </span>
         </div>
-        <span className="min-w-0 truncate text-sm font-medium">
-          {message.fileName}
-        </span>
+        {status}
       </div>
     );
   }
@@ -146,13 +164,21 @@ const MessageBubble = ({
   return (
     <div
       className={cn(
-        "max-w-[75%] rounded-3xl px-4 py-2.5 text-sm",
-        isOutgoing
-          ? "bg-primary self-end text-white"
-          : "self-start bg-[#EFEDF6] text-[#1C1E24]",
+        "flex flex-col gap-1",
+        isOutgoing ? "self-end items-end" : "self-start items-start",
       )}
     >
-      {message.text}
+      <div
+        className={cn(
+          "max-w-[75%] rounded-3xl px-4 py-2.5 text-sm",
+          isOutgoing
+            ? "bg-primary self-end text-white"
+            : "self-start bg-[#EFEDF6] text-[#1C1E24]",
+        )}
+      >
+        {message.text}
+      </div>
+      {status}
     </div>
   );
 };
@@ -203,41 +229,62 @@ export const ChatRoomPage = () => {
     };
   }, []);
 
+  // Бэкенда нет — имитируем сетевой раунд-трип: сообщение сразу появляется
+  // со статусом "Отправка..." (Spinner), через SEND_DELAY_MS помечается
+  // отправленным.
+  const SEND_DELAY_MS = 600;
+
   const sendMessage = (event: FormEvent) => {
     event.preventDefault();
     const text = draft.trim();
     if (!text && pendingAttachments.length === 0) return;
 
-    setMessages((prev) => {
-      const next = [...prev];
+    const newMessages: Message[] = [];
+    let nextId = messages.length + 1;
 
-      for (const attachment of pendingAttachments) {
-        if (attachment.kind === "image") {
-          next.push({
-            id: next.length + 1,
-            imageUrl: attachment.imageUrl,
-            kind: "image",
-            type: "outgoing",
-          });
-        } else {
-          next.push({
-            fileName: attachment.fileName,
-            id: next.length + 1,
-            kind: "file",
-            type: "outgoing",
-          });
-        }
+    for (const attachment of pendingAttachments) {
+      if (attachment.kind === "image") {
+        newMessages.push({
+          id: nextId,
+          imageUrl: attachment.imageUrl,
+          kind: "image",
+          sending: true,
+          type: "outgoing",
+        });
+      } else {
+        newMessages.push({
+          fileName: attachment.fileName,
+          id: nextId,
+          kind: "file",
+          sending: true,
+          type: "outgoing",
+        });
       }
+      nextId += 1;
+    }
 
-      if (text) {
-        next.push({ id: next.length + 1, kind: "text", text, type: "outgoing" });
-      }
+    if (text) {
+      newMessages.push({
+        id: nextId,
+        kind: "text",
+        sending: true,
+        text,
+        type: "outgoing",
+      });
+    }
 
-      return next;
-    });
-
+    setMessages((prev) => [...prev, ...newMessages]);
     setDraft("");
     setPendingAttachments([]);
+
+    const sentIds = new Set(newMessages.map((message) => message.id));
+    setTimeout(() => {
+      setMessages((prev) =>
+        prev.map((message) =>
+          sentIds.has(message.id) ? { ...message, sending: false } : message,
+        ),
+      );
+    }, SEND_DELAY_MS);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
