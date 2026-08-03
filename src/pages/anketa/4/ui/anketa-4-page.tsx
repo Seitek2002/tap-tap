@@ -72,7 +72,7 @@ export const Anketa4Page = () => {
                   selected ? "border-primary" : "border-border-soft",
                 )}
               >
-                <img src={item.icon} alt="" className="size-8 shrink-0" />
+                <img src={item.icon} alt="" className="w-7.5 shrink-0" />
                 <span className="flex-1 text-sm font-medium">{item.label}</span>
                 <div className="pointer-events-none">
                   <Radio size="large" checked={selected} readOnly />

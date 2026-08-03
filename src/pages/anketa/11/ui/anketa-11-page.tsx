@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 
-import { Check, ChevronLeft, Eye, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronLeft, Eye, ShieldCheck, Sparkles } from "lucide-react";
 
 import carPremium from "@/shared/assets/images/car-premium.png";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
@@ -43,19 +43,6 @@ export const Anketa11Page = () => {
 
         {/* Авто + бейдж-переключатель */}
         <div className="relative mt-6">
-          {/* Бейдж «Есть машина» — статичная иллюстрация (не кликается) */}
-          <div className="absolute top-4 left-2 z-10 flex rotate-[5.83deg] items-center gap-2.5 rounded-2xl bg-white p-2.5 shadow-[0px_1px_10px_0px_rgba(124,58,237,0.25)]">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-white">
-              <Check className="size-4" />
-            </span>
-            <span className="text-left">
-              <span className="block text-sm font-bold">Есть машина</span>
-              <span className="block text-xs text-[#6B7280]">
-                Показывается в профиле
-              </span>
-            </span>
-          </div>
-
           <img src={carPremium} alt="" className="w-full" />
         </div>
 

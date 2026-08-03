@@ -4,7 +4,6 @@ import { useNavigate } from "react-router";
 import {
   Camera,
   Check,
-  ChevronDown,
   ChevronLeft,
   Image as ImageIcon,
   Plus,
@@ -175,14 +174,45 @@ export const Anketa12Page = () => {
           Следуй нашим рекомендациям, чтобы твой профиль смотрелся намного лучше
         </p>
         <div className="mt-2 flex justify-center text-[#6B7280]">
-          <ChevronDown className="size-5" />
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7 6L12 11L17 6M7 13L12 18L17 13"
+              stroke="url(#paint0_linear_129_7042)"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <defs>
+              <linearGradient
+                id="paint0_linear_129_7042"
+                x1="12"
+                y1="8"
+                x2="12"
+                y2="18"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop
+                  offset="0.400742"
+                  stop-color="#6B7280"
+                  stop-opacity="0.45"
+                />
+                <stop offset="0.436035" stop-color="#6B7280" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
 
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TIPS.map((tip) => (
             <div
               key={tip.title}
-              className="w-[85%] shrink-0 rounded-2xl bg-white p-4"
+              className="w-[85%] shrink-0 rounded-2xl bg-white p-4 shadow-[0_2px_12px_0_rgba(127,127,127,0.25)]"
             >
               <h3 className="text-center text-sm font-bold">{tip.title}</h3>
               <p className="mt-1 text-center text-xs text-[#6B7280]">
