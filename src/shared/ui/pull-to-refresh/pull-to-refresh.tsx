@@ -76,7 +76,10 @@ export const PullToRefresh = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishPull}
-      className={cn("relative overscroll-y-contain", className)}
+      className={cn(
+        "relative overflow-x-hidden overscroll-y-contain",
+        className,
+      )}
       style={{
         transform: offset > 0 ? `translateY(${offset}px)` : undefined,
         transition: isPulling ? "none" : "transform 200ms ease",
