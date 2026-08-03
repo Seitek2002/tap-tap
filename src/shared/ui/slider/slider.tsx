@@ -38,9 +38,9 @@ export const Slider = ({
         className,
       )}
     >
-      <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-border-soft" />
+      <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 rounded-full bg-border-soft" />
       <div
-        className="absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full bg-primary"
+        className="absolute top-1/2 left-0 h-px -translate-y-1/2 rounded-full bg-primary"
         style={{ width: `${percent}%` }}
       />
       <input

@@ -47,9 +47,9 @@ export const RangeSlider = ({
       <span className="shrink-0 text-sm text-foreground">{minVal}</span>
 
       <div className="relative flex h-5 flex-1 items-center">
-        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-border-soft" />
+        <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 rounded-full bg-border-soft" />
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-primary"
+          className="absolute top-1/2 h-px -translate-y-1/2 rounded-full bg-primary"
           style={{
             left: `${getPercent(minVal)}%`,
             width: `${getPercent(maxVal) - getPercent(minVal)}%`,
