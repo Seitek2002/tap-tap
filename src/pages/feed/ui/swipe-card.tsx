@@ -133,6 +133,20 @@ export const SwipeCard = ({
     ["0px 0px 0px rgba(0,0,0,0)", "0px 6px 16px rgba(0,0,0,0.18)"],
   );
 
+  // Сердечко/крестик — фиолетовое стекло сверху над фото, к моменту скролла
+  // в детали профиля становятся белыми с тёмной иконкой (как и у остальных
+  // кнопок панели, но со своей стартовой точкой).
+  const heartXBg = useTransform(
+    scrollProgress,
+    [0, 1],
+    ["rgba(124, 58, 237, 0.56)", "#ffffff"],
+  );
+  const heartXColor = useTransform(
+    scrollProgress,
+    [0, 1],
+    ["#ffffff", "#1c1e24"],
+  );
+
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     scrollProgress.set(Math.min(event.currentTarget.scrollTop / 120, 1));
   };
@@ -431,24 +445,26 @@ export const SwipeCard = ({
             <Undo2 className="size-5" />
           </motion.button>
           <div className="flex items-center gap-5">
-            <button
+            <motion.button
               type="button"
               data-haptic="none"
               onClick={() => flyOut("left")}
-              className="flex size-13.5 items-center justify-center rounded-full bg-primary/56 text-white shadow-[inset_2px_-1px_2px_0_rgba(255,255,255,0.16)] backdrop-blur-[30px]"
+              style={{ backgroundColor: heartXBg, color: heartXColor }}
+              className="flex size-13.5 items-center justify-center rounded-full shadow-[inset_2px_-1px_2px_0_rgba(255,255,255,0.16)] backdrop-blur-[30px]"
               aria-label="Пропустить"
             >
               <X className="size-8 fill-current" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="button"
               data-haptic="none"
               onClick={like}
-              className="flex size-13.5 items-center justify-center rounded-full bg-primary/56 text-white shadow-[inset_2px_-1px_2px_0_rgba(255,255,255,0.16)] backdrop-blur-[30px]"
+              style={{ backgroundColor: heartXBg, color: heartXColor }}
+              className="flex size-13.5 items-center justify-center rounded-full shadow-[inset_2px_-1px_2px_0_rgba(255,255,255,0.16)] backdrop-blur-[30px]"
               aria-label="Нравится"
             >
               <Heart className="size-8 fill-current" />
-            </button>
+            </motion.button>
           </div>
           <motion.button
             type="button"
