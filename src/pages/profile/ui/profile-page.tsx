@@ -213,7 +213,7 @@ export const ProfilePage = () => {
           </span>
         </div>
 
-        <div className="mx-4 mt-5 overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFC947] to-[#F5A623] p-5">
+        <div className="mx-4 mt-5 overflow-hidden rounded-3xl bg-gradient-to-br from-[#F4B740] to-[#FDDA60] p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-extrabold italic">PREMIUM</h2>
             <div className="flex items-center gap-2">
