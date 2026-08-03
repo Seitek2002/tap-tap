@@ -166,7 +166,7 @@ export const LikesPage = () => {
               Активируй Премиум чтобы посмотреть все лайки
             </p>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
               {LIKED_YOU.map((profile, index) =>
                 index < UNLOCKED_LIKES_COUNT ? (
                   <LikeActionCard key={profile.id} profile={profile} />
@@ -177,7 +177,7 @@ export const LikesPage = () => {
             </div>
           </>
         ) : (
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
             {YOUR_LIKES.map((profile) => (
               <ProfileCard key={profile.id} profile={profile} />
             ))}
