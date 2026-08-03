@@ -182,19 +182,24 @@ export const LikesPage = () => {
             ))}
           </div>
         )}
-        {/* Посмотреть все лайки — только для вкладки «Лайкнули тебя» */}
-        {tab === "likedYou" && (
-          <div className="px-4 pb-4 fixed bottom-20 w-full left-0">
-            <button
-              type="button"
-              onClick={() => setIsPaywallOpen(true)}
-              className="w-full rounded-full bg-primary py-3 text-base font-semibold text-white transition-transform active:scale-[0.99]"
-            >
-              Посмотреть все лайки
-            </button>
-          </div>
-        )}
       </PullToRefresh>
+
+      {/* Посмотреть все лайки — только для вкладки «Лайкнули тебя». Вне
+          PullToRefresh: пока он тянется, на него накатывается transform
+          (translateY), а это делает его containing block'ом для любых
+          fixed-потомков — кнопка со своим bottom-20 внезапно съезжала
+          относительно уже сдвинутого контейнера, а не вьюпорта. */}
+      {tab === "likedYou" && (
+        <div className="px-4 pb-4 fixed bottom-20 w-full left-0">
+          <button
+            type="button"
+            onClick={() => setIsPaywallOpen(true)}
+            className="w-full rounded-full bg-primary py-3 text-base font-semibold text-white transition-transform active:scale-[0.99]"
+          >
+            Посмотреть все лайки
+          </button>
+        </div>
+      )}
 
       <BottomNav />
 
