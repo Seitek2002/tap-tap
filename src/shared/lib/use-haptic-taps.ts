@@ -23,7 +23,13 @@ const HAPTIC_OVERRIDE_STYLES: Record<string, ImpactStyle> = {
 /** Вибро-тик по нажатию на кнопки/дропдауны/чекбоксы/навлинки/тогглы. */
 export const useHapticTaps = () => {
   useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
+    // click, а не pointerdown: pointerdown стреляет в момент касания экрана —
+    // ровно так же, как в начале скролла, если палец опустился на строку-
+    // кнопку (например в списке чатов). click браузер сам не генерирует,
+    // если между touchstart и touchend палец увёл за порог — то есть при
+    // скролле/свайпе click не сработает, а при обычном тапе сработает сразу
+    // на отпускании, без заметной задержки.
+    const handleClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
 
@@ -37,10 +43,7 @@ export const useHapticTaps = () => {
       triggerHaptic(override ? HAPTIC_OVERRIDE_STYLES[override] : undefined);
     };
 
-    document.addEventListener("pointerdown", handlePointerDown, {
-      passive: true,
-    });
-    return () =>
-      document.removeEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
   }, []);
 };
