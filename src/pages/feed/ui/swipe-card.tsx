@@ -269,7 +269,7 @@ export const SwipeCard = ({
         </motion.div>
 
         {/* Нижняя инфа профиля */}
-        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/25 to-transparent px-4 pt-16 pb-24 text-white">
+        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/25 to-transparent px-4 pt-16 pb-20 text-white">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5FDE3] px-2.5 py-1 text-xs font-semibold text-[#18722E]">
             {profile.online && (
               <span className="size-1.5 rounded-full bg-[#18722E]" />
@@ -425,43 +425,35 @@ export const SwipeCard = ({
               boxShadow: btnShadow,
               color: btnColor,
             }}
-            className="flex size-12 items-center justify-center rounded-full"
+            className="flex size-10 items-center justify-center rounded-full"
             aria-label="Вернуть"
           >
             <Undo2 className="size-5" />
           </motion.button>
-          <motion.button
-            type="button"
-            data-haptic="none"
-            onClick={() => flyOut("left")}
-            style={{
-              backgroundColor: btnBg,
-              boxShadow: btnShadow,
-              color: btnColor,
-            }}
-            className="flex size-16 items-center justify-center rounded-full"
-            aria-label="Пропустить"
-          >
-            <X className="size-7" />
-          </motion.button>
-          <motion.button
-            type="button"
-            data-haptic="none"
-            onClick={like}
-            style={{
-              backgroundColor: btnBg,
-              boxShadow: btnShadow,
-              color: btnColor,
-            }}
-            className="flex size-16 items-center justify-center rounded-full"
-            aria-label="Нравится"
-          >
-            <Heart className="size-7 fill-current" />
-          </motion.button>
+          <div className="flex items-center gap-5">
+            <button
+              type="button"
+              data-haptic="none"
+              onClick={() => flyOut("left")}
+              className="flex size-13.5 items-center justify-center rounded-full bg-primary/56 text-white shadow-[inset_2px_-1px_2px_0_rgba(255,255,255,0.16)] backdrop-blur-[30px]"
+              aria-label="Пропустить"
+            >
+              <X className="size-8 fill-current" />
+            </button>
+            <button
+              type="button"
+              data-haptic="none"
+              onClick={like}
+              className="flex size-13.5 items-center justify-center rounded-full bg-primary/56 text-white shadow-[inset_2px_-1px_2px_0_rgba(255,255,255,0.16)] backdrop-blur-[30px]"
+              aria-label="Нравится"
+            >
+              <Heart className="size-8 fill-current" />
+            </button>
+          </div>
           <motion.button
             type="button"
             style={{ backgroundColor: btnBg, boxShadow: btnShadow }}
-            className="flex size-12 items-center justify-center rounded-full text-[#F5A623]"
+            className="flex size-10 items-center justify-center rounded-full text-[#F5A623]"
             aria-label="Суперлайк"
           >
             <svg
