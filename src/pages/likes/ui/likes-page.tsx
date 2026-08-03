@@ -70,20 +70,21 @@ const LikeActionCard = ({ profile }: { profile: LikeProfile }) => {
       >
         <ProfilePhoto profile={profile} />
       </button>
-      <div className="flex divide-x divide-[#E4E7EC]">
+      <div className="flex">
         <button
           type="button"
           onClick={bounce}
-          className="flex flex-1 items-center justify-center py-3.5 text-[#1C1E24]"
+          className="flex flex-1 items-center justify-center py-2.75 text-[#1C1E24]"
           aria-label="Нравится"
         >
           <motion.span style={{ scale }} className="flex">
             <Heart className="size-6" />
           </motion.span>
         </button>
+        <div className="w-px bg-[#E4E7EC] h-[25px] my-2.5"></div>
         <button
           type="button"
-          className="flex flex-1 items-center justify-center py-3.5 text-[#1C1E24]"
+          className="flex flex-1 items-center justify-center py-2.75 text-[#1C1E24]"
           aria-label="Пропустить"
         >
           <X className="size-6" />
