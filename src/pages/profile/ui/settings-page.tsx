@@ -184,7 +184,7 @@ export const SettingsPage = () => {
               background: "linear-gradient(135deg, #7C3AED 0%, #F4B740 100%)",
             }}
           >
-            <div className="flex flex-col gap-2.5 divide-y divide-[#E4E7EC] rounded-3xl bg-white p-4 shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
+            <div className="flex flex-col divide-y divide-[#E4E7EC] rounded-3xl bg-white p-4 shadow-[0_2px_12px_0_rgba(127,127,127,0.12)] [&>button]:py-1.25">
               {PREMIUM_SETTINGS_FEATURES.map((feature) => (
                 <SettingsRow
                   key={feature.key}
