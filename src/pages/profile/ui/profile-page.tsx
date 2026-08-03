@@ -234,19 +234,24 @@ export const ProfilePage = () => {
             <span className="text-center text-xs leading-[120%] font-bold text-[#1C1E24]">
               Бесплатно
             </span>
-            <span className="text-center text-xs leading-[120%] font-bold text-[#1C1E24]">
+            <span className="text-center pl-4 text-xs leading-[120%] font-bold text-[#1C1E24]">
               Premium
             </span>
             {PREMIUM_FEATURES.map((feature) => (
               <Fragment key={feature.label}>
-                <span className={feature.bold ? "font-bold" : ""}>
+                <span
+                  className={cn(
+                    "text-xs leading-[120%] text-[#1C1E24]",
+                    feature.bold ? "font-bold" : "font-medium",
+                  )}
+                >
                   {feature.label}
                 </span>
                 <div className="flex justify-center">
-                  <Lock className="size-4" />
+                  <Lock className="size-3" />
                 </div>
-                <div className="flex justify-center">
-                  <Check className="size-4" />
+                <div className="flex justify-center pl-4">
+                  <Check className="size-3" />
                 </div>
               </Fragment>
             ))}
