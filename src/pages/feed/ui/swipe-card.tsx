@@ -100,7 +100,8 @@ export const SwipeCard = ({
   };
 
   // Если карточку вернули — стартуем за экраном и влетаем к центру.
-  const initialX = enterFrom === "right" ? 700 : enterFrom === "left" ? -700 : 0;
+  const initialX =
+    enterFrom === "right" ? 700 : enterFrom === "left" ? -700 : 0;
   const x = useMotionValue(initialX);
 
   useEffect(() => {
@@ -410,9 +411,7 @@ export const SwipeCard = ({
         </button>
       </div>
 
-      {/* Плавающая панель действий — прилипает снизу.
-          Фон/цвет/тень проявляются по мере скролла (сверху — прозрачные). */}
-      <div className="sticky bottom-0 z-20 px-6 pt-10 pb-4">
+      <div className="sticky bottom-0 z-20 px-6 pb-4">
         <motion.div
           style={{ opacity: barOpacity }}
           className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#FAF9FD] via-[#FAF9FD]/95 to-transparent"

@@ -1,8 +1,9 @@
-import { AlignJustify, Check, Heart, Search, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+
+import { AlignJustify, Check, Heart, Search, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
