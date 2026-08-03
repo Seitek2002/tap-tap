@@ -81,7 +81,7 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
           <img
             src={matchHeartBg}
             alt=""
-            className="pointer-events-none absolute inset-0 size-full object-cover opacity-20"
+            className="pointer-events-none absolute inset-0 size-full object-cover"
           />
 
           {/* Две фото-карточки внахлёст + бейдж на стыке */}
@@ -128,20 +128,20 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
           </div>
 
           <motion.div
-            className="relative mt-6 text-center"
+            className="relative mt-10 text-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <h1 className="text-2xl font-bold text-white">Это взаимно!</h1>
-            <p className="mt-2 text-sm text-white/90">
+            <h1 className="text-3xl font-bold text-white">Это взаимно!</h1>
+            <p className="mt-2 text-base text-white/90">
               💖 Ты и {profile.name} нравитесь друг другу. Напиши ей, не упусти
               свою искру!
             </p>
           </motion.div>
 
           <motion.div
-            className="relative mt-6 w-full flex-1"
+            className="relative mt-10 w-full flex-1"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
@@ -158,7 +158,7 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
                 onClick={handleSend}
                 disabled={!message.trim()}
                 aria-label="Отправить"
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white disabled:opacity-40"
+                className="flex px-6 py-2.5 h-full shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white disabled:opacity-40"
               >
                 <Send className="size-4" />
               </button>
