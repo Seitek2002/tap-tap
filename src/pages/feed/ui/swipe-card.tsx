@@ -9,7 +9,7 @@ import {
 import {
   Ban,
   Check,
-  ChevronDown,
+  ChevronsDown,
   Heart,
   MapPin,
   MessageSquareWarning,
@@ -278,6 +278,7 @@ export const SwipeCard = ({
           <button
             type="button"
             onClick={scrollToDetails}
+            onPointerDownCapture={(event) => event.stopPropagation()}
             className="mt-2 flex w-full items-end justify-between text-left"
           >
             <div>
@@ -299,7 +300,7 @@ export const SwipeCard = ({
                 </span>
               </div>
             </div>
-            <ChevronDown className="size-6 shrink-0" />
+            <ChevronsDown className="size-6 shrink-0" />
           </button>
         </div>
 
