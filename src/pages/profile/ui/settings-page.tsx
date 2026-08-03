@@ -40,12 +40,14 @@ const SectionTitle = ({ children }: { children: ReactNode }) => (
 );
 
 const SettingsRow = ({
+  grouped,
   icon,
   label,
   onClick,
   premium,
   value,
 }: {
+  grouped?: boolean;
   icon?: ReactNode;
   label: string;
   onClick?: () => void;
@@ -56,15 +58,19 @@ const SettingsRow = ({
     type="button"
     onClick={onClick}
     className={cn(
-      "flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-4 text-left",
-      premium ? "border-[#F5A623]/50" : "border-[#E4E7EC]",
+      "flex w-full items-center justify-between px-4 py-4 text-left",
+      !grouped &&
+        cn(
+          "rounded-2xl border bg-white",
+          premium ? "border-[#F5A623]/50" : "border-[#E4E7EC]",
+        ),
     )}
   >
-    <span className="flex items-center gap-2.5 font-medium">
+    <span className="flex items-center gap-2.5 text-sm leading-[120%] font-normal text-[#1C1E24]">
       {icon}
       {label}
     </span>
-    <span className="flex items-center gap-1 text-[#6B7280]">
+    <span className="flex items-center gap-1 text-sm leading-[120%] font-normal text-[#1C1E24]">
       {value}
       <ChevronRight className="size-4 shrink-0" />
     </span>
@@ -126,12 +132,17 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>Аккаунт</SectionTitle>
-          <div className="flex flex-col gap-3">
+          <div className="divide-y divide-[#E4E7EC] rounded-2xl border border-[#E4E7EC] bg-white">
             <SettingsRow
+              grouped
               label="Номер телефона"
               value={SETTINGS_ACCOUNT.phone}
             />
-            <SettingsRow label="Твое имя" value={SETTINGS_ACCOUNT.name} />
+            <SettingsRow
+              grouped
+              label="Твое имя"
+              value={SETTINGS_ACCOUNT.name}
+            />
           </div>
         </div>
 
