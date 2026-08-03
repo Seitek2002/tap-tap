@@ -50,9 +50,20 @@ const FIELD_ICONS: Record<ProfileOptionFieldKey, ReactNode> = {
   sport: <Dumbbell className="size-4" />,
 };
 
-const Section = ({ children, title }: { children: ReactNode; title: string }) => (
+const Section = ({
+  children,
+  icon,
+  title,
+}: {
+  children: ReactNode;
+  icon?: ReactNode;
+  title: string;
+}) => (
   <div className="mx-4 mt-3 rounded-2xl bg-white p-4">
-    <h2 className="text-sm font-bold text-[#6B7280]">{title}</h2>
+    <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#6B7280]">
+      {icon}
+      {title}
+    </h2>
     <div className="mt-1 divide-y divide-[#E4E7EC]">{children}</div>
   </div>
 );
@@ -208,7 +219,9 @@ export const ProfilePage = () => {
           </div>
 
           <div className="mt-4 grid grid-cols-[1fr_auto_auto] items-center gap-y-3 text-sm">
-            <span />
+            <span className="text-xs font-semibold text-[#1C1E24]/70">
+              Что входит
+            </span>
             <span className="pl-4 text-xs font-semibold text-[#1C1E24]/70">
               Бесплатно
             </span>
@@ -283,11 +296,11 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        <Section title="Дополни описание">
-          <div className="flex items-start gap-1.5 py-1">
-            <Quote className="mt-0.5 size-4 shrink-0 text-[#6B7280]" />
-            <p className="font-medium">{profile.bio}</p>
-          </div>
+        <Section
+          icon={<Quote className="size-4 shrink-0" />}
+          title="Дополни описание"
+        >
+          <p className="py-1 font-medium text-[#1C1E24]">{profile.bio}</p>
         </Section>
 
         <Section title="О тебе">

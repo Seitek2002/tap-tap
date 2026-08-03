@@ -61,7 +61,14 @@ export const INTERESTS = [
   "🏍️ Мотоциклы",
 ];
 
-export const DEFAULT_INTERESTS = ["🌱 Вегетерианство", "🧩 Паззлы", "🌲 Природа"];
+export const DEFAULT_INTERESTS = [
+  "🎳 Боулинг",
+  "🌲 Природа",
+  "💻 Технологии",
+  "🎪 Фестивали",
+  "🧩 Паззлы",
+  "👗 Мода",
+];
 
 // Те же поля/опции, что в pages/filters (OPTION_FIELDS), только про себя, а
 // не про партнёра — title и лимит выбора (max) те же, что и там.
