@@ -99,7 +99,7 @@ export const NearbyPage = () => {
         </button>
       </header>
 
-      <div className="flex gap-6 border-b border-[#E4E7EC] px-4">
+      <div className="flex border-b border-[#E4E7EC] px-4">
         {TABS.map((item) => {
           const active = tab === item.key;
           return (
@@ -108,24 +108,26 @@ export const NearbyPage = () => {
               type="button"
               data-haptic="medium"
               onClick={() => setTab(item.key)}
-              className="flex flex-col items-center gap-2 pt-1 pb-3"
+              className="flex w-1/2 justify-center pt-1 pb-3"
             >
-              <span
-                className={cn(
-                  "text-sm whitespace-nowrap",
-                  active
-                    ? "font-semibold text-[#1C1E24]"
-                    : "font-normal text-[#6B7280]",
-                )}
-              >
-                {item.label}
+              <span className="flex flex-col items-center gap-2">
+                <span
+                  className={cn(
+                    "text-sm whitespace-nowrap",
+                    active
+                      ? "font-semibold text-[#1C1E24]"
+                      : "font-normal text-[#6B7280]",
+                  )}
+                >
+                  {item.label}
+                </span>
+                <span
+                  className={cn(
+                    "h-0.5 w-full rounded-full",
+                    active ? "bg-[#1C1E24]" : "bg-transparent",
+                  )}
+                />
               </span>
-              <span
-                className={cn(
-                  "h-0.5 w-full rounded-full",
-                  active ? "bg-[#1C1E24]" : "bg-transparent",
-                )}
-              />
             </button>
           );
         })}
