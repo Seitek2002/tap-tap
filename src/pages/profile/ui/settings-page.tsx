@@ -1,10 +1,4 @@
-import {
-  Car,
-  Check,
-  ChevronRight,
-  CreditCard,
-  type LucideIcon,
-} from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -27,13 +21,9 @@ import {
   SETTINGS_ACCOUNT,
   SHOW_TO_OPTIONS,
 } from "../model/settings";
+import { PremiumFeatureIcon } from "./premium-feature-icon";
 
 import { BottomNav } from "@/widgets/bottom-nav";
-
-const PREMIUM_FEATURE_ICONS: Record<string, LucideIcon> = {
-  car: Car,
-  credit: CreditCard,
-};
 
 const SectionTitle = ({ children }: { children: ReactNode }) => (
   <h2 className="mb-2 text-base font-bold">{children}</h2>
@@ -43,14 +33,12 @@ const SettingsRow = ({
   icon,
   label,
   onClick,
-  premium,
   value,
   variant = "standalone",
 }: {
   icon?: ReactNode;
   label: string;
   onClick?: () => void;
-  premium?: boolean;
   value?: string;
   variant?: "bare" | "grouped" | "standalone";
 }) => (
@@ -60,11 +48,7 @@ const SettingsRow = ({
     className={cn(
       "flex w-full items-center justify-between text-left",
       variant !== "bare" && "px-4 py-4",
-      variant === "standalone" &&
-        cn(
-          "rounded-2xl border bg-white",
-          premium ? "border-[#F5A623]/50" : "border-[#E4E7EC]",
-        ),
+      variant === "standalone" && "rounded-2xl border border-[#E4E7EC] bg-white",
     )}
   >
     <span className="flex items-center gap-2.5 text-sm leading-[120%] font-normal text-[#1C1E24]">
@@ -194,22 +178,22 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>Premium возможности</SectionTitle>
-          <div className="flex flex-col gap-3">
-            {PREMIUM_SETTINGS_FEATURES.map((feature) => {
-              const Icon = PREMIUM_FEATURE_ICONS[feature.key];
-              return (
+          <div
+            className="rounded-3xl p-[0.5px]"
+            style={{
+              background: "linear-gradient(135deg, #7C3AED 0%, #F4B740 100%)",
+            }}
+          >
+            <div className="flex flex-col gap-2.5 rounded-3xl bg-white p-4 shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
+              {PREMIUM_SETTINGS_FEATURES.map((feature) => (
                 <SettingsRow
                   key={feature.key}
-                  premium
-                  icon={
-                    <span className="flex size-8 items-center justify-center rounded-full bg-[#FDF1DC] text-[#B7791F]">
-                      <Icon className="size-4" />
-                    </span>
-                  }
+                  variant="bare"
+                  icon={<PremiumFeatureIcon className="h-4.5 w-6.75 shrink-0" />}
                   label={feature.label}
                 />
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
 
