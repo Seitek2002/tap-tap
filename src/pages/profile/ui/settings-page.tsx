@@ -106,10 +106,7 @@ export const SettingsPage = () => {
 
         <button
           type="button"
-          className="mx-4 flex items-center gap-3 rounded-2xl p-4 text-left text-white"
-          style={{
-            background: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)",
-          }}
+          className="bg-primary mx-4 flex items-center gap-4 rounded-3xl p-4 text-left text-white"
         >
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2">
