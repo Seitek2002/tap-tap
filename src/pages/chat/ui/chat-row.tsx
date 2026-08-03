@@ -123,11 +123,14 @@ export const ChatRow = ({
               alt=""
               className="size-14 rounded-full object-cover"
             />
-            {chat.unread && (
+            {/* Один статус-бэйдж сверху, не два одновременно — непрочитанное
+                важнее и перекрывает индикатор онлайна. */}
+            {chat.unread ? (
               <span className="absolute top-0 right-0 size-3 rounded-full bg-red-500 ring-2 ring-[#FAF9FD]" />
-            )}
-            {chat.online && (
-              <span className="absolute right-0 bottom-0 size-3 rounded-full bg-green-500 ring-2 ring-[#FAF9FD]" />
+            ) : (
+              chat.online && (
+                <span className="absolute top-0 right-0 size-3 rounded-full bg-green-500 ring-2 ring-[#FAF9FD]" />
+              )
             )}
           </div>
           <div className="min-w-0 flex-1">
