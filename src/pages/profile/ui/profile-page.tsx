@@ -1,12 +1,10 @@
 import {
   Briefcase,
-  Camera,
   Check,
   ChevronRight,
   Dumbbell,
   Gift,
   GraduationCap,
-  Image as ImageIcon,
   Lock,
   PawPrint,
   Plus,
@@ -28,6 +26,7 @@ import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
 import { ROUTES } from "@/shared/config";
 
 import {
@@ -245,8 +244,8 @@ export const ProfilePage = () => {
             type="button"
             className="flex w-full items-center justify-between px-4"
           >
-            <span className="flex items-center gap-2 font-medium">
-              <Plus className="size-5" />
+            <span className="flex items-center gap-2 font-medium text-sm">
+              <Plus className="size-4" />
               Добавь больше фото
             </span>
             <div className="flex -space-x-2">
@@ -266,8 +265,8 @@ export const ProfilePage = () => {
             onClick={() => setIsBestPhotoOpen(true)}
             className="flex w-full items-center justify-between px-4"
           >
-            <span className="font-medium">Показывать лучшее фото</span>
-            <span className="flex items-center gap-1 text-[#6B7280]">
+            <span className="font-medium text-sm">Показывать лучшее фото</span>
+            <span className="flex text-xs items-center gap-1 text-[#1C1E24]">
               {bestPhotoEnabled ? "Вкл" : "Выкл"}
               <ChevronRight className="size-4" />
             </span>
@@ -344,14 +343,7 @@ export const ProfilePage = () => {
         onClose={() => setIsBestPhotoOpen(false)}
       >
         <div className="flex justify-center">
-          <div className="relative flex size-20 items-center justify-center">
-            <div className="absolute top-0 left-0 flex size-14 -rotate-12 items-center justify-center rounded-2xl bg-[#F2F1F3] text-[#6B7280]">
-              <ImageIcon className="size-6" />
-            </div>
-            <div className="bg-primary absolute right-0 bottom-0 flex size-16 rotate-6 items-center justify-center rounded-2xl text-white shadow-lg">
-              <Camera className="size-7" />
-            </div>
-          </div>
+          <img src={bestPhotoIllustration} alt="" className="h-20" />
         </div>
 
         <h2 className="mt-4 text-center text-lg font-bold">
