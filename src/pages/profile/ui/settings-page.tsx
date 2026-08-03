@@ -1,5 +1,6 @@
 import { Check, ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { ROUTES } from "@/shared/config";
@@ -80,6 +81,15 @@ export const SettingsPage = () => {
   const [hideStatus, setHideStatus] = useState(false);
   const [hideActivity, setHideActivity] = useState(false);
 
+  const handleSave = () => {
+    toast.success("Изменения сохранены");
+    navigate(-1);
+  };
+
+  const handlePremiumClick = () => {
+    toast("Premium скоро будет доступен");
+  };
+
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       <div className="flex-1 overflow-y-auto pb-4">
@@ -87,7 +97,7 @@ export const SettingsPage = () => {
           <h1 className="text-2xl font-extrabold">Настройки</h1>
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={handleSave}
             aria-label="Готово"
             className="flex size-9 items-center justify-center rounded-full border border-[#E4E7EC]"
           >
@@ -97,6 +107,7 @@ export const SettingsPage = () => {
 
         <button
           type="button"
+          onClick={handlePremiumClick}
           className="bg-primary mx-4 flex items-center gap-4 rounded-3xl p-4 text-left text-white"
         >
           <div className="flex-1">
