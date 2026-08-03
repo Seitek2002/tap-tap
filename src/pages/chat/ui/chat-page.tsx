@@ -83,7 +83,7 @@ export const ChatPage = () => {
   };
 
   return (
-    <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
+    <div className="flex h-dvh flex-col overflow-x-hidden bg-[#FAF9FD] text-[#1C1E24]">
       {/* Верхний бар */}
       <header className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
         <h1 className="text-2xl font-extrabold">Чаты</h1>
