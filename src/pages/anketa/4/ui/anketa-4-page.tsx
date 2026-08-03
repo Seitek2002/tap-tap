@@ -3,6 +3,9 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import goalChat from "@/shared/assets/images/goal-chat.png";
+import goalFamily from "@/shared/assets/images/goal-family.png";
+import goalSerious from "@/shared/assets/images/goal-serious.png";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { cn } from "@/shared/lib/utils";
 import { Radio } from "@/shared/ui/input";
@@ -10,9 +13,9 @@ import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
 const GOALS = [
-  { emoji: "💬", label: "Просто общаться", value: "chat" },
-  { emoji: "💕", label: "Серьёзные отношения", value: "serious" },
-  { emoji: "💜", label: "Построить семью", value: "family" },
+  { icon: goalChat, label: "Просто общаться", value: "chat" },
+  { icon: goalSerious, label: "Серьёзные отношения", value: "serious" },
+  { icon: goalFamily, label: "Построить семью", value: "family" },
 ];
 
 const AUDIENCE = [
@@ -69,7 +72,7 @@ export const Anketa4Page = () => {
                   selected ? "border-primary" : "border-border-soft",
                 )}
               >
-                <span className="text-xl">{item.emoji}</span>
+                <img src={item.icon} alt="" className="size-8 shrink-0" />
                 <span className="flex-1 text-sm font-medium">{item.label}</span>
                 <div className="pointer-events-none">
                   <Radio size="large" checked={selected} readOnly />
@@ -81,20 +84,18 @@ export const Anketa4Page = () => {
 
         {/* Аудитория — сегмент-селектор (тоже одиночный выбор) */}
         <div className="mt-8">
-          <h2 className="text-center text-sm font-bold">
-            Кого тебе показывать?
-          </h2>
-          <p className="mt-1 text-center text-sm text-[#6B7280]">
+          <h2 className="text-center font-bold">Кого тебе показывать?</h2>
+          <p className="mt-1 text-center text-xs text-[#6B7280]">
             Можно изменить в любой момент
           </p>
 
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 gap-2.5 flex flex-col items-center">
             {AUDIENCE.map((item) => (
               <Pill
                 key={item.value}
                 selected={audience === item.value}
                 onClick={() => setAudience(item.value)}
-                className="w-full py-3"
+                className="py-3 w-[195px] text-sm"
               >
                 {item.label}
               </Pill>
