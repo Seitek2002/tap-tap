@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
@@ -7,11 +7,31 @@ import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Progress } from "@/shared/ui/progress";
 import { Slider } from "@/shared/ui/slider";
 
+const HEIGHT_MIN = 100;
+const HEIGHT_MAX = 240;
+
 export const Anketa3Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
   const [height, setHeight] = useState(170);
   const [skip, setSkip] = useState(false);
+
+  // Докручивать слайдер до точного значения не всегда удобно — по тапу на
+  // цифры даём ввести рост с клавиатуры напрямую.
+  const [isEditingHeight, setIsEditingHeight] = useState(false);
+  const heightInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditingHeight) heightInputRef.current?.select();
+  }, [isEditingHeight]);
+
+  const commitHeight = (rawValue: string) => {
+    const parsed = Number(rawValue);
+    if (Number.isFinite(parsed)) {
+      setHeight(Math.min(HEIGHT_MAX, Math.max(HEIGHT_MIN, Math.round(parsed))));
+    }
+    setIsEditingHeight(false);
+  };
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -46,14 +66,37 @@ export const Anketa3Page = () => {
         <div className="mt-8">
           <h2 className="mb-3 text-sm font-bold">Какого ты роста?</h2>
           <div className="flex items-center gap-4 rounded-full border border-border-soft px-5 py-3">
-            <span className="shrink-0 text-sm text-foreground">
-              {height} см
-            </span>
+            {isEditingHeight ? (
+              <input
+                ref={heightInputRef}
+                type="number"
+                inputMode="numeric"
+                min={HEIGHT_MIN}
+                max={HEIGHT_MAX}
+                defaultValue={height}
+                disabled={skip}
+                onBlur={(event) => commitHeight(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") event.currentTarget.blur();
+                  if (event.key === "Escape") setIsEditingHeight(false);
+                }}
+                className="w-14 shrink-0 bg-transparent text-sm text-foreground outline-none"
+              />
+            ) : (
+              <button
+                type="button"
+                disabled={skip}
+                onClick={() => setIsEditingHeight(true)}
+                className="shrink-0 text-sm text-foreground disabled:cursor-not-allowed"
+              >
+                {height} см
+              </button>
+            )}
             <Slider
               className="flex-1"
               disabled={skip}
-              min={100}
-              max={240}
+              min={HEIGHT_MIN}
+              max={HEIGHT_MAX}
               value={height}
               onChange={setHeight}
             />
