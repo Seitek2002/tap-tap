@@ -8,7 +8,6 @@ import {
   Lock,
   PawPrint,
   Plus,
-  Quote,
   Ruler,
   Settings,
   Smile,
@@ -21,13 +20,15 @@ import { Modal } from "@/shared/ui/modal";
 import { Pill } from "@/shared/ui/pill";
 import { Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
-import { Fragment, type ReactNode, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
 import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
 import { ROUTES } from "@/shared/config";
+
+import { BioQuoteIcon } from "./bio-quote-icon";
 
 import {
   DEFAULT_INTERESTS,
@@ -58,7 +59,7 @@ const Section = ({
   icon?: ReactNode;
   title: string;
 }) => (
-  <div className="mx-4 mt-3 rounded-2xl bg-white p-4">
+  <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
     <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#6B7280]">
       {icon}
       {title}
@@ -109,6 +110,15 @@ export const ProfilePage = () => {
   const profile = OWN_PROFILE;
   const [isBestPhotoOpen, setIsBestPhotoOpen] = useState(false);
   const [bestPhotoEnabled, setBestPhotoEnabled] = useState(false);
+
+  // Тап по описанию превращает текст в textarea прямо на карточке.
+  const [bio, setBio] = useState(profile.bio);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const bioInputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isEditingBio) bioInputRef.current?.select();
+  }, [isEditingBio]);
 
   const [isHeightOpen, setIsHeightOpen] = useState(false);
   const [height, setHeight] = useState(170);
@@ -273,7 +283,7 @@ export const ProfilePage = () => {
           </button>
         </div>
 
-        <div className="mx-4 mt-3 rounded-2xl bg-white p-4">
+        <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
           <div className="flex items-center justify-between">
             <span className="font-medium">Добавь свои интересы</span>
             <button
@@ -297,12 +307,33 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        <Section
-          icon={<Quote className="size-4 shrink-0" />}
-          title="Дополни описание"
-        >
-          <p className="py-1 font-medium text-[#1C1E24]">{profile.bio}</p>
-        </Section>
+        <div className="mx-4 mt-3 flex h-33.25 flex-col gap-2.5 rounded-3xl border border-[#E4E7EC] bg-white px-4 py-2.5">
+          <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm font-bold text-[#6B7280]">
+            <BioQuoteIcon className="size-4 shrink-0" />
+            Дополни описание
+          </h2>
+
+          {isEditingBio ? (
+            <textarea
+              ref={bioInputRef}
+              value={bio}
+              onChange={(event) => setBio(event.target.value)}
+              onBlur={() => setIsEditingBio(false)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setIsEditingBio(false);
+              }}
+              className="flex-1 resize-none bg-transparent font-medium text-[#1C1E24] outline-none"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsEditingBio(true)}
+              className="flex-1 overflow-hidden text-left font-medium text-[#1C1E24]"
+            >
+              {bio}
+            </button>
+          )}
+        </div>
 
         <Section title="О тебе">
           <Row
