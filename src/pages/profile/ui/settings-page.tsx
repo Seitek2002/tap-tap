@@ -40,26 +40,27 @@ const SectionTitle = ({ children }: { children: ReactNode }) => (
 );
 
 const SettingsRow = ({
-  grouped,
   icon,
   label,
   onClick,
   premium,
   value,
+  variant = "standalone",
 }: {
-  grouped?: boolean;
   icon?: ReactNode;
   label: string;
   onClick?: () => void;
   premium?: boolean;
   value?: string;
+  variant?: "bare" | "grouped" | "standalone";
 }) => (
   <button
     type="button"
     onClick={onClick}
     className={cn(
-      "flex w-full items-center justify-between px-4 py-4 text-left",
-      !grouped &&
+      "flex w-full items-center justify-between text-left",
+      variant !== "bare" && "px-4 py-4",
+      variant === "standalone" &&
         cn(
           "rounded-2xl border bg-white",
           premium ? "border-[#F5A623]/50" : "border-[#E4E7EC]",
@@ -134,12 +135,12 @@ export const SettingsPage = () => {
           <SectionTitle>Аккаунт</SectionTitle>
           <div className="divide-y divide-[#E4E7EC] rounded-2xl border border-[#E4E7EC] bg-white">
             <SettingsRow
-              grouped
+              variant="grouped"
               label="Номер телефона"
               value={SETTINGS_ACCOUNT.phone}
             />
             <SettingsRow
-              grouped
+              variant="grouped"
               label="Твое имя"
               value={SETTINGS_ACCOUNT.name}
             />
@@ -148,19 +149,21 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>Рекомендации</SectionTitle>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 rounded-2xl border border-[#E4E7EC] bg-white p-4">
             <SettingsRow
+              variant="bare"
               label="Показывать тебе"
               onClick={() => setIsShowToOpen(true)}
               value={showTo}
             />
             <SettingsRow
+              variant="bare"
               label="Ты ищешь"
               onClick={() => setIsSeekingOpen(true)}
               value={seeking}
             />
 
-            <div className="rounded-2xl border border-[#E4E7EC] bg-white p-4">
+            <div>
               <h3 className="text-sm font-bold">Возраст</h3>
               <RangeSlider
                 className="mt-3 rounded-none border-0 px-0 py-0"
@@ -171,7 +174,7 @@ export const SettingsPage = () => {
               />
             </div>
 
-            <div className="rounded-2xl border border-[#E4E7EC] bg-white p-4">
+            <div>
               <h3 className="text-sm font-bold">Расстояние от тебя</h3>
               <div className="mt-3 flex items-center gap-3">
                 <Slider
@@ -181,7 +184,7 @@ export const SettingsPage = () => {
                   value={distance}
                   onChange={setDistance}
                 />
-                <span className="shrink-0 text-sm text-[#6B7280]">
+                <span className="shrink-0 text-sm leading-[120%] font-normal text-[#1C1E24]">
                   {distance} км
                 </span>
               </div>
