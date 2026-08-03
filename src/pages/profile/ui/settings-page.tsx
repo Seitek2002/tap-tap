@@ -117,7 +117,7 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>Аккаунт</SectionTitle>
-          <div className="divide-y divide-[#E4E7EC] rounded-2xl border border-[#E4E7EC] bg-white">
+          <div className="divide-y divide-[#E4E7EC] rounded-3xl border-[0.5px] border-[#E4E7EC] bg-white shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
             <SettingsRow
               variant="grouped"
               label="Номер телефона"
@@ -133,7 +133,7 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>Рекомендации</SectionTitle>
-          <div className="flex flex-col gap-4 rounded-2xl border border-[#E4E7EC] bg-white p-4">
+          <div className="flex flex-col gap-4 rounded-3xl border-[0.5px] border-[#E4E7EC] bg-white p-4 shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
             <SettingsRow
               variant="bare"
               label="Показывать тебе"
@@ -199,12 +199,14 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>Системные настройки</SectionTitle>
-          <div className="flex flex-col gap-3">
+          <div className="divide-y divide-[#E4E7EC] rounded-3xl border-[0.5px] border-[#E4E7EC] bg-white shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
             <SettingsRow
+              variant="grouped"
               label="Уведомления"
               onClick={() => navigate(ROUTES.profileNotifications)}
             />
             <SettingsRow
+              variant="grouped"
               label="Язык"
               onClick={() => setIsLanguageOpen(true)}
               value={language}
@@ -230,15 +232,18 @@ export const SettingsPage = () => {
 
         <div className="mt-5 px-4">
           <SectionTitle>О нас</SectionTitle>
-          <div className="flex flex-col gap-3">
-            <SettingsRow label="Помощь и поддержка" />
-            <SettingsRow label="Правила сообщества" />
-            <SettingsRow label="Политика конфиденциальности" />
-            <SettingsRow label="О приложении" />
+          <div className="divide-y divide-[#E4E7EC] rounded-3xl border-[0.5px] border-[#E4E7EC] bg-white shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
+            <SettingsRow variant="grouped" label="Помощь и поддержка" />
+            <SettingsRow variant="grouped" label="Правила сообщества" />
+            <SettingsRow
+              variant="grouped"
+              label="Политика конфиденциальности"
+            />
+            <SettingsRow variant="grouped" label="О приложении" />
           </div>
         </div>
 
-        <div className="mt-5 divide-y divide-[#E4E7EC] overflow-hidden rounded-2xl border border-[#E4E7EC] bg-white text-center mx-4">
+        <div className="mt-5 divide-y divide-[#E4E7EC] overflow-hidden rounded-3xl border-[0.5px] border-[#E4E7EC] bg-white text-center mx-4 shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
           <button
             type="button"
             data-haptic="heavy"
