@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
+import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import { LIKE_PROFILE_DETAILS } from "../model/like-profile-details";
 import { LIKED_YOU, YOUR_LIKES } from "../model/likes";
@@ -100,9 +101,7 @@ export const LikeProfilePage = () => {
                   <MapPin className="size-4" />
                   {details.distanceKm} км от тебя
                 </span>
-                <span className="flex items-center gap-1">
-                  ⛎ {details.zodiac}
-                </span>
+                <ZodiacBadge sign={details.zodiac} />
               </div>
             </div>
             <ChevronDown className="size-6 shrink-0" />

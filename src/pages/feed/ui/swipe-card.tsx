@@ -14,8 +14,8 @@ import {
   MapPin,
   MessageSquareWarning,
   Quote,
-  RotateCcw,
   Star,
+  Undo2,
   X,
 } from "lucide-react";
 import {
@@ -35,6 +35,7 @@ import {
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
 import { cn } from "@/shared/lib/utils";
+import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import type { Profile } from "../model/profiles";
 
@@ -269,9 +270,9 @@ export const SwipeCard = ({
 
         {/* Нижняя инфа профиля */}
         <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/25 to-transparent px-4 pt-16 pb-24 text-white">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-green-600">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5FDE3] px-2.5 py-1 text-xs font-semibold text-[#18722E]">
             {profile.online && (
-              <span className="size-1.5 rounded-full bg-green-500" />
+              <span className="size-1.5 rounded-full bg-[#18722E]" />
             )}
             {profile.online ? "Сейчас в сети" : "Был(а) недавно"}
           </span>
@@ -287,7 +288,7 @@ export const SwipeCard = ({
                 <h2 className="text-3xl font-bold">
                   {profile.name}, {profile.age}
                 </h2>
-                <span className="shrink-0 rounded-full bg-black/25 px-3 py-1 text-sm whitespace-nowrap backdrop-blur-sm">
+                <span className="shrink-0 rounded-full bg-black/25 px-3 py-1 text-sm whitespace-nowrap backdrop-blur-sm border border-white">
                   {profile.marital}
                 </span>
               </div>
@@ -296,9 +297,7 @@ export const SwipeCard = ({
                   <MapPin className="size-4" />
                   {profile.distanceKm} км от тебя
                 </span>
-                <span className="flex items-center gap-1">
-                  ⛎ {profile.zodiac}
-                </span>
+                <ZodiacBadge sign={profile.zodiac} />
               </div>
             </div>
             <ChevronsDown className="size-6 shrink-0" />
@@ -429,7 +428,7 @@ export const SwipeCard = ({
             className="flex size-12 items-center justify-center rounded-full"
             aria-label="Вернуть"
           >
-            <RotateCcw className="size-5" />
+            <Undo2 className="size-5" />
           </motion.button>
           <motion.button
             type="button"

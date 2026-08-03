@@ -4,10 +4,12 @@ import { useNavigate } from "react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
+import { ZODIAC_ICONS, ZODIAC_SIGNS } from "@/shared/lib/zodiac";
 import { Modal } from "@/shared/ui/modal";
 import { Pill } from "@/shared/ui/pill";
 import { RangeSlider, Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
+import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 const AUDIENCE = [
   { label: "Мужчины", value: "men" },
@@ -69,22 +71,7 @@ const INTERESTS = [
 
 const DEFAULT_INTERESTS = ["🌱 Вегетерианство", "🧩 Паззлы", "🌲 Природа"];
 
-const ZODIAC_SIGNS = [
-  "♈ Овен",
-  "♉ Телец",
-  "♊ Близнецы",
-  "♋ Рак",
-  "♌ Лев",
-  "♍ Дева",
-  "♎ Весы",
-  "♏ Скорпион",
-  "♐ Стрелец",
-  "♑ Козерог",
-  "♒ Водолей",
-  "♓ Рыбы",
-];
-
-const DEFAULT_ZODIAC = "♋ Рак";
+const DEFAULT_ZODIAC = "Рак";
 
 // Поля с вертикальным списком пилюль (одиночный или до max=2 вариантов).
 // Конфиг вместо восьми одинаковых блоков разметки — вся разница между ними в
@@ -454,7 +441,7 @@ export const FiltersPage = () => {
           >
             <span className="text-sm font-medium">Знак зодиака</span>
             <span className="flex items-center gap-1 text-sm text-[#6B7280]">
-              {zodiac}
+              <ZodiacBadge sign={zodiac} />
               <ChevronRight className="size-4" />
             </span>
           </button>
@@ -552,18 +539,23 @@ export const FiltersPage = () => {
         <h2 className="text-center text-lg font-bold">Знак зодиака партнера</h2>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {ZODIAC_SIGNS.map((sign) => (
-            <Pill
-              key={sign}
-              selected={zodiac === sign}
-              onClick={() => {
-                setZodiac(sign);
-                setIsZodiacOpen(false);
-              }}
-            >
-              {sign}
-            </Pill>
-          ))}
+          {ZODIAC_SIGNS.map((sign) => {
+            const Icon = ZODIAC_ICONS[sign];
+            return (
+              <Pill
+                key={sign}
+                selected={zodiac === sign}
+                onClick={() => {
+                  setZodiac(sign);
+                  setIsZodiacOpen(false);
+                }}
+                className="flex items-center gap-1.5"
+              >
+                {Icon && <Icon className="size-4" />}
+                {sign}
+              </Pill>
+            );
+          })}
         </div>
 
         <button

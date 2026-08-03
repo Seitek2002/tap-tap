@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
+import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import { NEARBY_PROFILES } from "../model/nearby";
 import { NEARBY_PROFILE_DETAILS } from "../model/nearby-profile-details";
@@ -98,9 +99,7 @@ export const NearbyProfilePage = () => {
                   <MapPin className="size-4" />
                   {details.distanceKm} км от тебя
                 </span>
-                <span className="flex items-center gap-1">
-                  ⛎ {details.zodiac}
-                </span>
+                <ZodiacBadge sign={details.zodiac} />
               </div>
             </div>
             <ChevronDown className="size-6 shrink-0" />

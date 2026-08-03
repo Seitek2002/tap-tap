@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
+import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import { CHAT_PROFILES } from "../model/chat-profiles";
 import { CHATS } from "../model/chats";
@@ -110,9 +111,7 @@ export const ChatProfilePage = () => {
                   <MapPin className="size-4" />
                   {profile.distanceKm} км от тебя
                 </span>
-                <span className="flex items-center gap-1">
-                  ⛎ {profile.zodiac}
-                </span>
+                <ZodiacBadge sign={profile.zodiac} />
               </div>
             </div>
             <ChevronDown className="size-6 shrink-0" />
