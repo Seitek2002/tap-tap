@@ -240,37 +240,39 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="mx-4 mt-4 flex w-[calc(100%-2rem)] items-center justify-between rounded-2xl bg-white p-4"
-        >
-          <span className="flex items-center gap-2 font-medium">
-            <Plus className="size-5" />
-            Добавь больше фото
-          </span>
-          <div className="flex -space-x-2">
-            {MORE_PHOTOS_PREVIEW.map((photo, index) => (
-              <img
-                key={index}
-                src={photo}
-                alt=""
-                className="size-8 rounded-full border-2 border-white object-cover"
-              />
-            ))}
-          </div>
-        </button>
+        <div className="mx-4 mt-4 divide-y divide-[#E4E7EC] rounded-2xl bg-white">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between p-4"
+          >
+            <span className="flex items-center gap-2 font-medium">
+              <Plus className="size-5" />
+              Добавь больше фото
+            </span>
+            <div className="flex -space-x-2">
+              {MORE_PHOTOS_PREVIEW.map((photo, index) => (
+                <img
+                  key={index}
+                  src={photo}
+                  alt=""
+                  className="size-8 rounded-full border-2 border-white object-cover"
+                />
+              ))}
+            </div>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setIsBestPhotoOpen(true)}
-          className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center justify-between rounded-2xl bg-white p-4"
-        >
-          <span className="font-medium">Показывать лучшее фото</span>
-          <span className="flex items-center gap-1 text-[#6B7280]">
-            {bestPhotoEnabled ? "Вкл" : "Выкл"}
-            <ChevronRight className="size-4" />
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setIsBestPhotoOpen(true)}
+            className="flex w-full items-center justify-between p-4"
+          >
+            <span className="font-medium">Показывать лучшее фото</span>
+            <span className="flex items-center gap-1 text-[#6B7280]">
+              {bestPhotoEnabled ? "Вкл" : "Выкл"}
+              <ChevronRight className="size-4" />
+            </span>
+          </button>
+        </div>
 
         <div className="mx-4 mt-3 rounded-2xl bg-white p-4">
           <div className="flex items-center justify-between">
