@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useNavigate } from "react-router";
 
 import matchBadge from "@/shared/assets/icons/match-badge.svg";
 import matchHeartBg from "@/shared/assets/images/match-heart-bg.png";
@@ -21,6 +22,7 @@ const SUGGESTIONS = ["Сходим на ужин?", "Мне нравятся т�
 
 export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
   const mounted = useMounted();
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [prevProfileId, setPrevProfileId] = useState<null | number>(
     profile?.id ?? null,
@@ -34,6 +36,24 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
     setPrevProfileId(profileId);
     setMessage("");
   }
+
+  // Отправка (кнопкой или готовым вариантом первого сообщения) сразу
+  // переносит в чат с этим человеком — не просто закрывает оверлей.
+  const goToChat = () => {
+    if (!profile) return;
+    onClose();
+    navigate(`/chat/${profile.id}`);
+  };
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    goToChat();
+  };
+
+  const handleSuggestionClick = (text: string) => {
+    setMessage(text);
+    goToChat();
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -135,9 +155,10 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
               />
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleSend}
+                disabled={!message.trim()}
                 aria-label="Отправить"
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white disabled:opacity-40"
               >
                 <Send className="size-4" />
               </button>
@@ -148,7 +169,7 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
                 <button
                   key={text}
                   type="button"
-                  onClick={() => setMessage(text)}
+                  onClick={() => handleSuggestionClick(text)}
                   className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-xs font-medium whitespace-nowrap text-[#1C1E24]"
                 >
                   <Send className="size-3.5" />
