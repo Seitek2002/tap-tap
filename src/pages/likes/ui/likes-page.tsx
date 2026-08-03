@@ -27,7 +27,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 const ProfilePhoto = ({ profile }: { profile: LikeProfile }) => (
-  <div className="relative aspect-[3/4] bg-[#E4E7EC]">
+  <div className="relative aspect-[4/5] bg-[#E4E7EC]">
     <img
       src={profile.photo}
       alt=""
