@@ -1,3 +1,6 @@
+import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+
 import {
   Briefcase,
   Check,
@@ -14,21 +17,17 @@ import {
   Sparkles,
   Wine,
 } from "lucide-react";
+
+import { BottomNav } from "@/widgets/bottom-nav";
+
+import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
+import { ROUTES } from "@/shared/config";
 import { cn } from "@/shared/lib/utils";
 import { Checkbox, Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
 import { Pill } from "@/shared/ui/pill";
 import { Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
-import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
-
-import { BottomNav } from "@/widgets/bottom-nav";
-
-import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
-import { ROUTES } from "@/shared/config";
-
-import { BioQuoteIcon } from "./bio-quote-icon";
 
 import {
   DEFAULT_INTERESTS,
@@ -40,6 +39,7 @@ import {
   PROFILE_OPTION_FIELDS,
   type ProfileOptionFieldKey,
 } from "../model/profile";
+import { BioQuoteIcon } from "./bio-quote-icon";
 
 const FIELD_ICONS: Record<ProfileOptionFieldKey, ReactNode> = {
   alcohol: <Wine className="size-4" />,
@@ -228,13 +228,13 @@ export const ProfilePage = () => {
           </div>
 
           <div className="mt-4 grid grid-cols-[1fr_auto_auto] items-center gap-y-3 text-sm">
-            <span className="text-xs font-semibold text-[#1C1E24]/70">
+            <span className="text-xs leading-[120%] font-bold text-[#1C1E24]">
               Что входит
             </span>
-            <span className="pl-4 text-xs font-semibold text-[#1C1E24]/70">
+            <span className="text-center text-xs leading-[120%] font-bold text-[#1C1E24]">
               Бесплатно
             </span>
-            <span className="pl-4 text-xs font-semibold text-[#1C1E24]/70">
+            <span className="text-center text-xs leading-[120%] font-bold text-[#1C1E24]">
               Premium
             </span>
             {PREMIUM_FEATURES.map((feature) => (
@@ -242,8 +242,12 @@ export const ProfilePage = () => {
                 <span className={feature.bold ? "font-bold" : ""}>
                   {feature.label}
                 </span>
-                <Lock className="ml-4 size-4" />
-                <Check className="ml-4 size-4" />
+                <div className="flex justify-center">
+                  <Lock className="size-4" />
+                </div>
+                <div className="flex justify-center">
+                  <Check className="size-4" />
+                </div>
               </Fragment>
             ))}
           </div>
@@ -369,10 +373,7 @@ export const ProfilePage = () => {
         </Section>
       </div>
 
-      <Modal
-        isOpen={isBestPhotoOpen}
-        onClose={() => setIsBestPhotoOpen(false)}
-      >
+      <Modal isOpen={isBestPhotoOpen} onClose={() => setIsBestPhotoOpen(false)}>
         <div className="flex justify-center">
           <img src={bestPhotoIllustration} alt="" className="h-20" />
         </div>
@@ -522,10 +523,7 @@ export const ProfilePage = () => {
         </Modal>
       ))}
 
-      <Modal
-        isOpen={isInterestsOpen}
-        onClose={() => setIsInterestsOpen(false)}
-      >
+      <Modal isOpen={isInterestsOpen} onClose={() => setIsInterestsOpen(false)}>
         <h2 className="text-lg font-bold">
           У тебя уже {interests.length} {interestsWord(interests.length)}!
         </h2>
