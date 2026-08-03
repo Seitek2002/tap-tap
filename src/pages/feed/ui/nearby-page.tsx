@@ -1,7 +1,8 @@
-import { Heart, Settings2 } from "lucide-react";
-import { motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+
+import { Heart, Settings2 } from "lucide-react";
+import { motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
@@ -108,15 +109,13 @@ export const NearbyPage = () => {
               type="button"
               data-haptic="medium"
               onClick={() => setTab(item.key)}
-              className="flex w-1/2 justify-center pt-1 pb-3"
+              className="flex w-1/2 justify-center pt-1"
             >
-              <span className="flex flex-col items-center gap-2">
+              <span className="flex flex-col items-center gap-2 flex-1">
                 <span
                   className={cn(
-                    "text-sm whitespace-nowrap",
-                    active
-                      ? "font-semibold text-[#1C1E24]"
-                      : "font-normal text-[#6B7280]",
+                    "text-sm whitespace-nowrap flex-1",
+                    active ? "font-semibold" : "font-normal",
                   )}
                 >
                   {item.label}
@@ -139,8 +138,7 @@ export const NearbyPage = () => {
             <div
               className="mt-4 overflow-hidden rounded-3xl p-5"
               style={{
-                background:
-                  "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)",
+                background: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)",
               }}
             >
               <h2 className="text-xl font-extrabold text-white italic">
@@ -196,8 +194,8 @@ export const NearbyPage = () => {
             <div className="mt-4">
               <h2 className="text-lg font-bold">Специальные рекомендации</h2>
               <p className="mt-1 text-sm text-[#6B7280]">
-                Мы будем предлагать тебе людей поблизости, которые подходят
-                под твои интересы
+                Мы будем предлагать тебе людей поблизости, которые подходят под
+                твои интересы
               </p>
             </div>
 

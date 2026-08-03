@@ -525,7 +525,7 @@ export const ProfilePage = () => {
           <button
             type="button"
             onClick={() => setOpenField(null)}
-            className="mt-5 w-full rounded-full bg-[#1C1E24] py-4 text-sm font-semibold text-white"
+            className="mt-5 w-full rounded-full bg-[#1C1E24] py-3 text-sm font-semibold text-white"
           >
             Готово
           </button>
