@@ -285,14 +285,14 @@ export const SwipeCard = ({
           >
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-3xl font-bold">
+                <h2 className="text-2xl font-bold">
                   {profile.name}, {profile.age}
                 </h2>
                 <span className="shrink-0 rounded-full bg-black/25 px-3 py-1 text-sm whitespace-nowrap backdrop-blur-sm border border-white">
                   {profile.marital}
                 </span>
               </div>
-              <div className="mt-1 flex items-center gap-4 text-sm text-white/90">
+              <div className="mt-1.5 flex items-center gap-4 text-xs text-white/90">
                 <span className="flex items-center gap-1">
                   <MapPin className="size-4" />
                   {profile.distanceKm} км от тебя
