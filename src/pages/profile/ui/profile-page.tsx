@@ -60,11 +60,11 @@ const Section = ({
   title: string;
 }) => (
   <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
-    <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#6B7280]">
+    <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm font-bold text-[#6B7280]">
       {icon}
       {title}
     </h2>
-    <div className="mt-1 divide-y divide-[#E4E7EC]">{children}</div>
+    <div className="mt-1">{children}</div>
   </div>
 );
 
