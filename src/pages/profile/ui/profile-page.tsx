@@ -60,7 +60,7 @@ const Section = ({
   title: string;
 }) => (
   <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
-    <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm font-bold text-[#6B7280]">
+    <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm leading-[120%] font-semibold text-[#1C1E24]">
       {icon}
       {title}
     </h2>
@@ -263,7 +263,7 @@ export const ProfilePage = () => {
             type="button"
             className="flex w-full items-center justify-between px-4"
           >
-            <span className="flex items-center gap-2 font-medium text-sm">
+            <span className="flex items-center gap-2 text-sm leading-[120%] font-semibold">
               <Plus className="size-4" />
               Добавь больше фото
             </span>
@@ -294,7 +294,9 @@ export const ProfilePage = () => {
 
         <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
           <div className="flex items-center justify-between">
-            <span className="font-medium">Добавь свои интересы</span>
+            <span className="text-sm leading-[120%] font-semibold">
+              Добавь свои интересы
+            </span>
             <button
               type="button"
               onClick={() => setIsInterestsOpen(true)}
@@ -317,7 +319,7 @@ export const ProfilePage = () => {
         </div>
 
         <div className="mx-4 mt-3 flex h-33.25 flex-col gap-2.5 rounded-3xl border border-[#E4E7EC] bg-white px-4 py-2.5">
-          <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm font-bold text-[#6B7280]">
+          <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm leading-[120%] font-semibold text-[#1C1E24]">
             <BioQuoteIcon className="size-4 shrink-0" />
             Дополни описание
           </h2>
