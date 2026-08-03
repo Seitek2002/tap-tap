@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
+import { Checkbox } from "@/shared/ui/input";
 import { Progress } from "@/shared/ui/progress";
 import { Slider } from "@/shared/ui/slider";
 
@@ -102,15 +103,12 @@ export const Anketa3Page = () => {
             />
           </div>
 
-          <label className="mt-4 flex items-center gap-2 text-sm text-[#6B7280]">
-            <input
-              type="checkbox"
-              checked={skip}
-              onChange={(event) => setSkip(event.target.checked)}
-              className="size-5 rounded accent-primary"
-            />
-            <span>Предпочту не отвечать</span>
-          </label>
+          <Checkbox
+            className="mt-4"
+            checked={skip}
+            onChange={(event) => setSkip(event.target.checked)}
+            label="Предпочту не отвечать"
+          />
         </div>
       </div>
 
