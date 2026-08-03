@@ -240,10 +240,10 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="mx-4 mt-4 divide-y divide-[#E4E7EC] rounded-2xl bg-white">
+        <div className="mx-4 mt-4 flex flex-col gap-2.5 divide-y divide-[#E4E7EC] rounded-3xl border border-[#E4E7EC] bg-white py-2">
           <button
             type="button"
-            className="flex w-full items-center justify-between p-4"
+            className="flex w-full items-center justify-between px-4"
           >
             <span className="flex items-center gap-2 font-medium">
               <Plus className="size-5" />
@@ -264,7 +264,7 @@ export const ProfilePage = () => {
           <button
             type="button"
             onClick={() => setIsBestPhotoOpen(true)}
-            className="flex w-full items-center justify-between p-4"
+            className="flex w-full items-center justify-between px-4"
           >
             <span className="font-medium">Показывать лучшее фото</span>
             <span className="flex items-center gap-1 text-[#6B7280]">
