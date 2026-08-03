@@ -112,8 +112,10 @@ export const NearbyPage = () => {
             >
               <span
                 className={cn(
-                  "text-sm font-semibold whitespace-nowrap",
-                  active ? "text-[#1C1E24]" : "text-[#6B7280]",
+                  "text-sm whitespace-nowrap",
+                  active
+                    ? "font-semibold text-[#1C1E24]"
+                    : "font-normal text-[#6B7280]",
                 )}
               >
                 {item.label}
