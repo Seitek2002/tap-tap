@@ -193,7 +193,7 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
               type: "spring",
             }}
           >
-            <X className="size-5" />
+            <X className="size-6" />
           </motion.button>
         </motion.div>
       )}
