@@ -425,9 +425,13 @@ export const SwipeCard = ({
       </div>
 
       <div className="sticky bottom-0 z-20 px-6 pb-4">
+        {/* Прогрессивный blur (0 → 3px от верха к низу) — CSS не умеет
+            пространственно-переменный backdrop-filter, берём максимум
+            (3px), раз сама подложка и так проявляется только при скролле
+            через barOpacity. */}
         <motion.div
           style={{ opacity: barOpacity }}
-          className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#FAF9FD] via-[#FAF9FD]/95 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/65 via-black/39 to-black/0 backdrop-blur-[3px]"
         />
         <div className="relative flex items-center justify-between">
           <motion.button
