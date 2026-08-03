@@ -98,7 +98,7 @@ const Row = ({
       {icon}
       {label}
     </span>
-    <span className="flex items-center gap-1 text-[#6B7280]">
+    <span className="flex items-center gap-1 text-sm leading-[120%] font-normal text-[#1C1E24]">
       <span className="max-w-40 truncate">{value}</span>
       <ChevronRight className="size-4 shrink-0" />
     </span>
@@ -287,7 +287,7 @@ export const ProfilePage = () => {
             <span className="text-sm leading-[120%] font-normal text-[#1C1E24]">
               Показывать лучшее фото
             </span>
-            <span className="flex text-xs items-center gap-1 text-[#1C1E24]">
+            <span className="flex items-center gap-1 text-sm leading-[120%] font-normal text-[#1C1E24]">
               {bestPhotoEnabled ? "Вкл" : "Выкл"}
               <ChevronRight className="size-4" />
             </span>
