@@ -21,7 +21,7 @@ type PremiumPaywallModalProps = {
 
 // Ровно 5 карточек веера — по одному фото на карточку, центр (index 2) резкий.
 const FAN = [
-  { photo: personZalkar, rotate: -16 },
+  { photo: personZalkar, rotate: -26 },
   { photo: personNight, rotate: -8 },
   { photo: personEmir, rotate: 0 },
   { photo: personDastan, rotate: 8 },
@@ -29,8 +29,6 @@ const FAN = [
 ];
 
 const CENTER_INDEX = 2;
-// Шаг между соседними картами веера (под w-24 карту с -mx-3 нахлёстом).
-const FAN_STEP = 72;
 
 export const PremiumPaywallModal = ({
   isOpen,
@@ -78,12 +76,11 @@ export const PremiumPaywallModal = ({
             <div className="relative flex h-44 items-center justify-center">
               {FAN.map((card, index) => {
                 const isCenter = index === CENTER_INDEX;
-                const offset = (index - CENTER_INDEX) * FAN_STEP;
                 return (
                   <motion.div
                     key={index}
                     className={cn(
-                      "relative -mx-3 h-32 w-24 shrink-0 overflow-hidden rounded-2xl border-2 border-white/10",
+                      "relative -mx-6 h-32 w-24 shrink-0 overflow-hidden rounded-2xl border-2 border-white/10",
                       !isCenter && "brightness-75",
                     )}
                     style={{ zIndex: 10 - Math.abs(index - CENTER_INDEX) }}
@@ -91,7 +88,6 @@ export const PremiumPaywallModal = ({
                       opacity: 0,
                       rotate: 0,
                       scale: 0.85,
-                      x: -offset,
                       y: 0,
                     }}
                     animate={{
@@ -99,7 +95,7 @@ export const PremiumPaywallModal = ({
                       rotate: card.rotate,
                       scale: isCenter ? 1.08 : 0.94,
                       x: 0,
-                      y: isCenter ? -6 : 6,
+                      y: isCenter ? -6 : 0,
                     }}
                     transition={{
                       damping: 20,
@@ -113,10 +109,7 @@ export const PremiumPaywallModal = ({
                     <img
                       src={card.photo}
                       alt=""
-                      className={cn(
-                        "size-full object-cover",
-                        !isCenter && "blur-[3px]",
-                      )}
+                      className="size-full object-cover blur-[3px]"
                     />
                   </motion.div>
                 );
@@ -145,8 +138,8 @@ export const PremiumPaywallModal = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 }}
             >
-              <p className="text-xl font-bold text-white">Смотри всех,</p>
-              <p className="text-xl font-bold text-[#F472B6]">
+              <p className="text-2xl font-bold text-white">Смотри всех,</p>
+              <p className="text-2xl font-bold text-[#F472B6]">
                 кому ты нравишься
               </p>
             </motion.div>
@@ -157,24 +150,28 @@ export const PremiumPaywallModal = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65 }}
             >
-              <div className="overflow-hidden rounded-[20px]">
+              <div className="">
                 <div
-                  className="flex h-24.25 items-center justify-center gap-3 border-t border-[#CF6AB7]/64 px-4 pt-2.5 pb-9.75 -mb-10"
+                  className="flex overflow-hidden rounded-[20px] h-24.25 items-center justify-center border-t border-[#CF6AB7]/64 px-4 pt-2.5 pb-9.75 -mb-9"
                   style={{
                     background:
                       "linear-gradient(180deg, #3D084B 0%, #0A0620 100%)",
                   }}
                 >
-                  <span className="text-sm text-white/50 line-through">
+                  <span className="text-base text-white/50 line-through">
                     50 сом
                   </span>
-                  <span className="text-2xl font-bold text-white">9</span>
-                  <span className="text-sm text-white/70">сом / день</span>
+                  <span className="text-[40px] font-bold text-white ml-2.5">
+                    9
+                  </span>
+                  <span className="text-[20px] font-medium text-white mt-4">
+                    сом / день
+                  </span>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="relative rounded-full w-full bg-[#F5A623] py-4 text-sm font-bold text-[#1C1E24] transition-transform active:scale-[0.99]"
+                  className="relative rounded-full w-full bg-[#F5A623] py-2.75 text-base font-semibold text-[#1C1E24] transition-transform active:scale-[0.99]"
                 >
                   Смотреть
                 </button>
