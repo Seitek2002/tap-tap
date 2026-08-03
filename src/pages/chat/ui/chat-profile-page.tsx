@@ -1,11 +1,12 @@
-import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 import { type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
+
 import { cn } from "@/shared/lib/utils";
 
-import { CHATS } from "../model/chats";
 import { CHAT_PROFILES } from "../model/chat-profiles";
+import { CHATS } from "../model/chats";
 
 const Section = ({
   children,

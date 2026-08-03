@@ -4,9 +4,9 @@ import { useNavigate } from "react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Input } from "@/shared/ui/input";
 import { Pill } from "@/shared/ui/pill";
+import { Progress } from "@/shared/ui/progress";
 
 const DEGREES = [
   "Бакалавриат",

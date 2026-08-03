@@ -1,6 +1,6 @@
+import person1 from "@/shared/assets/images/person-1.jpg";
 import personDastan from "@/shared/assets/images/person-dastan.png";
 import personEmir from "@/shared/assets/images/person-emir.png";
-import person1 from "@/shared/assets/images/person-1.jpg";
 import personNight from "@/shared/assets/images/person-night.png";
 import personSeitek from "@/shared/assets/images/person-seitek.png";
 import personZalkar from "@/shared/assets/images/person-zalkar.png";

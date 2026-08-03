@@ -1,6 +1,7 @@
-import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 import { type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router";
+
+import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 
@@ -44,7 +45,9 @@ export const LikeProfilePage = () => {
   const profile = [...LIKED_YOU, ...YOUR_LIKES].find(
     (item) => String(item.id) === profileId,
   );
-  const details = profileId ? LIKE_PROFILE_DETAILS[Number(profileId)] : undefined;
+  const details = profileId
+    ? LIKE_PROFILE_DETAILS[Number(profileId)]
+    : undefined;
 
   if (!profile || !details) {
     return (

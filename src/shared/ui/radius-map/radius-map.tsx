@@ -1,7 +1,7 @@
-import "leaflet/dist/leaflet.css";
+import { useEffect, useRef } from "react";
 
 import * as L from "leaflet";
-import { useEffect, useRef } from "react";
+import "leaflet/dist/leaflet.css";
 
 type RadiusMapProps = {
   className?: string;
@@ -16,7 +16,12 @@ const ACCENT = "#7c3aed";
  * Лёгкая карта на Leaflet (OSM-тайлы, без ключа) с кругом выбранного радиуса.
  * Карта статична (жесты выключены) и всегда подгоняет масштаб под круг.
  */
-export const RadiusMap = ({ className, lat, lng, radiusKm }: RadiusMapProps) => {
+export const RadiusMap = ({
+  className,
+  lat,
+  lng,
+  radiusKm,
+}: RadiusMapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const circleRef = useRef<L.Circle | null>(null);

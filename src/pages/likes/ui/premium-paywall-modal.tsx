@@ -1,6 +1,7 @@
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+
+import { AnimatePresence, motion } from "motion/react";
 
 import personDastan from "@/shared/assets/images/person-dastan.png";
 import personEmir from "@/shared/assets/images/person-emir.png";
@@ -86,7 +87,13 @@ export const PremiumPaywallModal = ({
                       !isCenter && "brightness-75",
                     )}
                     style={{ zIndex: 10 - Math.abs(index - CENTER_INDEX) }}
-                    initial={{ opacity: 0, rotate: 0, scale: 0.85, x: -offset, y: 0 }}
+                    initial={{
+                      opacity: 0,
+                      rotate: 0,
+                      scale: 0.85,
+                      x: -offset,
+                      y: 0,
+                    }}
                     animate={{
                       opacity: 1,
                       rotate: card.rotate,
@@ -96,7 +103,9 @@ export const PremiumPaywallModal = ({
                     }}
                     transition={{
                       damping: 20,
-                      delay: isCenter ? 0.05 : 0.25 + Math.abs(index - CENTER_INDEX) * 0.08,
+                      delay: isCenter
+                        ? 0.05
+                        : 0.25 + Math.abs(index - CENTER_INDEX) * 0.08,
                       stiffness: 240,
                       type: "spring",
                     }}
@@ -119,7 +128,12 @@ export const PremiumPaywallModal = ({
                 style={{ background: "#18033EB2" }}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ damping: 14, delay: 0.5, stiffness: 400, type: "spring" }}
+                transition={{
+                  damping: 14,
+                  delay: 0.5,
+                  stiffness: 400,
+                  type: "spring",
+                }}
               >
                 <LockHeartIcon className="size-11" />
               </motion.div>
@@ -147,7 +161,8 @@ export const PremiumPaywallModal = ({
                 <div
                   className="flex h-24.25 items-center justify-center gap-3 border-t border-[#CF6AB7]/64 px-4 pt-2.5 pb-9.75 -mb-10"
                   style={{
-                    background: "linear-gradient(180deg, #3D084B 0%, #0A0620 100%)",
+                    background:
+                      "linear-gradient(180deg, #3D084B 0%, #0A0620 100%)",
                   }}
                 >
                   <span className="text-sm text-white/50 line-through">

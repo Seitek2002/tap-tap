@@ -1,6 +1,7 @@
-import { type PanInfo, animate, motion, useMotionValue } from "motion/react";
 import { useState } from "react";
 import toast, { type Toast } from "react-hot-toast";
+
+import { type PanInfo, animate, motion, useMotionValue } from "motion/react";
 
 import personEmir from "@/shared/assets/images/person-emir.png";
 
@@ -11,7 +12,13 @@ import type { Profile } from "../model/profiles";
 const SWIPE_DISMISS_THRESHOLD = 80;
 const SWIPE_DISMISS_VELOCITY = 500;
 
-export const MatchToastCard = ({ profile, t }: { profile: Profile; t: Toast }) => {
+export const MatchToastCard = ({
+  profile,
+  t,
+}: {
+  profile: Profile;
+  t: Toast;
+}) => {
   const x = useMotionValue(0);
   const [isDismissed, setIsDismissed] = useState(false);
   const [flyDirection, setFlyDirection] = useState(1);
@@ -70,9 +77,7 @@ export const MatchToastCard = ({ profile, t }: { profile: Profile; t: Toast }) =
       </div>
       <div>
         <p className="text-sm font-bold text-white">У вас новая пара!</p>
-        <p className="text-xs text-white/90">
-          {profile.name} тоже лайкнул вас
-        </p>
+        <p className="text-xs text-white/90">{profile.name} тоже лайкнул вас</p>
       </div>
     </motion.div>
   );

@@ -76,8 +76,13 @@ export const Dropdown = ({
   }, [options, searchQuery]);
 
   return (
-    <div className={cn("flex w-full flex-col gap-1.5", className)} ref={containerRef}>
-      {label && <span className="text-sm font-medium text-overlay">{label}</span>}
+    <div
+      className={cn("flex w-full flex-col gap-1.5", className)}
+      ref={containerRef}
+    >
+      {label && (
+        <span className="text-sm font-medium text-overlay">{label}</span>
+      )}
 
       <div className="relative">
         <DropdownTrigger

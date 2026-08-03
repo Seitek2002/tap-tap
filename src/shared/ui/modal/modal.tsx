@@ -1,12 +1,13 @@
-import { X } from "lucide-react";
 import {
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
+  type PointerEvent as ReactPointerEvent,
   useEffect,
   useRef,
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+
+import { X } from "lucide-react";
 
 import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { useMounted } from "@/shared/lib/use-mounted";

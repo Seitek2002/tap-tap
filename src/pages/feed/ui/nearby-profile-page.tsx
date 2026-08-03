@@ -1,11 +1,12 @@
-import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 import { type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
+
 import { cn } from "@/shared/lib/utils";
 
-import { NEARBY_PROFILE_DETAILS } from "../model/nearby-profile-details";
 import { NEARBY_PROFILES } from "../model/nearby";
+import { NEARBY_PROFILE_DETAILS } from "../model/nearby-profile-details";
 
 const Section = ({
   children,
@@ -41,9 +42,7 @@ const Chips = ({ items }: { items: string[] }) => (
 export const NearbyProfilePage = () => {
   const navigate = useNavigate();
   const { profileId } = useParams<{ profileId: string }>();
-  const profile = NEARBY_PROFILES.find(
-    (item) => String(item.id) === profileId,
-  );
+  const profile = NEARBY_PROFILES.find((item) => String(item.id) === profileId);
   const details = profileId
     ? NEARBY_PROFILE_DETAILS[Number(profileId)]
     : undefined;

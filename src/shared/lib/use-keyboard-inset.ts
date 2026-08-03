@@ -15,8 +15,7 @@ export const useKeyboardInset = () => {
     if (!viewport) return;
 
     const update = () => {
-      const overlap =
-        window.innerHeight - viewport.height - viewport.offsetTop;
+      const overlap = window.innerHeight - viewport.height - viewport.offsetTop;
       setInset(Math.max(0, Math.round(overlap)));
     };
 

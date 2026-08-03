@@ -1,5 +1,3 @@
-import { X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import {
   type PointerEvent as ReactPointerEvent,
   type TouchEvent as ReactTouchEvent,
@@ -8,6 +6,9 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+
+import { X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { useMounted } from "@/shared/lib/use-mounted";
 import { useScrollLock } from "@/shared/lib/use-scroll-lock";

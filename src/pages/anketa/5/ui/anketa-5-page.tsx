@@ -3,8 +3,8 @@ import { useNavigate } from "react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Input } from "@/shared/ui/input";
+import { Progress } from "@/shared/ui/progress";
 
 export const Anketa5Page = () => {
   const navigate = useNavigate();

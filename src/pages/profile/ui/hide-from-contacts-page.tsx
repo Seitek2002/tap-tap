@@ -1,8 +1,11 @@
-import { Check, ChevronLeft, Search, TriangleAlert } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
+
+import { Check, ChevronLeft, Search, TriangleAlert } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+
+import { BottomNav } from "@/widgets/bottom-nav";
 
 import { ROUTES } from "@/shared/config";
 import { useMounted } from "@/shared/lib/use-mounted";
@@ -10,8 +13,6 @@ import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
 import { Toggle } from "@/shared/ui/toggle";
-
-import { BottomNav } from "@/widgets/bottom-nav";
 
 import { type Contact, MOCK_BLACKLIST, MOCK_CONTACTS } from "../model/contacts";
 
@@ -71,8 +72,8 @@ const ImportBlockedModal = ({
             <TriangleAlert className="text-primary mx-auto size-12" />
             <h2 className="mt-4 text-lg font-bold">Ты запретил импорт</h2>
             <p className="mt-1 text-sm text-[#6B7280]">
-              Разреши нам доступ к твоей телефонной книге, чтобы
-              импортировать контакты
+              Разреши нам доступ к твоей телефонной книге, чтобы импортировать
+              контакты
             </p>
             <button
               type="button"
@@ -214,8 +215,7 @@ export const HideFromContactsPage = () => {
         <div className="mx-4 mt-4 flex gap-1 rounded-full bg-[#F2F1F3] p-1">
           {TABS.map((item) => {
             const active = tab === item.key;
-            const badgeCount =
-              item.key === "blacklist" ? blockedIds.length : 0;
+            const badgeCount = item.key === "blacklist" ? blockedIds.length : 0;
             return (
               <button
                 key={item.key}
@@ -266,8 +266,8 @@ export const HideFromContactsPage = () => {
             <div className="rounded-2xl border border-[#E4E7EC] bg-white p-4">
               <h2 className="font-bold">Импортируй контакты</h2>
               <p className="mt-2 text-sm text-[#6B7280]">
-                Это поможет нам скрыть твой профиль от людей из твоей
-                телефонной книги.
+                Это поможет нам скрыть твой профиль от людей из твоей телефонной
+                книги.
               </p>
               <p className="mt-2 text-sm text-[#6B7280]">
                 Контакты будут использоваться только для поиска совпадений.
@@ -312,9 +312,7 @@ export const HideFromContactsPage = () => {
                             <button
                               key={contact.id}
                               type="button"
-                              onClick={() =>
-                                toggleContactSelected(contact.id)
-                              }
+                              onClick={() => toggleContactSelected(contact.id)}
                               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
                             >
                               <div className="min-w-0">
@@ -409,9 +407,7 @@ export const HideFromContactsPage = () => {
           <span className="font-medium">Разрешить доступ к контактам</span>
           <Toggle
             checked={contactsAccessGranted}
-            onChange={(event) =>
-              setContactsAccessGranted(event.target.checked)
-            }
+            onChange={(event) => setContactsAccessGranted(event.target.checked)}
           />
         </div>
 

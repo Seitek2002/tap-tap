@@ -1,7 +1,10 @@
-import { Check, ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+
+import { Check, ChevronRight } from "lucide-react";
+
+import { BottomNav } from "@/widgets/bottom-nav";
 
 import { ROUTES } from "@/shared/config";
 import { cn } from "@/shared/lib/utils";
@@ -24,8 +27,6 @@ import {
   SHOW_TO_OPTIONS,
 } from "../model/settings";
 import { PremiumFeatureIcon } from "./premium-feature-icon";
-
-import { BottomNav } from "@/widgets/bottom-nav";
 
 const SectionTitle = ({ children }: { children: ReactNode }) => (
   <h2 className="mb-2 text-base font-bold">{children}</h2>
@@ -50,7 +51,8 @@ const SettingsRow = ({
     className={cn(
       "flex w-full items-center justify-between text-left",
       variant !== "bare" && "px-4 py-4",
-      variant === "standalone" && "rounded-2xl border border-[#E4E7EC] bg-white",
+      variant === "standalone" &&
+        "rounded-2xl border border-[#E4E7EC] bg-white",
     )}
   >
     <span className="flex items-center gap-2.5 text-sm leading-[120%] font-normal text-[#1C1E24]">
@@ -110,7 +112,11 @@ export const SettingsPage = () => {
             aria-label="Готово"
             className="flex size-9 items-center justify-center rounded-full border border-[#E4E7EC] disabled:opacity-60"
           >
-            {isSaving ? <Spinner className="size-5" /> : <Check className="size-5" />}
+            {isSaving ? (
+              <Spinner className="size-5" />
+            ) : (
+              <Check className="size-5" />
+            )}
           </button>
         </header>
 
@@ -209,7 +215,9 @@ export const SettingsPage = () => {
                 <SettingsRow
                   key={feature.key}
                   variant="bare"
-                  icon={<PremiumFeatureIcon className="h-4.5 w-6.75 shrink-0" />}
+                  icon={
+                    <PremiumFeatureIcon className="h-4.5 w-6.75 shrink-0" />
+                  }
                   label={feature.label}
                 />
               ))}

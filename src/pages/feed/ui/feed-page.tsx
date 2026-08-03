@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 import { Settings2 } from "lucide-react";
-import { useNavigate } from "react-router";
+
+import { BottomNav } from "@/widgets/bottom-nav";
 
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
-import { NotificationType, triggerNotificationHaptic } from "@/shared/lib/haptics";
-import { BottomNav } from "@/widgets/bottom-nav";
+import {
+  NotificationType,
+  triggerNotificationHaptic,
+} from "@/shared/lib/haptics";
 
 import { GUIDE_PROFILE, PROFILES, type Profile } from "../model/profiles";
 import { LikeLimitOverlay } from "./like-limit-overlay";

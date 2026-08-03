@@ -1,10 +1,11 @@
-import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { ChevronLeft } from "lucide-react";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Pill } from "@/shared/ui/pill";
+import { Progress } from "@/shared/ui/progress";
 
 const ALCOHOL = [
   "Я не пью",

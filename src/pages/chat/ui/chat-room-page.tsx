@@ -1,4 +1,14 @@
 import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router";
+
+import {
   Camera,
   Check,
   ChevronLeft,
@@ -12,20 +22,14 @@ import {
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import toast from "react-hot-toast";
-import { useNavigate, useParams } from "react-router";
 
 import { ROUTES } from "@/shared/config";
-import { NotificationType, triggerNotificationHaptic } from "@/shared/lib/haptics";
-import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
+import {
+  NotificationType,
+  triggerNotificationHaptic,
+} from "@/shared/lib/haptics";
 import { isAndroid } from "@/shared/lib/platform";
+import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
 import { Spinner } from "@/shared/ui/spinner";
@@ -42,8 +46,7 @@ import { PhotoViewer } from "./photo-viewer";
 // Вложения выбраны, но ещё не отправлены — лежат рядом с инпутом до нажатия
 // на иконку отправки, как в Telegram/WhatsApp. Можно накопить несколько штук.
 type PendingAttachment = { id: number } & (
-  | { fileName: string; kind: "file" }
-  | { imageUrl: string; kind: "image" }
+  { fileName: string; kind: "file" } | { imageUrl: string; kind: "image" }
 );
 
 // Ограничение типов вложений в чате: только картинки и документы (задача
@@ -303,7 +306,9 @@ export const ChatRoomPage = () => {
       const freeSlots = Math.max(0, MAX_ATTACHMENTS - prev.length);
       if (freeSlots < allowedFiles.length) {
         triggerNotificationHaptic(NotificationType.Error);
-        toast.error(`Можно прикрепить не больше ${MAX_ATTACHMENTS} файлов за раз`);
+        toast.error(
+          `Можно прикрепить не больше ${MAX_ATTACHMENTS} файлов за раз`,
+        );
       }
 
       return [
@@ -311,7 +316,11 @@ export const ChatRoomPage = () => {
         ...allowedFiles.slice(0, freeSlots).map((file, index) => {
           const id = prev.length + index + 1;
           return isImageFile(file)
-            ? { id, imageUrl: URL.createObjectURL(file), kind: "image" as const }
+            ? {
+                id,
+                imageUrl: URL.createObjectURL(file),
+                kind: "image" as const,
+              }
             : { fileName: file.name, id, kind: "file" as const };
         }),
       ];
@@ -321,7 +330,8 @@ export const ChatRoomPage = () => {
   const removeAttachment = (id: number) => {
     setPendingAttachments((prev) => {
       const attachment = prev.find((item) => item.id === id);
-      if (attachment?.kind === "image") URL.revokeObjectURL(attachment.imageUrl);
+      if (attachment?.kind === "image")
+        URL.revokeObjectURL(attachment.imageUrl);
       return prev.filter((item) => item.id !== id);
     });
   };
@@ -500,57 +510,57 @@ export const ChatRoomPage = () => {
             onChange={handleFileChange}
             className="hidden"
           />
-        <button
-          type="button"
-          onClick={openAttachMenu}
-          aria-label="Прикрепить файл"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
-        >
-          <Plus className="size-5" />
-        </button>
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Напиши сообщение"
-          className="h-11 min-w-0 flex-1 rounded-full bg-[#F2F1F6] px-4 text-sm outline-none placeholder:text-[#9CA3AF]"
-        />
-        <button
-          type="button"
-          aria-label="Эмодзи"
-          className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
-        >
-          <Smile className="size-6" />
-        </button>
-        <AnimatePresence mode="wait" initial={false}>
-          {draft.trim() || pendingAttachments.length > 0 ? (
-            <motion.button
-              key="send"
-              type="submit"
-              data-haptic="medium"
-              aria-label="Отправить"
-              initial={{ opacity: 0, scale: 0.4 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.4 }}
-              transition={{ damping: 22, stiffness: 500, type: "spring" }}
-              className="flex h-9 w-15.5 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
-            >
-              <Send className="size-5" />
-            </motion.button>
-          ) : (
-            <motion.button
-              key="mic"
-              type="button"
-              aria-label="Голосовое сообщение"
-              initial={{ opacity: 0, scale: 0.4 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.4 }}
-              transition={{ damping: 22, stiffness: 500, type: "spring" }}
-              className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
-            >
-              <Mic className="size-6" />
-            </motion.button>
-          )}
-        </AnimatePresence>
+          <button
+            type="button"
+            onClick={openAttachMenu}
+            aria-label="Прикрепить файл"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
+          >
+            <Plus className="size-5" />
+          </button>
+          <input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Напиши сообщение"
+            className="h-11 min-w-0 flex-1 rounded-full bg-[#F2F1F6] px-4 text-sm outline-none placeholder:text-[#9CA3AF]"
+          />
+          <button
+            type="button"
+            aria-label="Эмодзи"
+            className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
+          >
+            <Smile className="size-6" />
+          </button>
+          <AnimatePresence mode="wait" initial={false}>
+            {draft.trim() || pendingAttachments.length > 0 ? (
+              <motion.button
+                key="send"
+                type="submit"
+                data-haptic="medium"
+                aria-label="Отправить"
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.4 }}
+                transition={{ damping: 22, stiffness: 500, type: "spring" }}
+                className="flex h-9 w-15.5 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
+              >
+                <Send className="size-5" />
+              </motion.button>
+            ) : (
+              <motion.button
+                key="mic"
+                type="button"
+                aria-label="Голосовое сообщение"
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.4 }}
+                transition={{ damping: 22, stiffness: 500, type: "spring" }}
+                className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
+              >
+                <Mic className="size-6" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </form>
       </div>
 
@@ -621,9 +631,7 @@ export const ChatRoomPage = () => {
 
       <Modal isOpen={isUnmatchOpen} onClose={() => setIsUnmatchOpen(false)}>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h2 className="text-lg font-bold">
-            Удалить пару с {chat?.name}?
-          </h2>
+          <h2 className="text-lg font-bold">Удалить пару с {chat?.name}?</h2>
           <p className="text-sm text-[#6B7280]">
             Ваша пара будет аннулирована и удалится чат у обоих
           </p>

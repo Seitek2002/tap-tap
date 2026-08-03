@@ -3,9 +3,9 @@ import { useState } from "react";
 import { TriangleAlert } from "lucide-react";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Dropdown } from "@/shared/ui/dropdown";
 import { Input } from "@/shared/ui/input";
+import { Progress } from "@/shared/ui/progress";
 
 const MARITAL_OPTIONS = [
   { label: "Не в браке", value: "single" },

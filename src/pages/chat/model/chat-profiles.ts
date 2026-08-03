@@ -1,6 +1,6 @@
+import person1 from "@/shared/assets/images/person-1.jpg";
 import personDastan from "@/shared/assets/images/person-dastan.png";
 import personEmir from "@/shared/assets/images/person-emir.png";
-import person1 from "@/shared/assets/images/person-1.jpg";
 import personNight from "@/shared/assets/images/person-night.png";
 import personSeitek from "@/shared/assets/images/person-seitek.png";
 import personZalkar from "@/shared/assets/images/person-zalkar.png";
@@ -80,7 +80,13 @@ export const CHAT_PROFILES: Record<number, ChatProfile> = {
     bio: "Работаю над интересными проектами, люблю горы и хорошую компанию.",
     distanceKm: 9,
     habits: ["🚭 Не курю", "🏋️ Каждый день", "🍷 Иногда"],
-    important: ["📏 180 см", "📍 Бишкек", "🐂 Телец", "🌌 Агностик", "🐕 Собаки"],
+    important: [
+      "📏 180 см",
+      "📍 Бишкек",
+      "🐂 Телец",
+      "🌌 Агностик",
+      "🐕 Собаки",
+    ],
     interests: ["⛰️ Горы", "📈 Бизнес", "🎧 Подкасты"],
     marital: "Не женат",
     online: true,
@@ -112,7 +118,13 @@ export const CHAT_PROFILES: Record<number, ChatProfile> = {
     bio: "Планирую поездки чаще, чем разговариваю по телефону.",
     distanceKm: 11,
     habits: ["🚭 Не курю", "🥾 Часто", "🍷 Редко"],
-    important: ["📏 178 см", "📍 Каракол", "♏ Скорпион", "⛪ Христианство", "🐕 Собаки"],
+    important: [
+      "📏 178 см",
+      "📍 Каракол",
+      "♏ Скорпион",
+      "⛪ Христианство",
+      "🐕 Собаки",
+    ],
     interests: ["⛰️ Горы", "✈️ Путешествия", "📷 Фото"],
     marital: "В разводе",
     online: true,

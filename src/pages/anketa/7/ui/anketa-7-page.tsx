@@ -1,9 +1,10 @@
-import { ChevronLeft, Mic } from "lucide-react";
 import { useNavigate } from "react-router";
 
+import { ChevronLeft, Mic } from "lucide-react";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Pill } from "@/shared/ui/pill";
+import { Progress } from "@/shared/ui/progress";
 
 const QUESTIONS = [
   "💪 Ты занимаешься спортом?",

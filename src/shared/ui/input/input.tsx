@@ -1,9 +1,4 @@
-import type {
-  ComponentType,
-  InputHTMLAttributes,
-  Ref,
-  SVGProps,
-} from "react";
+import type { ComponentType, InputHTMLAttributes, Ref, SVGProps } from "react";
 
 import { cn } from "@/shared/lib/utils";
 

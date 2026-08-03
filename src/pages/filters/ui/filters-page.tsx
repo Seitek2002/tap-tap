@@ -1,6 +1,7 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
@@ -267,7 +268,10 @@ export const FiltersPage = () => {
 
   // max=1 — выбор сразу закрывает шит (радио-семантика: тап = готово).
   // max>1 — тап только переключает опцию, шит остаётся открытым.
-  const selectOption = (field: (typeof OPTION_FIELDS)[number], option: string) => {
+  const selectOption = (
+    field: (typeof OPTION_FIELDS)[number],
+    option: string,
+  ) => {
     if (field.max === 1) {
       setOptionValues((prev) => ({ ...prev, [field.key]: [option] }));
       setOpenField(null);
@@ -276,7 +280,10 @@ export const FiltersPage = () => {
     setOptionValues((prev) => {
       const current = prev[field.key];
       if (current.includes(option)) {
-        return { ...prev, [field.key]: current.filter((item) => item !== option) };
+        return {
+          ...prev,
+          [field.key]: current.filter((item) => item !== option),
+        };
       }
       if (current.length >= field.max) return prev;
       return { ...prev, [field.key]: [...current, option] };
@@ -513,10 +520,7 @@ export const FiltersPage = () => {
       </Modal>
 
       {/* Шит: «Выбери интересы партнера» — мультивыбор */}
-      <Modal
-        isOpen={isInterestsOpen}
-        onClose={() => setIsInterestsOpen(false)}
-      >
+      <Modal isOpen={isInterestsOpen} onClose={() => setIsInterestsOpen(false)}>
         <h2 className="text-lg font-bold">Выбери интересы партнера</h2>
 
         <div className="mt-4 flex flex-wrap gap-2 pb-4">
@@ -545,9 +549,7 @@ export const FiltersPage = () => {
 
       {/* Шит: «Знак зодиака партнера» — одиночный выбор */}
       <Modal isOpen={isZodiacOpen} onClose={() => setIsZodiacOpen(false)}>
-        <h2 className="text-center text-lg font-bold">
-          Знак зодиака партнера
-        </h2>
+        <h2 className="text-center text-lg font-bold">Знак зодиака партнера</h2>
 
         <div className="mt-4 flex flex-wrap gap-2">
           {ZODIAC_SIGNS.map((sign) => (

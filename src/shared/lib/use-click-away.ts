@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from "react";
+import { type RefObject, useEffect } from "react";
 
 /** Вызывает onAway при клике/тапе вне элемента ref (замена react-use). */
 export function useClickAway(

@@ -1,9 +1,9 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 import { Heart, Lock, X } from "lucide-react";
 import { motion } from "motion/react";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 

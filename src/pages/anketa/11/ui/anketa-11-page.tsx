@@ -1,5 +1,6 @@
-import { Check, ChevronLeft, Eye, ShieldCheck, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router";
+
+import { Check, ChevronLeft, Eye, ShieldCheck, Sparkles } from "lucide-react";
 
 import carPremium from "@/shared/assets/images/car-premium.png";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";

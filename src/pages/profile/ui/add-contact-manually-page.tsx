@@ -1,10 +1,11 @@
-import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Input } from "@/shared/ui/input";
+import { ChevronLeft } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
+
+import { Input } from "@/shared/ui/input";
 
 export const AddContactManuallyPage = () => {
   const navigate = useNavigate();
@@ -45,9 +46,7 @@ export const AddContactManuallyPage = () => {
           <div className="mt-5 flex flex-col gap-2 text-sm">
             <span className="font-bold">Укажи номер телефона</span>
             <div className="flex items-center gap-2 rounded-full border border-[#E4E7EC] px-4 py-3.5">
-              <span className="shrink-0 font-medium text-[#6B7280]">
-                +996
-              </span>
+              <span className="shrink-0 font-medium text-[#6B7280]">+996</span>
               <span className="h-4 w-px shrink-0 bg-[#E4E7EC]" />
               <input
                 value={phone}

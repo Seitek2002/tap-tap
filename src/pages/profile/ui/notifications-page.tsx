@@ -1,8 +1,11 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+
+import { BottomNav } from "@/widgets/bottom-nav";
 
 import enableNotifications from "@/shared/assets/images/enable-notifications.png";
 import { useMounted } from "@/shared/lib/use-mounted";
@@ -10,8 +13,6 @@ import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 import { Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
 import { Toggle } from "@/shared/ui/toggle";
-
-import { BottomNav } from "@/widgets/bottom-nav";
 
 import {
   EMAIL_NOTIFICATION_TOGGLES,
@@ -55,11 +56,7 @@ const EnableNotificationsModal = ({
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ damping: 22, stiffness: 300, type: "spring" }}
           >
-            <img
-              src={enableNotifications}
-              alt=""
-              className="mx-auto h-20"
-            />
+            <img src={enableNotifications} alt="" className="mx-auto h-20" />
             <h2 className="mt-4 text-lg font-bold">Включи уведомления</h2>
             <p className="mt-1 text-sm text-[#6B7280]">
               Измени настройки устройства, чтобы получать от нас уведомления

@@ -1,6 +1,7 @@
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
 import { Ban, Flag, HeartCrack } from "lucide-react";
 import { type PanInfo, animate, motion, useMotionValue } from "motion/react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import type { Chat } from "../model/chats";
 

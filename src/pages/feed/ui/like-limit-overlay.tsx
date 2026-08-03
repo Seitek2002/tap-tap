@@ -1,5 +1,6 @@
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+
+import { AnimatePresence, motion } from "motion/react";
 
 type LikeLimitOverlayProps = {
   isOpen: boolean;

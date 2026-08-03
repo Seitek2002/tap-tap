@@ -5,8 +5,8 @@ import { ChevronLeft, Navigation } from "lucide-react";
 
 import distanceCircle from "@/shared/assets/images/distance-circle.png";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Modal } from "@/shared/ui/modal";
+import { Progress } from "@/shared/ui/progress";
 import { RangeSlider, Slider } from "@/shared/ui/slider";
 
 // Карта (с Leaflet) грузится лениво — только после включения геолокации,

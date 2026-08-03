@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router";
 
 import { Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useNavigate } from "react-router";
 
 import matchBadge from "@/shared/assets/icons/match-badge.svg";
 import matchHeartBg from "@/shared/assets/images/match-heart-bg.png";

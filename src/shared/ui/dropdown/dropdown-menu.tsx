@@ -1,5 +1,6 @@
-import { X } from "lucide-react";
 import { type ReactNode } from "react";
+
+import { X } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -78,7 +79,10 @@ export const DropdownMenu = ({
       </div>
 
       <div className="mt-5 md:hidden">
-        <Button className="w-full justify-center py-3.5 text-base" onClick={onClose}>
+        <Button
+          className="w-full justify-center py-3.5 text-base"
+          onClick={onClose}
+        >
           Готово
         </Button>
       </div>

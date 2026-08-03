@@ -1,10 +1,11 @@
-import { RefreshCw } from "lucide-react";
 import {
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
+  type PointerEvent as ReactPointerEvent,
   useRef,
   useState,
 } from "react";
+
+import { RefreshCw } from "lucide-react";
 
 import { ImpactStyle, triggerHaptic } from "@/shared/lib/haptics";
 import { cn } from "@/shared/lib/utils";

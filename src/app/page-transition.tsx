@@ -1,6 +1,7 @@
-import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useLocation, useOutlet } from "react-router";
+
+import { AnimatePresence, motion } from "motion/react";
 
 // <Outlet/> сам по себе всегда синхронен с текущим location — при смене
 // маршрута он мгновенно переключается на новый элемент, и «заморозить»

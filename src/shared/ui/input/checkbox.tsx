@@ -44,7 +44,12 @@ export const Checkbox = ({
   const iconStyles = "text-white shrink-0 size-3";
 
   return (
-    <label className={cn("group flex cursor-pointer items-center gap-2.5", className)}>
+    <label
+      className={cn(
+        "group flex cursor-pointer items-center gap-2.5",
+        className,
+      )}
+    >
       <div className="relative flex items-center justify-center">
         <input
           ref={inputRef}
@@ -81,7 +86,9 @@ export const Checkbox = ({
         </div>
       </div>
 
-      {label && <span className="text-sm font-medium text-overlay">{label}</span>}
+      {label && (
+        <span className="text-sm font-medium text-overlay">{label}</span>
+      )}
     </label>
   );
 };

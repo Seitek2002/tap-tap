@@ -4,10 +4,10 @@ import { useNavigate } from "react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { cn } from "@/shared/lib/utils";
 import { Radio } from "@/shared/ui/input";
 import { Pill } from "@/shared/ui/pill";
+import { Progress } from "@/shared/ui/progress";
 
 const GOALS = [
   { emoji: "💬", label: "Просто общаться", value: "chat" },

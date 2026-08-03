@@ -30,7 +30,12 @@ export const LockHeartIcon = ({ className }: LockHeartIconProps) => (
       fill="white"
       style={{ transformOrigin: "14px 13px" }}
       animate={{ rotate: [0, -24, 0] }}
-      transition={{ delay: 1, duration: 0.7, ease: "easeInOut", times: [0, 0.55, 1] }}
+      transition={{
+        delay: 1,
+        duration: 0.7,
+        ease: "easeInOut",
+        times: [0, 0.55, 1],
+      }}
     />
   </svg>
 );

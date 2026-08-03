@@ -1,5 +1,5 @@
-import personDastan from "@/shared/assets/images/person-dastan.png";
 import person1 from "@/shared/assets/images/person-1.jpg";
+import personDastan from "@/shared/assets/images/person-dastan.png";
 import personNight from "@/shared/assets/images/person-night.png";
 import personZalkar from "@/shared/assets/images/person-zalkar.png";
 
@@ -164,7 +164,8 @@ export const PROFILE_OPTION_FIELDS = [
   },
 ] as const;
 
-export type ProfileOptionFieldKey = (typeof PROFILE_OPTION_FIELDS)[number]["key"];
+export type ProfileOptionFieldKey =
+  (typeof PROFILE_OPTION_FIELDS)[number]["key"];
 
 export const DEFAULT_PROFILE_OPTION_VALUES: Record<
   ProfileOptionFieldKey,

@@ -1,3 +1,6 @@
+import { type ChangeEvent, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+
 import {
   Camera,
   Check,
@@ -7,8 +10,6 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { type ChangeEvent, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 
 import goodImg1 from "@/shared/assets/images/good-img-1.jpg";
 import goodImg2 from "@/shared/assets/images/good-img-2.jpg";
@@ -16,8 +17,8 @@ import notGoodImg1 from "@/shared/assets/images/not-good-img-1.jpg";
 import notGoodImg2 from "@/shared/assets/images/not-good-img-2.jpg";
 import { isAndroid } from "@/shared/lib/platform";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Progress } from "@/shared/ui/progress";
 import { Modal } from "@/shared/ui/modal";
+import { Progress } from "@/shared/ui/progress";
 
 const PHOTO_SLOTS = 6;
 
@@ -190,7 +191,11 @@ export const Anketa12Page = () => {
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div className="relative">
                   <div className="aspect-[3/4] overflow-hidden rounded-xl bg-[#E4E7EC]">
-                    <img src={tip.bad} alt="" className="size-full object-cover" />
+                    <img
+                      src={tip.bad}
+                      alt=""
+                      className="size-full object-cover"
+                    />
                   </div>
                   <span className="absolute bottom-0 left-1/2 flex size-7 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-red-500 text-white">
                     <X className="size-4" />

@@ -1,8 +1,9 @@
-import { Heart, MapPin, MessageCircle, User, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 
-import { cn } from "@/shared/lib/utils";
+import { Heart, MapPin, MessageCircle, User, Users } from "lucide-react";
+
 import { ROUTES } from "@/shared/config";
+import { cn } from "@/shared/lib/utils";
 
 const TABS = [
   { icon: MessageCircle, label: "Чат", route: ROUTES.chat },
