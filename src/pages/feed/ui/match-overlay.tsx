@@ -69,7 +69,7 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
     <AnimatePresence>
       {profile && (
         <motion.div
-          className="fixed inset-0 z-100 flex flex-col items-center overflow-hidden px-6 pt-16 pb-10"
+          className="fixed inset-0 z-100 flex flex-col items-center overflow-hidden px-3 pt-16 pb-10"
           style={{
             background:
               "linear-gradient(180deg, #4C1D95 0%, #A855F7 45%, #F5A623 100%)",
@@ -134,14 +134,14 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
             transition={{ delay: 0.5 }}
           >
             <h1 className="text-2xl font-bold text-white">Это взаимно!</h1>
-            <p className="mt-2 max-w-xs text-sm text-white/90">
+            <p className="mt-2 text-sm text-white/90">
               💖 Ты и {profile.name} нравитесь друг другу. Напиши ей, не упусти
               свою искру!
             </p>
           </motion.div>
 
           <motion.div
-            className="relative mt-6 w-full max-w-xs flex-1"
+            className="relative mt-6 w-full flex-1"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}

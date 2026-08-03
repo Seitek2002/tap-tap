@@ -326,7 +326,7 @@ export const FiltersPage = () => {
       {/* Прокручиваемая часть */}
       <div className="flex-1 overflow-y-auto px-4 pb-8">
         {/* Тебя интересуют */}
-        <div className="rounded-2xl bg-white p-4">
+        <div className="rounded-3xl bg-white p-4">
           <h2 className="text-sm font-bold">Тебя интересуют</h2>
           {/* Сегмент-контрол (как antd Segmented): общий фон, выбранная
               опция — плавающая пилюля внутри, а не отдельные чипы с зазором. */}
@@ -350,7 +350,7 @@ export const FiltersPage = () => {
         </div>
 
         {/* Возраст + расстояние */}
-        <div className="mt-3 space-y-6 rounded-2xl bg-white p-4">
+        <div className="mt-3 space-y-6 rounded-3xl bg-white p-4">
           <div>
             <h2 className="text-sm font-bold">Возраст</h2>
             <RangeSlider
@@ -387,7 +387,7 @@ export const FiltersPage = () => {
           </span>
         </div>
 
-        <div className="mt-3 divide-y divide-[#E4E7EC] rounded-2xl bg-white px-4">
+        <div className="mt-3 divide-y divide-[#E4E7EC] rounded-3xl bg-white px-4">
           {TOGGLES.map((toggle) => (
             <div
               key={toggle.key}
