@@ -1,12 +1,4 @@
-import {
-  AlignJustify,
-  Ban,
-  Check,
-  Flag,
-  Heart,
-  HeartCrack,
-  Search,
-} from "lucide-react";
+import { AlignJustify, Check, Heart, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -22,6 +14,7 @@ import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
 
 import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
 import { REPORT_REASONS } from "../model/report-reasons";
+import { ChatRow } from "./chat-row";
 
 const CHAT_FILTERS = [
   { key: "all", label: "Все" },
@@ -47,6 +40,10 @@ export const ChatPage = () => {
   const [filter, setFilter] = useState<ChatFilterKey>("all");
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  // Открытая свайпом строка — только одна за раз, как в большинстве
+  // мессенджеров: открыть новую значит закрыть предыдущую.
+  const [openChatId, setOpenChatId] = useState<null | number>(null);
 
   useClickAway(filterMenuRef, () => {
     if (isFilterMenuOpen) setIsFilterMenuOpen(false);
@@ -191,9 +188,6 @@ export const ChatPage = () => {
         >
           <AnimatePresence mode="popLayout">
             {visibleChats.map((chat) => (
-              // Строка внутри — горизонтальный скролл: контент занимает всю
-              // видимую ширину, кнопки действий лежат правее и открываются
-              // скроллом/свайпом (без drag-логики, просто overflow-x-auto).
               // layout + popLayout — при удалении строка выезжает дальше
               // вправо и гаснет, а соседние строки сразу сдвигаются вверх,
               // не дожидаясь конца анимации ухода.
@@ -202,82 +196,16 @@ export const ChatPage = () => {
                 layout
                 exit={{ opacity: 0, x: 120 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="relative overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
-              <div className="flex w-full">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/chat/${chat.id}`)}
-                  className="flex w-full shrink-0 items-center gap-3 px-4 py-3 text-left"
-                >
-                  <div className="relative shrink-0">
-                    <img
-                      src={chat.photo}
-                      alt=""
-                      className="size-14 rounded-full object-cover"
-                    />
-                    {chat.unread && (
-                      <span className="absolute top-0 right-0 size-3 rounded-full bg-red-500 ring-2 ring-[#FAF9FD]" />
-                    )}
-                    {chat.online && (
-                      <span className="absolute right-0 bottom-0 size-3 rounded-full bg-green-500 ring-2 ring-[#FAF9FD]" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="truncate font-bold">{chat.name}</h3>
-                      {chat.yourTurn && (
-                        <span className="shrink-0 rounded-full bg-[#1C1E24] px-2.5 py-1 text-[10px] font-bold whitespace-nowrap text-white">
-                          Твоя очередь
-                        </span>
-                      )}
-                    </div>
-                    <p className="truncate text-sm text-[#6B7280]">
-                      {chat.lastMessage}
-                    </p>
-                  </div>
-                </button>
-
-                {/* Доп. функции — пока без обработчиков, добавим позже */}
-                <div className="flex shrink-0 items-center gap-3 pr-4">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setUnmatchChatId(chat.id)}
-                      className="flex py-1.5 w-18 items-center justify-center rounded-2xl bg-primary text-white"
-                    >
-                      <HeartCrack size={16} />
-                    </button>
-                    <span className="text-xs whitespace-nowrap text-[#1C1E24]">
-                      Отменить лайк
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setBlockChatId(chat.id)}
-                      className="flex py-1.5 w-18 items-center justify-center rounded-2xl bg-[#1C1E24] text-white"
-                    >
-                      <Ban size={16} />
-                    </button>
-                    <span className="text-xs whitespace-nowrap text-[#1C1E24]">
-                      Заблокировать
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setReportChatId(chat.id)}
-                      className="flex py-1.5 w-18 items-center justify-center rounded-2xl bg-red-500 text-white"
-                    >
-                      <Flag size={16} />
-                    </button>
-                    <span className="text-xs whitespace-nowrap text-[#1C1E24]">
-                      Пожаловаться
-                    </span>
-                  </div>
-                </div>
-              </div>
+                <ChatRow
+                  chat={chat}
+                  isOpen={openChatId === chat.id}
+                  onBlock={() => setBlockChatId(chat.id)}
+                  onNavigate={() => navigate(`/chat/${chat.id}`)}
+                  onOpenChange={(open) => setOpenChatId(open ? chat.id : null)}
+                  onReport={() => setReportChatId(chat.id)}
+                  onUnmatch={() => setUnmatchChatId(chat.id)}
+                />
               </motion.div>
             ))}
           </AnimatePresence>
