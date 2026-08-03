@@ -125,9 +125,9 @@ export const Modal = ({ children, isOpen, onClose, title }: ModalProps) => {
           onPointerMove={handleDragMove}
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragEnd}
-          className="flex shrink-0 touch-none justify-center py-3"
+          className="flex shrink-0 touch-none justify-center pt-1.5"
         >
-          <div className="h-1.5 w-10 rounded-full bg-[#E4E7EC]" />
+          <div className="h-0.5 w-10 rounded-full bg-[#6B7280]" />
         </div>
         {title && (
           <div className="flex items-center justify-between border-b border-border-soft p-5">
@@ -140,7 +140,7 @@ export const Modal = ({ children, isOpen, onClose, title }: ModalProps) => {
             </button>
           </div>
         )}
-        <div className="overflow-y-auto p-5">{children}</div>
+        <div className="overflow-y-auto p-4">{children}</div>
       </div>
 
       {/* Десктоп по центру */}
