@@ -94,7 +94,7 @@ const Row = ({
     onClick={onClick}
     className="flex w-full items-center justify-between py-3 text-left"
   >
-    <span className="flex items-center gap-2 text-[#1C1E24]">
+    <span className="flex items-center gap-2 text-sm leading-[120%] font-normal text-[#1C1E24]">
       {icon}
       {label}
     </span>
@@ -284,7 +284,9 @@ export const ProfilePage = () => {
             onClick={() => setIsBestPhotoOpen(true)}
             className="flex w-full items-center justify-between px-4"
           >
-            <span className="font-medium text-sm">Показывать лучшее фото</span>
+            <span className="text-sm leading-[120%] font-normal text-[#1C1E24]">
+              Показывать лучшее фото
+            </span>
             <span className="flex text-xs items-center gap-1 text-[#1C1E24]">
               {bestPhotoEnabled ? "Вкл" : "Выкл"}
               <ChevronRight className="size-4" />
@@ -310,7 +312,7 @@ export const ProfilePage = () => {
             {interests.map((interest) => (
               <span
                 key={interest}
-                className="rounded-full bg-[#F2F1F3] px-3 py-2 text-xs font-medium"
+                className="rounded-full bg-[#F2F1F3] px-3 py-2 text-xs leading-[120%] font-normal text-[#1C1E24]"
               >
                 {interest}
               </span>
@@ -333,13 +335,13 @@ export const ProfilePage = () => {
               onKeyDown={(event) => {
                 if (event.key === "Escape") setIsEditingBio(false);
               }}
-              className="flex-1 resize-none bg-transparent font-medium text-[#1C1E24] outline-none"
+              className="flex-1 resize-none bg-transparent text-sm leading-[120%] font-normal text-[#1C1E24] outline-none"
             />
           ) : (
             <button
               type="button"
               onClick={() => setIsEditingBio(true)}
-              className="flex-1 overflow-hidden text-left font-medium text-[#1C1E24]"
+              className="flex-1 overflow-hidden text-left text-sm leading-[120%] font-normal text-[#1C1E24]"
             >
               {bio}
             </button>
