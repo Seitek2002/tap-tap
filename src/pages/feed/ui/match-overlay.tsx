@@ -170,7 +170,7 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
                   key={text}
                   type="button"
                   onClick={() => handleSuggestionClick(text)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-xs font-medium whitespace-nowrap text-[#1C1E24]"
+                  className="flex shrink-0 items-center gap-2.5 rounded-full border-[#E4E7EC] border bg-white/90 p-2 text-sm font-medium whitespace-nowrap text-[#1C1E24]"
                 >
                   <Send className="size-3.5" />
                   {text}
