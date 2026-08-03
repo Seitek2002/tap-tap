@@ -143,7 +143,7 @@ export const ChatPage = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -8 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-full right-0 z-30 mt-2 w-56 overflow-hidden rounded-2xl bg-white shadow-xl"
+                className="absolute top-full right-0 z-30 mt-2 flex w-51.75 flex-col gap-4.5 rounded-3xl border-[0.3px] border-[#1C1E24] bg-white py-5 shadow-[-3px_6px_40px_0_rgba(61,61,61,0.14)]"
               >
                 {CHAT_FILTERS.map((option) => (
                   <button
@@ -153,7 +153,7 @@ export const ChatPage = () => {
                       setFilter(option.key);
                       setIsFilterMenuOpen(false);
                     }}
-                    className="flex w-full items-center justify-between px-4 py-3.5 text-left text-sm"
+                    className="flex w-full items-center justify-between px-4 text-left text-sm"
                   >
                     {option.label}
                     {filter === option.key && (
