@@ -171,7 +171,7 @@ export const ChatPage = () => {
 
       {/* Лайки и пары */}
       <div className="px-4 pb-2">
-        <h2 className="text-sm font-bold text-[#6B7280]">Лайки и пары</h2>
+        <h2 className="text-base font-medium text-[#1C1E24]">Лайки и пары</h2>
         <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {LIKES_AND_MATCHES.map((photo, index) => (
             <div key={index} className="relative mb-2 w-16 shrink-0">
