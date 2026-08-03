@@ -70,7 +70,7 @@ const LikeActionCard = ({ profile }: { profile: LikeProfile }) => {
       >
         <ProfilePhoto profile={profile} />
       </button>
-      <div className="flex">
+      <div className="flex border border-[#E4E7EC] rounded-bl-3xl rounded-br-3xl">
         <button
           type="button"
           onClick={bounce}
