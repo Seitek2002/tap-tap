@@ -1,75 +1,51 @@
-# React + TypeScript + Vite
+# TapTap — Фронтенд
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite. Бекенд — отдельный репозиторий `bakai-server` (Express + SQLite), лежит на уровень выше (`../bakai-server`).
 
-Currently, two official plugins are available:
+## Запуск фронта вместе с беком
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### 1. Бекенд
 
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+cd ../bakai-server
+npm install
+cp .env.example .env
+# открой .env и задай JWT_SECRET и ADMIN_PASSWORD (любые свои значения)
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Поднимется на `http://localhost:4000`.
 
-```js
-// eslint.config.js
-import reactDom from "eslint-plugin-react-dom";
-import reactX from "eslint-plugin-react-x";
+### 2. Фронт (этот репозиторий)
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+npm install
+npm run dev
 ```
+
+Поднимется на `http://localhost:5173`.
+
+По умолчанию в `.env` стоит `VITE_MOCK_MODE=true` — всё работает на моках, бекенд не нужен вообще (удобно для демо/дизайн-ревью без поднятого сервера).
+
+Чтобы фронт реально ходил на локальный `bakai-server` (шаг 1 должен быть запущен):
+
+```bash
+# .env.local (не коммитится, переопределяет .env только у тебя локально)
+VITE_MOCK_MODE=false
+```
+
+`VITE_API_URL` в `.env` уже указывает на `http://localhost:4000` — трогать не нужно, если бек поднят на дефолтном порту.
+
+## Админка бекенда
+
+Сервер-рендеренная панель, отдаётся самим `bakai-server` (отдельного фронтенда у неё нет):
+
+1. Открой `http://localhost:4000/admin`
+2. Пароль — значение `ADMIN_PASSWORD` из `bakai-server/.env`
+
+Внутри:
+
+- **Дашборд** — количество пользователей/банов/мэтчей/жалоб
+- **Пользователи** — поиск по имени/телефону, бан/разбан
+- **Жалобы** — кто на кого и почему, отклонить или сразу забанить
+- **Справочники** (`/admin/options`) — списки вариантов для боттомшитов анкеты/фильтров/профиля (алкоголь, курение, спорт, дети, язык любви, питомцы, религия, образование, знак зодиака) — по одному значению на строку, можно завести и новый ключ справочника
