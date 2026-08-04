@@ -167,6 +167,14 @@ export const PROFILE_OPTION_FIELDS = [
 export type ProfileOptionFieldKey =
   (typeof PROFILE_OPTION_FIELDS)[number]["key"];
 
+// Локальный ключ loveLanguage — на бэке справочник называется love_language,
+// остальные ключи совпадают 1:1 с колонками в users.
+export const BACKEND_OPTION_KEY: Partial<
+  Record<ProfileOptionFieldKey, string>
+> = {
+  loveLanguage: "love_language",
+};
+
 export const DEFAULT_PROFILE_OPTION_VALUES: Record<
   ProfileOptionFieldKey,
   string[]

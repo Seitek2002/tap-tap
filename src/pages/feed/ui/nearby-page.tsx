@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { Heart, Settings2 } from "lucide-react";
@@ -6,11 +7,15 @@ import { motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { useFeedQuery, useLikeMutation } from "@/entities/user";
+
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useBounce } from "@/shared/lib/use-bounce";
 import { cn } from "@/shared/lib/utils";
 
+import { mapFeedCandidateToNearbyProfile } from "../model/map-nearby-candidate";
 import { NEARBY_PROFILES } from "../model/nearby";
 import { NearbyLikeIcon } from "./nearby-like-icon";
 
@@ -81,10 +86,34 @@ export const NearbyPage = () => {
   const [tab, setTab] = useState<TabKey>("all");
   const [likedIds, setLikedIds] = useState<number[]>([]);
 
-  const toggleLike = (id: number) => {
-    setLikedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+  const feedQuery = useFeedQuery(!isMockMode());
+  const likeMutation = useLikeMutation();
+  const profiles = isMockMode()
+    ? NEARBY_PROFILES
+    : (feedQuery.data ?? []).map(mapFeedCandidateToNearbyProfile);
+
+  const handleLike = async (id: number) => {
+    if (likedIds.includes(id)) return;
+    setLikedIds((prev) => [...prev, id]);
+
+    if (isMockMode()) return;
+    try {
+      const result = await likeMutation.mutateAsync(id);
+      if (result.limitReached) {
+        setLikedIds((prev) => prev.filter((item) => item !== id));
+        toast.error("Дневной лимит лайков исчерпан");
+        return;
+      }
+      if (result.match) {
+        const profile = profiles.find((item) => item.id === id);
+        toast.success(
+          profile ? `Это пара с ${profile.name}! 💜` : "Это пара! 💜",
+        );
+      }
+    } catch {
+      setLikedIds((prev) => prev.filter((item) => item !== id));
+      toast.error("Не получилось лайкнуть. Попробуй ещё раз");
+    }
   };
 
   return (
@@ -157,7 +186,7 @@ export const NearbyPage = () => {
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-1.5">
-              {NEARBY_PROFILES.map((profile) => {
+              {profiles.map((profile) => {
                 const liked = likedIds.includes(profile.id);
                 return (
                   <div
@@ -181,7 +210,7 @@ export const NearbyPage = () => {
                       </span>
                       <AllTabLikeButton
                         liked={liked}
-                        onClick={() => toggleLike(profile.id)}
+                        onClick={() => void handleLike(profile.id)}
                       />
                     </div>
                   </div>
@@ -200,7 +229,7 @@ export const NearbyPage = () => {
             </div>
 
             <div className="mt-4 flex flex-col gap-4">
-              {NEARBY_PROFILES.map((profile) => {
+              {profiles.map((profile) => {
                 const liked = likedIds.includes(profile.id);
                 return (
                   <div
@@ -224,7 +253,7 @@ export const NearbyPage = () => {
                         </div>
                         <ForYouLikeButton
                           liked={liked}
-                          onClick={() => toggleLike(profile.id)}
+                          onClick={() => void handleLike(profile.id)}
                         />
                       </div>
                     </div>

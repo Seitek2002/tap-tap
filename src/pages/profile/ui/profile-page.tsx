@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import {
@@ -21,9 +22,15 @@ import {
 import { BottomNav } from "@/widgets/bottom-nav";
 
 import { useOptionsQuery } from "@/entities/option";
+import {
+  type ProfileUpdate,
+  useProfileQuery,
+  useUpdateProfileMutation,
+} from "@/entities/user";
 
 import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
 import { ROUTES } from "@/shared/config";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
 import { Checkbox, Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
@@ -31,7 +38,9 @@ import { Pill } from "@/shared/ui/pill";
 import { Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
 
+import { mapUserToOwnProfile } from "../model/map-own-profile";
 import {
+  BACKEND_OPTION_KEY,
   DEFAULT_INTERESTS,
   DEFAULT_PROFILE_OPTION_VALUES,
   INTERESTS,
@@ -52,11 +61,13 @@ const FIELD_ICONS: Record<ProfileOptionFieldKey, ReactNode> = {
   sport: <Dumbbell className="size-4" />,
 };
 
-// Локальный ключ loveLanguage — на бэке справочник называется love_language,
-// остальные ключи совпадают 1:1.
-const BACKEND_OPTION_KEY: Partial<Record<ProfileOptionFieldKey, string>> = {
-  loveLanguage: "love_language",
-};
+function optionFieldToUpdate(
+  key: ProfileOptionFieldKey,
+  value: string,
+): ProfileUpdate {
+  if (key === "loveLanguage") return { love_language: value };
+  return { [key]: value };
+}
 
 // Дефолты — те же списки, что в PROFILE_OPTION_FIELDS. Служат initialData,
 // пока реальный ответ /api/options ещё не пришёл.
@@ -124,13 +135,18 @@ const Row = ({
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
-  const profile = OWN_PROFILE;
+  const mockProfile = OWN_PROFILE;
+  const profileQuery = useProfileQuery(!isMockMode());
+  const updateProfileMutation = useUpdateProfileMutation();
+  const ownProfile = profileQuery.data
+    ? mapUserToOwnProfile(profileQuery.data)
+    : null;
   const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [isBestPhotoOpen, setIsBestPhotoOpen] = useState(false);
   const [bestPhotoEnabled, setBestPhotoEnabled] = useState(false);
 
   // Тап по описанию превращает текст в textarea прямо на карточке.
-  const [bio, setBio] = useState(profile.bio);
+  const [bio, setBio] = useState(mockProfile.bio);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const bioInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -143,7 +159,7 @@ export const ProfilePage = () => {
   const [heightHidden, setHeightHidden] = useState(false);
 
   const [isJobOpen, setIsJobOpen] = useState(false);
-  const [jobTitle, setJobTitle] = useState(profile.work);
+  const [jobTitle, setJobTitle] = useState(mockProfile.work);
   const [jobCompany, setJobCompany] = useState("");
 
   const [isInterestsOpen, setIsInterestsOpen] = useState(false);
@@ -158,7 +174,7 @@ export const ProfilePage = () => {
   };
 
   const [isStudyOpen, setIsStudyOpen] = useState(false);
-  const [study, setStudy] = useState(profile.study);
+  const [study, setStudy] = useState(mockProfile.study);
 
   const [optionValues, setOptionValues] = useState(
     DEFAULT_PROFILE_OPTION_VALUES,
@@ -167,8 +183,36 @@ export const ProfilePage = () => {
     null,
   );
 
+  // Реальный режим: как только придёт GET /api/profile, один раз заливаем
+  // локальный черновик реальными значениями — дальше это обычные
+  // редактируемые поля, как и в mock-режиме, а не controlled-инпуты от query.
+  const hasHydratedProfile = useRef(isMockMode());
+  useEffect(() => {
+    if (hasHydratedProfile.current || !ownProfile) return;
+    hasHydratedProfile.current = true;
+    setBio(ownProfile.bio);
+    setHeight(ownProfile.height);
+    setHeightHidden(ownProfile.heightHidden);
+    setJobTitle(ownProfile.jobTitle);
+    setJobCompany(ownProfile.jobCompany);
+    setStudy(ownProfile.study);
+    setInterests(ownProfile.interests);
+    setOptionValues(ownProfile.optionValues);
+  }, [ownProfile]);
+
   const fieldOptions = (field: (typeof PROFILE_OPTION_FIELDS)[number]) =>
     options[BACKEND_OPTION_KEY[field.key] ?? field.key] ?? field.options;
+
+  const saveProfile = (update: ProfileUpdate) => {
+    updateProfileMutation.mutate(update, {
+      onError: () => toast.error("Не получилось сохранить изменения"),
+    });
+  };
+
+  const persistOptionField = (key: ProfileOptionFieldKey, values: string[]) => {
+    if (isMockMode()) return;
+    saveProfile(optionFieldToUpdate(key, values.join(", ")));
+  };
 
   // max=1 — выбор сразу закрывает шит (радио-семантика: тап = готово).
   // max>1 — тап только переключает опцию, шит остаётся открытым.
@@ -176,23 +220,59 @@ export const ProfilePage = () => {
     field: (typeof PROFILE_OPTION_FIELDS)[number],
     option: string,
   ) => {
+    const current = optionValues[field.key];
+    let nextValue: string[];
+
     if (field.max === 1) {
-      setOptionValues((prev) => ({ ...prev, [field.key]: [option] }));
+      nextValue = [option];
       setOpenField(null);
+    } else if (current.includes(option)) {
+      nextValue = current.filter((item) => item !== option);
+    } else if (current.length >= field.max) {
       return;
+    } else {
+      nextValue = [...current, option];
     }
-    setOptionValues((prev) => {
-      const current = prev[field.key];
-      if (current.includes(option)) {
-        return {
-          ...prev,
-          [field.key]: current.filter((item) => item !== option),
-        };
-      }
-      if (current.length >= field.max) return prev;
-      return { ...prev, [field.key]: [...current, option] };
-    });
+
+    setOptionValues((prev) => ({ ...prev, [field.key]: nextValue }));
+    persistOptionField(field.key, nextValue);
   };
+
+  const saveBio = () => {
+    setIsEditingBio(false);
+    if (isMockMode()) return;
+    saveProfile({ bio });
+  };
+
+  const saveHeight = () => {
+    setIsHeightOpen(false);
+    if (isMockMode()) return;
+    saveProfile({ height: heightHidden ? "" : String(height) });
+  };
+
+  const saveJob = () => {
+    setIsJobOpen(false);
+    if (isMockMode()) return;
+    saveProfile({ company: jobCompany, workplace: jobTitle });
+  };
+
+  const saveStudy = () => {
+    setIsStudyOpen(false);
+    if (isMockMode()) return;
+    saveProfile({ education_place: study });
+  };
+
+  const saveInterests = () => {
+    setIsInterestsOpen(false);
+    if (isMockMode()) return;
+    saveProfile({ interests });
+  };
+
+  if (!isMockMode() && (profileQuery.isLoading || !ownProfile)) {
+    return <div className="h-dvh bg-[#FAF9FD]" />;
+  }
+
+  const profile = isMockMode() ? mockProfile : (ownProfile ?? mockProfile);
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -352,9 +432,9 @@ export const ProfilePage = () => {
               ref={bioInputRef}
               value={bio}
               onChange={(event) => setBio(event.target.value)}
-              onBlur={() => setIsEditingBio(false)}
+              onBlur={saveBio}
               onKeyDown={(event) => {
-                if (event.key === "Escape") setIsEditingBio(false);
+                if (event.key === "Escape") saveBio();
               }}
               className="flex-1 resize-none bg-transparent text-sm leading-[120%] font-normal text-[#1C1E24] outline-none"
             />
@@ -459,7 +539,7 @@ export const ProfilePage = () => {
 
         <button
           type="button"
-          onClick={() => setIsHeightOpen(false)}
+          onClick={saveHeight}
           className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Готово
@@ -484,7 +564,7 @@ export const ProfilePage = () => {
 
         <button
           type="button"
-          onClick={() => setIsJobOpen(false)}
+          onClick={saveJob}
           className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Готово
@@ -504,7 +584,7 @@ export const ProfilePage = () => {
 
         <button
           type="button"
-          onClick={() => setIsStudyOpen(false)}
+          onClick={saveStudy}
           className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Готово
@@ -574,7 +654,7 @@ export const ProfilePage = () => {
         <div className="sticky bottom-0 -mx-5 -mb-5 bg-linear-to-t from-white via-white to-transparent px-5 pt-6 pb-5">
           <button
             type="button"
-            onClick={() => setIsInterestsOpen(false)}
+            onClick={saveInterests}
             className="w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
           >
             Готово
