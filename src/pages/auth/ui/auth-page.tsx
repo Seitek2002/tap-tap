@@ -7,6 +7,7 @@ import { CheckCircle2 } from "lucide-react";
 import { registerOrLogin, useSessionStore } from "@/entities/session";
 
 import { ROUTES } from "@/shared/config";
+import { isMockMode } from "@/shared/lib/mock-mode";
 
 const PHONE_LENGTH = 9;
 
@@ -31,6 +32,11 @@ export const AuthPage = () => {
 
   const handleContinue = async () => {
     if (phone.length < PHONE_LENGTH || isSubmitting) return;
+
+    if (isMockMode()) {
+      navigate(ROUTES.numberVerification, { state: { isNewUser: true } });
+      return;
+    }
 
     setIsSubmitting(true);
     try {

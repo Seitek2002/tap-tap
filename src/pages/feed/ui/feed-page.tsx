@@ -19,11 +19,13 @@ import {
   NotificationType,
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
+import { isMockMode } from "@/shared/lib/mock-mode";
 
 import { mapFeedCandidateToProfile } from "../model/map-feed-candidate";
-import { GUIDE_PROFILE, type Profile } from "../model/profiles";
+import { GUIDE_PROFILE, PROFILES, type Profile } from "../model/profiles";
 import { LikeLimitOverlay } from "./like-limit-overlay";
 import { MatchOverlay } from "./match-overlay";
+import { showNewMatchToast } from "./new-match-toast";
 import { SwipeCard } from "./swipe-card";
 
 // Локальный предохранитель — то же значение, что и дефолт бэка
@@ -31,15 +33,22 @@ import { SwipeCard } from "./swipe-card";
 // Источник истины всё равно бэк: если он ответит limitReached, override.
 const LIKE_LIMIT = 4;
 
+// Демо-режим (без бэка): раньше матч был на N-ном по счёту лайке — для
+// mock-режима эта имитация возвращается, чтобы было что показать.
+const MOCK_MATCH_ON_LIKE_NUMBER = 2;
+const MOCK_TOAST_MATCH_ON_LIKE_NUMBER = 3;
+
 export const FeedPage = () => {
   const navigate = useNavigate();
-  const feedQuery = useFeedQuery();
+  const feedQuery = useFeedQuery(!isMockMode());
   const likeMutation = useLikeMutation();
   const dislikeMutation = useDislikeMutation();
   const undoMutation = useUndoMutation();
 
-  const [stack, setStack] = useState<Profile[]>([GUIDE_PROFILE]);
-  const hasSeededFeed = useRef(false);
+  const [stack, setStack] = useState<Profile[]>(() =>
+    isMockMode() ? [GUIDE_PROFILE, ...PROFILES] : [GUIDE_PROFILE],
+  );
+  const hasSeededFeed = useRef(isMockMode());
 
   useEffect(() => {
     if (hasSeededFeed.current || !feedQuery.data) return;
@@ -74,6 +83,24 @@ export const FeedPage = () => {
     // Гайд-карточка не реальный человек — на бэке для неё ничего не свайпаем.
     if (id === GUIDE_PROFILE.id) return;
 
+    if (isMockMode()) {
+      if (direction === "right") {
+        const nextCount = likeCount + 1;
+        setLikeCount(nextCount);
+        if (nextCount >= LIKE_LIMIT) setIsLimitReached(true);
+        if (nextCount === MOCK_MATCH_ON_LIKE_NUMBER && swiped) {
+          triggerNotificationHaptic(NotificationType.Success);
+          // Настоящего чата нет — используем id профиля, чтобы кнопка
+          // "написать" вела хоть куда-то предсказуемое в тех же моках.
+          setMatched({ chatId: swiped.id, profile: swiped });
+        }
+        if (nextCount === MOCK_TOAST_MATCH_ON_LIKE_NUMBER && swiped) {
+          showNewMatchToast(swiped);
+        }
+      }
+      return;
+    }
+
     if (direction === "left") {
       dislikeMutation.mutate(id);
       return;
@@ -100,7 +127,7 @@ export const FeedPage = () => {
     if (history.length === 0) return;
     const last = history[history.length - 1];
 
-    if (last.profile.id !== GUIDE_PROFILE.id) {
+    if (!isMockMode() && last.profile.id !== GUIDE_PROFILE.id) {
       try {
         await undoMutation.mutateAsync();
       } catch {

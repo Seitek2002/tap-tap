@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useSessionStore } from "@/entities/session";
 
 import { ROUTES } from "@/shared/config";
+import { isMockMode } from "@/shared/lib/mock-mode";
 
 // "/" — это WelcomePage (см. router.tsx), ROUTES.welcome сейчас нигде не
 // смонтирован. Обе страницы не требуют токена, все остальные — требуют.
@@ -32,10 +33,13 @@ export const PageTransition = () => {
   const token = useSessionStore((state) => state.token);
 
   // Проверка сессии: есть токен → нечего делать на welcome/auth, в ленту;
-  // нет токена → нечего делать нигде, кроме welcome/auth.
+  // нет токена → нечего делать нигде, кроме welcome/auth. В mock-режиме
+  // бэка нет вообще — сессии неоткуда взяться, гейт просто выключен.
   const isPublicPath = PUBLIC_PATHS.has(location.pathname);
-  if (!token && !isPublicPath) return <Navigate to="/" replace />;
-  if (token && isPublicPath) return <Navigate to={ROUTES.feed} replace />;
+  if (!isMockMode()) {
+    if (!token && !isPublicPath) return <Navigate to="/" replace />;
+    if (token && isPublicPath) return <Navigate to={ROUTES.feed} replace />;
+  }
 
   return (
     <div className="relative h-dvh overflow-hidden">

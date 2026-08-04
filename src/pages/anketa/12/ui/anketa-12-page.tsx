@@ -17,6 +17,7 @@ import goodImg1 from "@/shared/assets/images/good-img-1.jpg";
 import goodImg2 from "@/shared/assets/images/good-img-2.jpg";
 import notGoodImg1 from "@/shared/assets/images/not-good-img-1.jpg";
 import notGoodImg2 from "@/shared/assets/images/not-good-img-2.jpg";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { isAndroid } from "@/shared/lib/platform";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Modal } from "@/shared/ui/modal";
@@ -110,6 +111,13 @@ export const Anketa12Page = () => {
 
   const finishAnketa = async () => {
     if (isSubmitting) return;
+
+    if (isMockMode()) {
+      resetDraft();
+      goNext();
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await submitAnketa(
