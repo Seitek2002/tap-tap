@@ -34,8 +34,8 @@ import { PageTransition } from "./page-transition";
 
 // createHashRouter, а не browser: в Capacitor WebView перезагрузка на любом
 // маршруте не улетает в 404 и не требует серверного rewrite.
-// Пока верстаем — старт прямо с "/" (welcome). Позже здесь появится
-// проверка сессии (есть токен → в ленту, иначе → на welcome).
+// Проверка сессии (есть токен → в ленту, иначе → на welcome) — в
+// PageTransition, он оборачивает все роуты ниже.
 // Корневой pathless layout-роут — не участвует в матчинге URL, только
 // оборачивает все страницы в PageTransition для анимации между ними.
 export const router = createHashRouter([

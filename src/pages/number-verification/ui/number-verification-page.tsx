@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { ROUTES } from "@/shared/config";
 
@@ -11,18 +11,25 @@ export const NumberVerificationPage = () => {
   const [seconds, setSeconds] = useState(RESEND_SECONDS);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const navigate = useNavigate();
+  // Пришло с /auth: true для только что зарегистрированных (→ анкета),
+  // false для уже существующих аккаунтов (→ сразу в ленту). SMS-провайдера
+  // пока нет (это к другому бек-разработчику), поэтому код тут ничем не
+  // проверяется — подходит любой заполненный набор цифр.
+  const isNewUser = Boolean(
+    (useLocation().state as { isNewUser?: boolean } | null)?.isNewUser,
+  );
 
   // Автофокус на первую ячейку при заходе на страницу.
   useEffect(() => {
     inputsRef.current[0]?.focus();
   }, []);
 
-  // Когда все 4 цифры введены — переходим к анкете.
+  // Когда все 4 цифры введены — переходим дальше.
   useEffect(() => {
     if (otp.every((digit) => digit !== "")) {
-      navigate(ROUTES.anketa1);
+      navigate(isNewUser ? ROUTES.anketa1 : ROUTES.feed);
     }
-  }, [otp, navigate]);
+  }, [otp, navigate, isNewUser]);
 
   // Обратный отсчёт до повторной отправки кода.
   useEffect(() => {

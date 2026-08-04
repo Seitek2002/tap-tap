@@ -3,32 +3,35 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useOptionsQuery } from "@/entities/option";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
-const ALCOHOL = [
-  "Я не пью",
-  "Категорически против",
-  "Пью редко",
-  "По особым случаям",
-  "Пью за компанию",
-  "Иногда",
-  "Люблю выпить",
-  "По выходным",
-];
-
-const SMOKING = [
-  "Я не курю",
-  "Категорически против",
-  "Редко курю",
-  "Бросаю",
-  "Активно курю",
-  "Курю за компанию",
-  "Курю, когда выпью",
-];
-
-const SPORT = ["Каждый день", "Иногда", "Очень редко"];
+// Дефолты — на случай, пока реальный ответ /api/options ещё не пришёл.
+const OPTIONS_FALLBACK = {
+  alcohol: [
+    "Я не пью",
+    "Категорически против",
+    "Пью редко",
+    "По особым случаям",
+    "Пью за компанию",
+    "Иногда",
+    "Люблю выпить",
+    "По выходным",
+  ],
+  smoking: [
+    "Я не курю",
+    "Категорически против",
+    "Редко курю",
+    "Бросаю",
+    "Активно курю",
+    "Курю за компанию",
+    "Курю, когда выпью",
+  ],
+  sport: ["Каждый день", "Иногда", "Очень редко"],
+};
 
 type PillGroupProps = {
   onChange: (value: string) => void;
@@ -57,6 +60,7 @@ const PillGroup = ({ onChange, options, title, value }: PillGroupProps) => (
 export const Anketa9Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [alcohol, setAlcohol] = useState("Пью редко");
   const [smoking, setSmoking] = useState("Активно курю");
   const [sport, setSport] = useState("Иногда");
@@ -91,21 +95,21 @@ export const Anketa9Page = () => {
         <div className="mt-6 space-y-6">
           <PillGroup
             title="Какое у тебя отношение к алкоголю?"
-            options={ALCOHOL}
+            options={options.alcohol}
             value={alcohol}
             onChange={setAlcohol}
           />
           <div className="border-t border-[#E4E7EC]" />
           <PillGroup
             title="Какое у тебя отношение к курению?"
-            options={SMOKING}
+            options={options.smoking}
             value={smoking}
             onChange={setSmoking}
           />
           <div className="border-t border-[#E4E7EC]" />
           <PillGroup
             title="Ты занимаешься спортом?"
-            options={SPORT}
+            options={options.sport}
             value={sport}
             onChange={setSport}
           />

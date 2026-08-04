@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { CheckCircle2 } from "lucide-react";
 
+import { registerOrLogin, useSessionStore } from "@/entities/session";
+
 import { ROUTES } from "@/shared/config";
+
+const PHONE_LENGTH = 9;
 
 export const AuthPage = () => {
   const navigate = useNavigate();
+  const setSession = useSessionStore((state) => state.setSession);
   const [phone, setPhone] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Автофокус на номер, как только страница смонтирована.
@@ -19,7 +26,22 @@ export const AuthPage = () => {
     const digits = event.target.value
       .replace(/\D/g, "") // только цифры
       .replace(/^0+/, ""); // нельзя начинать с 0
-    setPhone(digits.slice(0, 9)); // максимум 9 цифр после +996
+    setPhone(digits.slice(0, PHONE_LENGTH)); // максимум 9 цифр после +996
+  };
+
+  const handleContinue = async () => {
+    if (phone.length < PHONE_LENGTH || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const { isNewUser, token, userId } = await registerOrLogin(phone);
+      setSession({ token, userId });
+      navigate(ROUTES.numberVerification, { state: { isNewUser } });
+    } catch {
+      toast.error("Не получилось войти. Попробуй ещё раз");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,10 +94,11 @@ export const AuthPage = () => {
         </div>
         <button
           type="button"
-          onClick={() => navigate(ROUTES.numberVerification)}
-          className="mt-4 w-full rounded-full bg-[#1C1C1E] py-3 text-sm font-semibold text-white active:scale-[0.99]"
+          disabled={phone.length < PHONE_LENGTH || isSubmitting}
+          onClick={() => void handleContinue()}
+          className="mt-4 w-full rounded-full bg-[#1C1C1E] py-3 text-sm font-semibold text-white active:scale-[0.99] disabled:opacity-50"
         >
-          Продолжить
+          {isSubmitting ? "Входим..." : "Продолжить"}
         </button>
       </div>
     </div>

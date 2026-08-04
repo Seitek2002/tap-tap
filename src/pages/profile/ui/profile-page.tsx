@@ -20,6 +20,8 @@ import {
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { useOptionsQuery } from "@/entities/option";
+
 import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
 import { ROUTES } from "@/shared/config";
 import { cn } from "@/shared/lib/utils";
@@ -49,6 +51,21 @@ const FIELD_ICONS: Record<ProfileOptionFieldKey, ReactNode> = {
   religion: <Sparkles className="size-4" />,
   sport: <Dumbbell className="size-4" />,
 };
+
+// Локальный ключ loveLanguage — на бэке справочник называется love_language,
+// остальные ключи совпадают 1:1.
+const BACKEND_OPTION_KEY: Partial<Record<ProfileOptionFieldKey, string>> = {
+  loveLanguage: "love_language",
+};
+
+// Дефолты — те же списки, что в PROFILE_OPTION_FIELDS. Служат initialData,
+// пока реальный ответ /api/options ещё не пришёл.
+const OPTIONS_FALLBACK: Record<string, string[]> = Object.fromEntries(
+  PROFILE_OPTION_FIELDS.map((field) => [
+    BACKEND_OPTION_KEY[field.key] ?? field.key,
+    [...field.options],
+  ]),
+);
 
 const Section = ({
   children,
@@ -108,6 +125,7 @@ const Row = ({
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const profile = OWN_PROFILE;
+  const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [isBestPhotoOpen, setIsBestPhotoOpen] = useState(false);
   const [bestPhotoEnabled, setBestPhotoEnabled] = useState(false);
 
@@ -148,6 +166,9 @@ export const ProfilePage = () => {
   const [openField, setOpenField] = useState<null | ProfileOptionFieldKey>(
     null,
   );
+
+  const fieldOptions = (field: (typeof PROFILE_OPTION_FIELDS)[number]) =>
+    options[BACKEND_OPTION_KEY[field.key] ?? field.key] ?? field.options;
 
   // max=1 — выбор сразу закрывает шит (радио-семантика: тап = готово).
   // max>1 — тап только переключает опцию, шит остаётся открытым.
@@ -502,7 +523,7 @@ export const ProfilePage = () => {
           <h2 className="text-center text-lg font-bold">{field.title}</h2>
 
           <div className="mt-4 space-y-2">
-            {field.options.map((option) => {
+            {fieldOptions(field).map((option) => {
               const selected = optionValues[field.key].includes(option);
               return (
                 <button

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { useOptionsQuery } from "@/entities/option";
+
 import { cn } from "@/shared/lib/utils";
 import { ZODIAC_ICONS, ZODIAC_SIGNS } from "@/shared/lib/zodiac";
 import { Modal } from "@/shared/ui/modal";
@@ -201,6 +203,24 @@ const OPTION_FIELDS = [
 
 type OptionFieldKey = (typeof OPTION_FIELDS)[number]["key"];
 
+// Локальные ключи полей отличаются от ключей справочников на бэке только для
+// loveLanguage (там love_language) — остальные совпадают 1:1.
+const BACKEND_OPTION_KEY: Partial<Record<OptionFieldKey, string>> = {
+  loveLanguage: "love_language",
+};
+
+// Дефолты — те же списки, что в OPTION_FIELDS, плюс знаки зодиака. Служат
+// initialData, пока реальный ответ /api/options ещё не пришёл.
+const OPTIONS_FALLBACK: Record<string, string[]> = {
+  ...Object.fromEntries(
+    OPTION_FIELDS.map((field) => [
+      BACKEND_OPTION_KEY[field.key] ?? field.key,
+      [...field.options],
+    ]),
+  ),
+  zodiac: [...ZODIAC_SIGNS],
+};
+
 const DEFAULT_OPTION_VALUES: Record<OptionFieldKey, string[]> = {
   alcohol: ["Пью редко"],
   children: ["Пока не знаю"],
@@ -228,6 +248,7 @@ const interestsWord = (count: number) => {
 
 export const FiltersPage = () => {
   const navigate = useNavigate();
+  const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [audience, setAudience] = useState("men");
   const [age, setAge] = useState<[number, number]>([18, 28]);
   const [distance, setDistance] = useState(80);
@@ -245,6 +266,9 @@ export const FiltersPage = () => {
 
   const [optionValues, setOptionValues] = useState(DEFAULT_OPTION_VALUES);
   const [openField, setOpenField] = useState<null | OptionFieldKey>(null);
+
+  const fieldOptions = (field: (typeof OPTION_FIELDS)[number]) =>
+    options[BACKEND_OPTION_KEY[field.key] ?? field.key] ?? field.options;
 
   const toggleInterest = (value: string) =>
     setInterests((prev) =>
@@ -539,7 +563,7 @@ export const FiltersPage = () => {
         <h2 className="text-center text-lg font-bold">Знак зодиака партнера</h2>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {ZODIAC_SIGNS.map((sign) => {
+          {options.zodiac.map((sign) => {
             const Icon = ZODIAC_ICONS[sign];
             return (
               <Pill
@@ -577,7 +601,7 @@ export const FiltersPage = () => {
           <h2 className="text-center text-lg font-bold">{field.title}</h2>
 
           <div className="mt-4 space-y-2">
-            {field.options.map((option) => {
+            {fieldOptions(field).map((option) => {
               const selected = optionValues[field.key].includes(option);
               return (
                 <button

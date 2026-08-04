@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { useLocation, useOutlet } from "react-router";
+import { Navigate, useLocation, useOutlet } from "react-router";
 
 import { AnimatePresence, motion } from "motion/react";
+
+import { useSessionStore } from "@/entities/session";
+
+import { ROUTES } from "@/shared/config";
+
+// "/" — это WelcomePage (см. router.tsx), ROUTES.welcome сейчас нигде не
+// смонтирован. Обе страницы не требуют токена, все остальные — требуют.
+const PUBLIC_PATHS = new Set<string>(["/", ROUTES.auth]);
 
 // <Outlet/> сам по себе всегда синхронен с текущим location — при смене
 // маршрута он мгновенно переключается на новый элемент, и «заморозить»
@@ -21,6 +29,13 @@ const FrozenOutlet = () => {
 // к нативному, чем мгновенная подмена.
 export const PageTransition = () => {
   const location = useLocation();
+  const token = useSessionStore((state) => state.token);
+
+  // Проверка сессии: есть токен → нечего делать на welcome/auth, в ленту;
+  // нет токена → нечего делать нигде, кроме welcome/auth.
+  const isPublicPath = PUBLIC_PATHS.has(location.pathname);
+  if (!token && !isPublicPath) return <Navigate to="/" replace />;
+  if (token && isPublicPath) return <Navigate to={ROUTES.feed} replace />;
 
   return (
     <div className="relative h-dvh overflow-hidden">

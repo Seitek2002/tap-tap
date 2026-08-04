@@ -3,55 +3,57 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useOptionsQuery } from "@/entities/option";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
-const CHILDREN = [
-  "Хочу когда-нибудь",
-  "Пока не знаю",
-  "Дети есть и хочу еще",
-  "Дети есть, больше не хочу",
-];
-
-const LOVE_LANGUAGE = [
-  "Жесты внимания",
-  "Комплименты",
-  "Забота",
-  "Подарки",
-  "Совместное время",
-  "Прикосновения",
-  "Интеллектуальная любовь",
-  "Эмоции",
-];
-
-const ANIMALS = [
-  "Собаки",
-  "Кошки",
-  "Рыбы",
-  "Рептилии",
-  "Птицы",
-  "Черепахи",
-  "Хомяки",
-  "Кролики",
-  "Всех",
-  "У меня аллергия",
-  "Другое",
-];
-
-const RELIGION = [
-  "Ислам",
-  "Атеизм",
-  "Христианство",
-  "Мормонизм",
-  "Агностицизм",
-  "Спиритуализм",
-  "Протестантизм",
-  "Иудаизм",
-  "Буддизм",
-  "Католичество",
-  "Другое",
-];
+// Дефолты — на случай, пока реальный ответ /api/options ещё не пришёл.
+const OPTIONS_FALLBACK = {
+  children: [
+    "Хочу когда-нибудь",
+    "Пока не знаю",
+    "Дети есть и хочу еще",
+    "Дети есть, больше не хочу",
+  ],
+  love_language: [
+    "Жесты внимания",
+    "Комплименты",
+    "Забота",
+    "Подарки",
+    "Совместное время",
+    "Прикосновения",
+    "Интеллектуальная любовь",
+    "Эмоции",
+  ],
+  pets: [
+    "Собаки",
+    "Кошки",
+    "Рыбы",
+    "Рептилии",
+    "Птицы",
+    "Черепахи",
+    "Хомяки",
+    "Кролики",
+    "Всех",
+    "У меня аллергия",
+    "Другое",
+  ],
+  religion: [
+    "Ислам",
+    "Атеизм",
+    "Христианство",
+    "Мормонизм",
+    "Агностицизм",
+    "Спиритуализм",
+    "Протестантизм",
+    "Иудаизм",
+    "Буддизм",
+    "Католичество",
+    "Другое",
+  ],
+};
 
 type PillGroupProps = {
   onChange: (value: string) => void;
@@ -80,6 +82,7 @@ const PillGroup = ({ onChange, options, title, value }: PillGroupProps) => (
 export const Anketa10Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [children, setChildren] = useState("");
   const [loveLanguage, setLoveLanguage] = useState("Совместное время");
   const [animals, setAnimals] = useState("У меня аллергия");
@@ -117,28 +120,28 @@ export const Anketa10Page = () => {
         <div className="mt-6 space-y-6">
           <PillGroup
             title="Как относишься к детям?"
-            options={CHILDREN}
+            options={options.children}
             value={children}
             onChange={setChildren}
           />
           <div className="border-t border-[#E4E7EC]" />
           <PillGroup
             title="Какой у тебя язык любви?"
-            options={LOVE_LANGUAGE}
+            options={options.love_language}
             value={loveLanguage}
             onChange={setLoveLanguage}
           />
           <div className="border-t border-[#E4E7EC]" />
           <PillGroup
             title="Каких животных ты любишь?"
-            options={ANIMALS}
+            options={options.pets}
             value={animals}
             onChange={setAnimals}
           />
           <div className="border-t border-[#E4E7EC]" />
           <PillGroup
             title="Твоя религия"
-            options={RELIGION}
+            options={options.religion}
             value={religion}
             onChange={setReligion}
           />
