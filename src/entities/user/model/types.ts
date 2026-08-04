@@ -200,9 +200,12 @@ export type ChatDetail = z.infer<typeof ChatDetailSchema>;
 // GET /api/chats/:id/messages и событие сокета new_message — одна и та же
 // форма строки из таблицы messages.
 export const ChatMessageSchema = z.object({
+  attachment_url: z.string().nullable().optional(),
   chat_id: z.number(),
   created_at: z.string(),
+  file_name: z.string().nullable().optional(),
   id: z.number(),
+  kind: z.enum(["text", "image", "file"]).optional().default("text"),
   read: z.number(),
   sender_id: z.number(),
   text: z.string(),

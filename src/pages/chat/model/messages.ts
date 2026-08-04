@@ -1,5 +1,8 @@
 export type Message = {
   fileName?: string;
+  // Реальный URL вложения — есть только у сообщений с бэка, не у
+  // моковых/ещё не загруженных.
+  fileUrl?: string;
   id: number;
   imageUrl?: string;
   kind: "file" | "image" | "text";

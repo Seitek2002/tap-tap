@@ -1,5 +1,6 @@
 import type { LikeUser } from "@/entities/user";
 
+import { resolveUploadUrl } from "@/shared/api";
 import personZalkar from "@/shared/assets/images/person-zalkar.png";
 
 import type { LikeProfile } from "./likes";
@@ -13,6 +14,6 @@ export function mapLikeUserToProfile(user: LikeUser): LikeProfile {
     age: user.age,
     id: user.id,
     name: user.name,
-    photo: user.photos[0] ?? FALLBACK_PHOTO,
+    photo: user.photos[0] ? resolveUploadUrl(user.photos[0]) : FALLBACK_PHOTO,
   };
 }

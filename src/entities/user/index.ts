@@ -15,6 +15,7 @@ export { submitAnketa } from "./api/submit-anketa";
 export { useTopUpMutation } from "./api/top-up";
 export { useUndoMutation } from "./api/undo";
 export { useUpdateProfileMutation } from "./api/update-profile";
+export { useUploadChatAttachmentMutation } from "./api/upload-chat-attachment";
 export { useAnketaDraftStore } from "./model/anketa-draft-store";
 export { useChatSocket } from "./model/use-chat-socket";
 export type {

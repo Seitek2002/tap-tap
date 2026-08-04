@@ -1,5 +1,6 @@
 import type { FeedCandidate } from "@/entities/user";
 
+import { resolveUploadUrl } from "@/shared/api";
 import person1 from "@/shared/assets/images/person-1.jpg";
 
 import type { Profile } from "./profiles";
@@ -46,7 +47,10 @@ export function mapFeedCandidateToProfile(candidate: FeedCandidate): Profile {
     marital: MARITAL_LABELS[candidate.marital_status] ?? "Не указано",
     name: candidate.name,
     online: candidate.online === 1,
-    photos: candidate.photos.length > 0 ? candidate.photos : FALLBACK_PHOTOS,
+    photos:
+      candidate.photos.length > 0
+        ? candidate.photos.map(resolveUploadUrl)
+        : FALLBACK_PHOTOS,
     premium: [
       ...(candidate.credit_ok
         ? [{ label: "💳 Хорошая кредитная история", tone: "green" as const }]

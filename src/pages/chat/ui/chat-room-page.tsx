@@ -28,8 +28,10 @@ import {
   useChatMessagesQuery,
   useChatQuery,
   useChatSocket,
+  useUploadChatAttachmentMutation,
 } from "@/entities/user";
 
+import { resolveUploadUrl } from "@/shared/api";
 import person1 from "@/shared/assets/images/person-1.jpg";
 import { ROUTES } from "@/shared/config";
 import { formatLastSeen } from "@/shared/lib/format-last-seen";
@@ -60,7 +62,7 @@ const FALLBACK_PHOTO = person1;
 
 // Вложения выбраны, но ещё не отправлены — лежат рядом с инпутом до нажатия
 // на иконку отправки, как в Telegram/WhatsApp. Можно накопить несколько штук.
-type PendingAttachment = { id: number } & (
+type PendingAttachment = { file: File; id: number } & (
   { fileName: string; kind: "file" } | { imageUrl: string; kind: "image" }
 );
 
@@ -147,6 +149,29 @@ const MessageBubble = ({
   }
 
   if (message.kind === "file") {
+    const fileContent = (
+      <div
+        className={cn(
+          "flex max-w-[75%] items-center gap-3 rounded-2xl px-3 py-3",
+          isOutgoing
+            ? "bg-primary self-end text-white"
+            : "self-start bg-[#EFEDF6] text-[#1C1E24]",
+        )}
+      >
+        <div
+          className={cn(
+            "flex size-11 shrink-0 items-center justify-center rounded-xl",
+            isOutgoing ? "bg-white/20" : "bg-white",
+          )}
+        >
+          <File className="size-5" />
+        </div>
+        <span className="min-w-0 truncate text-sm font-medium">
+          {message.fileName}
+        </span>
+      </div>
+    );
+
     return (
       <div
         className={cn(
@@ -154,26 +179,15 @@ const MessageBubble = ({
           isOutgoing ? "self-end items-end" : "self-start items-start",
         )}
       >
-        <div
-          className={cn(
-            "flex max-w-[75%] items-center gap-3 rounded-2xl px-3 py-3",
-            isOutgoing
-              ? "bg-primary self-end text-white"
-              : "self-start bg-[#EFEDF6] text-[#1C1E24]",
-          )}
-        >
-          <div
-            className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-xl",
-              isOutgoing ? "bg-white/20" : "bg-white",
-            )}
-          >
-            <File className="size-5" />
-          </div>
-          <span className="min-w-0 truncate text-sm font-medium">
-            {message.fileName}
-          </span>
-        </div>
+        {/* Реальный файл (с бэка) — кликабельная ссылка на скачивание;
+            локально выбранный, ещё не отправленный — просто превью. */}
+        {message.fileUrl ? (
+          <a href={message.fileUrl} target="_blank" rel="noreferrer">
+            {fileContent}
+          </a>
+        ) : (
+          fileContent
+        )}
         {status}
       </div>
     );
@@ -222,13 +236,19 @@ export const ChatRoomPage = () => {
     partnerTyping,
     sendMessage: sendSocketMessage,
   } = useChatSocket(isMockMode() ? null : numericChatId, partnerId);
+  const uploadAttachmentMutation = useUploadChatAttachmentMutation(
+    isMockMode() ? null : numericChatId,
+  );
+  const [isSendingAttachments, setIsSendingAttachments] = useState(false);
 
   const displayName = isMockMode()
     ? (mockChat?.name ?? "Собеседник")
     : chatQuery.data?.partner.name || "Собеседник";
   const displayPhoto = isMockMode()
     ? mockChat?.photo
-    : (chatQuery.data?.partner.photo ?? FALLBACK_PHOTO);
+    : chatQuery.data?.partner.photo
+      ? resolveUploadUrl(chatQuery.data.partner.photo)
+      : FALLBACK_PHOTO;
   const isOnline = isMockMode()
     ? (mockChat?.online ?? false)
     : (partnerStatus?.online ?? chatQuery.data?.partner.online === 1);
@@ -251,13 +271,37 @@ export const ChatRoomPage = () => {
         ).values(),
       )
         .sort((a, b) => a.id - b.id)
-        .map((message) => ({
-          id: message.id,
-          kind: "text",
-          seen: message.read === 1,
-          text: message.text,
-          type: message.sender_id === myUserId ? "outgoing" : "incoming",
-        }));
+        .map((message): Message => {
+          const type = message.sender_id === myUserId ? "outgoing" : "incoming";
+          const seen = message.read === 1;
+
+          if (message.kind === "image" && message.attachment_url) {
+            return {
+              id: message.id,
+              imageUrl: resolveUploadUrl(message.attachment_url),
+              kind: "image",
+              seen,
+              type,
+            };
+          }
+          if (message.kind === "file" && message.attachment_url) {
+            return {
+              fileName: message.file_name ?? "Файл",
+              fileUrl: resolveUploadUrl(message.attachment_url),
+              id: message.id,
+              kind: "file",
+              seen,
+              type,
+            };
+          }
+          return {
+            id: message.id,
+            kind: "text",
+            seen,
+            text: message.text,
+            type,
+          };
+        });
   const messages = isMockMode() ? mockMessages : realMessages;
 
   const [draft, setDraft] = useState("");
@@ -352,28 +396,44 @@ export const ChatRoomPage = () => {
     }, SEND_DELAY_MS);
   };
 
-  const sendMessage = (event: FormEvent) => {
+  const sendMessage = async (event: FormEvent) => {
     event.preventDefault();
     const text = draft.trim();
     if (!text && pendingAttachments.length === 0) return;
 
     if (isMockMode()) {
       sendMockMessage();
-    } else {
-      // Вложения бэк пока не умеет — только текстовые сообщения через сокет.
-      if (pendingAttachments.length > 0) {
-        toast.error(
-          "Файлы и фото пока нельзя отправить — бэк это не поддерживает",
-        );
-      }
-      if (text) {
-        sendSocketMessage(text);
-        notifyStopTyping();
+      setDraft("");
+      setPendingAttachments([]);
+      return;
+    }
+
+    const attachments = pendingAttachments;
+    setDraft("");
+    setPendingAttachments([]);
+
+    if (attachments.length > 0) {
+      setIsSendingAttachments(true);
+      try {
+        // Последовательно, не Promise.all — сервер пишет вложения по одному
+        // в ту же строку чата, параллельные запросы рискуют гонкой.
+        for (const attachment of attachments) {
+          await uploadAttachmentMutation.mutateAsync(attachment.file);
+          if (attachment.kind === "image") {
+            URL.revokeObjectURL(attachment.imageUrl);
+          }
+        }
+      } catch {
+        toast.error("Не получилось отправить вложение");
+      } finally {
+        setIsSendingAttachments(false);
       }
     }
 
-    setDraft("");
-    setPendingAttachments([]);
+    if (text) {
+      sendSocketMessage(text);
+      notifyStopTyping();
+    }
   };
 
   const handleDraftChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -413,11 +473,12 @@ export const ChatRoomPage = () => {
           const id = prev.length + index + 1;
           return isImageFile(file)
             ? {
+                file,
                 id,
                 imageUrl: URL.createObjectURL(file),
                 kind: "image" as const,
               }
-            : { fileName: file.name, id, kind: "file" as const };
+            : { file, fileName: file.name, id, kind: "file" as const };
         }),
       ];
     });
@@ -604,7 +665,7 @@ export const ChatRoomPage = () => {
           </div>
         )}
         <form
-          onSubmit={sendMessage}
+          onSubmit={(event) => void sendMessage(event)}
           className="flex items-center gap-2 px-4 py-3"
         >
           <input
@@ -657,15 +718,20 @@ export const ChatRoomPage = () => {
               <motion.button
                 key="send"
                 type="submit"
+                disabled={isSendingAttachments}
                 data-haptic="medium"
                 aria-label="Отправить"
                 initial={{ opacity: 0, scale: 0.4 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.4 }}
                 transition={{ damping: 22, stiffness: 500, type: "spring" }}
-                className="flex h-9 w-15.5 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
+                className="flex h-9 w-15.5 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white disabled:opacity-50"
               >
-                <Send className="size-5" />
+                {isSendingAttachments ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <Send className="size-5" />
+                )}
               </motion.button>
             ) : (
               <motion.button
