@@ -1,5 +1,9 @@
+export { AboutPage } from "./ui/about-page";
 export { AddContactManuallyPage } from "./ui/add-contact-manually-page";
+export { GuidelinesPage } from "./ui/guidelines-page";
 export { HideFromContactsPage } from "./ui/hide-from-contacts-page";
 export { NotificationsPage } from "./ui/notifications-page";
+export { PrivacyPage } from "./ui/privacy-page";
 export { ProfilePage } from "./ui/profile-page";
 export { SettingsPage } from "./ui/settings-page";
+export { SupportPage } from "./ui/support-page";

@@ -389,13 +389,26 @@ export const SettingsPage = () => {
         <div className="mt-5 px-4">
           <SectionTitle>О нас</SectionTitle>
           <div className="divide-y divide-[#E4E7EC] rounded-3xl border-[0.5px] border-[#E4E7EC] bg-white shadow-[0_2px_12px_0_rgba(127,127,127,0.12)]">
-            <SettingsRow variant="grouped" label="Помощь и поддержка" />
-            <SettingsRow variant="grouped" label="Правила сообщества" />
+            <SettingsRow
+              variant="grouped"
+              label="Помощь и поддержка"
+              onClick={() => navigate(ROUTES.profileSupport)}
+            />
+            <SettingsRow
+              variant="grouped"
+              label="Правила сообщества"
+              onClick={() => navigate(ROUTES.profileGuidelines)}
+            />
             <SettingsRow
               variant="grouped"
               label="Политика конфиденциальности"
+              onClick={() => navigate(ROUTES.profilePrivacy)}
             />
-            <SettingsRow variant="grouped" label="О приложении" />
+            <SettingsRow
+              variant="grouped"
+              label="О приложении"
+              onClick={() => navigate(ROUTES.profileAbout)}
+            />
           </div>
         </div>
 

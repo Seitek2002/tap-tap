@@ -20,11 +20,15 @@ import { FiltersPage } from "@/pages/filters";
 import { LikeProfilePage, LikesPage } from "@/pages/likes";
 import { NumberVerificationPage } from "@/pages/number-verification";
 import {
+  AboutPage,
   AddContactManuallyPage,
+  GuidelinesPage,
   HideFromContactsPage,
   NotificationsPage,
+  PrivacyPage,
   ProfilePage,
   SettingsPage,
+  SupportPage,
 } from "@/pages/profile";
 import { WalletPage } from "@/pages/wallet";
 import { WelcomePage } from "@/pages/welcome";
@@ -89,6 +93,22 @@ export const router = createHashRouter([
       {
         element: <AddContactManuallyPage />,
         path: ROUTES.profileAddContactManually,
+      },
+      {
+        element: <SupportPage />,
+        path: ROUTES.profileSupport,
+      },
+      {
+        element: <GuidelinesPage />,
+        path: ROUTES.profileGuidelines,
+      },
+      {
+        element: <PrivacyPage />,
+        path: ROUTES.profilePrivacy,
+      },
+      {
+        element: <AboutPage />,
+        path: ROUTES.profileAbout,
       },
       {
         element: <ChatPage />,
