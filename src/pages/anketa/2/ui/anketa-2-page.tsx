@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft, Navigation } from "lucide-react";
 
+import { useAnketaDraftStore } from "@/entities/user";
+
 import distanceCircle from "@/shared/assets/images/distance-circle.png";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Modal } from "@/shared/ui/modal";
@@ -24,10 +26,19 @@ type Coords = { lat: number; lng: number };
 export const Anketa2Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const setField = useAnketaDraftStore((state) => state.setField);
   const [age, setAge] = useState<[number, number]>([18, 28]);
   const [distance, setDistance] = useState(80);
   const [coords, setCoords] = useState<Coords | null>(null);
   const [isGeoOpen, setIsGeoOpen] = useState(false);
+
+  const commitAndNext = () => {
+    setField("age_range_min", age[0]);
+    setField("age_range_max", age[1]);
+    setField("latitude", coords?.lat ?? null);
+    setField("longitude", coords?.lng ?? null);
+    goNext();
+  };
 
   const requestGeolocation = () => {
     if (!navigator.geolocation) return;
@@ -61,7 +72,7 @@ export const Anketa2Page = () => {
           </button>
           <button
             type="button"
-            onClick={goNext}
+            onClick={commitAndNext}
             className="text-sm text-[#1C1E24]"
           >
             Пропустить
@@ -131,7 +142,7 @@ export const Anketa2Page = () => {
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={goNext}
+          onClick={commitAndNext}
           className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
         >
           Далее

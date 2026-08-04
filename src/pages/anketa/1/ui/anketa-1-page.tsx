@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { TriangleAlert } from "lucide-react";
 
+import { useAnketaDraftStore } from "@/entities/user";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Dropdown } from "@/shared/ui/dropdown";
 import { Input } from "@/shared/ui/input";
@@ -17,9 +19,20 @@ const MARITAL_OPTIONS = [
 
 export const Anketa1Page = () => {
   const { goNext, progress } = useAnketaFlow();
+  const setField = useAnketaDraftStore((state) => state.setField);
   const [accepted, setAccepted] = useState(false);
+  const [name, setName] = useState("");
+  // Дата рождения пока свободный текст без парсинга — на бэке нет поля под
+  // неё (там number age, не дата), только UI-заготовка под будущий пикер.
+  const [birthDate, setBirthDate] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("married");
   const isMarried = maritalStatus === "married";
+
+  const commitAndNext = () => {
+    setField("name", name);
+    setField("marital_status", maritalStatus);
+    goNext();
+  };
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -28,7 +41,7 @@ export const Anketa1Page = () => {
         <div className="flex justify-end">
           <button
             type="button"
-            onClick={goNext}
+            onClick={commitAndNext}
             className="text-sm text-[#1C1E24]"
           >
             Пропустить
@@ -45,8 +58,18 @@ export const Anketa1Page = () => {
 
         {/* Поля анкеты */}
         <div className="mt-6 space-y-5">
-          <Input label="ФИО" defaultValue="Асанов Асан Асанович" />
-          <Input label="Дата рождения" defaultValue="24 февраля, 1991 года" />
+          <Input
+            label="ФИО"
+            placeholder="Асанов Асан Асанович"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+          <Input
+            label="Дата рождения"
+            placeholder="24 февраля, 1991 года"
+            value={birthDate}
+            onChange={(event) => setBirthDate(event.target.value)}
+          />
           <Dropdown
             label="Семейное положение"
             placeholder="Выберите..."
@@ -92,7 +115,7 @@ export const Anketa1Page = () => {
         <button
           type="button"
           disabled={isMarried && !accepted}
-          onClick={goNext}
+          onClick={commitAndNext}
           className="w-full rounded-full bg-primary py-4 font-semibold text-white transition-colors active:scale-[0.99] disabled:bg-[#C9C7D0]"
         >
           Подтвердить

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useAnketaDraftStore } from "@/entities/user";
+
 import goalChat from "@/shared/assets/images/goal-chat.png";
 import goalFamily from "@/shared/assets/images/goal-family.png";
 import goalSerious from "@/shared/assets/images/goal-serious.png";
@@ -27,8 +29,15 @@ const AUDIENCE = [
 export const Anketa4Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const setField = useAnketaDraftStore((state) => state.setField);
   const [goal, setGoal] = useState("");
   const [audience, setAudience] = useState("women");
+
+  const commitAndNext = () => {
+    setField("goals", goal);
+    setField("show_gender_preference", audience);
+    goNext();
+  };
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -44,7 +53,7 @@ export const Anketa4Page = () => {
           </button>
           <button
             type="button"
-            onClick={goNext}
+            onClick={commitAndNext}
             className="text-sm text-[#1C1E24]"
           >
             Пропустить
@@ -108,7 +117,7 @@ export const Anketa4Page = () => {
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={goNext}
+          onClick={commitAndNext}
           className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
         >
           Далее

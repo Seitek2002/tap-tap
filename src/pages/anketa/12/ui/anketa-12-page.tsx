@@ -1,4 +1,5 @@
 import { type ChangeEvent, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import {
@@ -9,6 +10,8 @@ import {
   Plus,
   X,
 } from "lucide-react";
+
+import { submitAnketa, useAnketaDraftStore } from "@/entities/user";
 
 import goodImg1 from "@/shared/assets/images/good-img-1.jpg";
 import goodImg2 from "@/shared/assets/images/good-img-2.jpg";
@@ -39,10 +42,18 @@ const TIPS = [
 export const Anketa12Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const draft = useAnketaDraftStore((state) => state.draft);
+  const resetDraft = useAnketaDraftStore((state) => state.reset);
   const [photos, setPhotos] = useState<(null | string)[]>(
     Array(PHOTO_SLOTS).fill(null),
   );
+  // Превью в `photos` — blob-URL для показа в сетке; сами File нужны отдельно
+  // для реальной заливки на бэк при сабмите.
+  const [files, setFiles] = useState<(File | null)[]>(
+    Array(PHOTO_SLOTS).fill(null),
+  );
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -83,9 +94,10 @@ export const Anketa12Page = () => {
         return url;
       }),
     );
+    setFiles((prev) => prev.map((value, i) => (i === index ? file : value)));
   };
 
-  const removePhoto = (index: number) =>
+  const removePhoto = (index: number) => {
     setPhotos((prev) =>
       prev.map((value, i) => {
         if (i !== index) return value;
@@ -93,6 +105,25 @@ export const Anketa12Page = () => {
         return null;
       }),
     );
+    setFiles((prev) => prev.map((value, i) => (i === index ? null : value)));
+  };
+
+  const finishAnketa = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await submitAnketa(
+        draft,
+        files.filter((file): file is File => file !== null),
+      );
+      resetDraft();
+      goNext();
+    } catch {
+      toast.error("Не получилось сохранить анкету. Попробуй ещё раз");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -253,10 +284,11 @@ export const Anketa12Page = () => {
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={goNext}
-          className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
+          disabled={isSubmitting}
+          onClick={() => void finishAnketa()}
+          className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99] disabled:opacity-50"
         >
-          Далее
+          {isSubmitting ? "Сохраняем..." : "Далее"}
         </button>
       </div>
 

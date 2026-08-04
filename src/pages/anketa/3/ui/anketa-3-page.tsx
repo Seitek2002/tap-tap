@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useAnketaDraftStore } from "@/entities/user";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Checkbox } from "@/shared/ui/input";
 import { Progress } from "@/shared/ui/progress";
@@ -14,8 +16,14 @@ const HEIGHT_MAX = 240;
 export const Anketa3Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const setField = useAnketaDraftStore((state) => state.setField);
   const [height, setHeight] = useState(170);
   const [skip, setSkip] = useState(false);
+
+  const commitAndNext = () => {
+    setField("height", skip ? "" : String(height));
+    goNext();
+  };
 
   // Докручивать слайдер до точного значения не всегда удобно — по тапу на
   // цифры даём ввести рост с клавиатуры напрямую.
@@ -48,7 +56,7 @@ export const Anketa3Page = () => {
           </button>
           <button
             type="button"
-            onClick={goNext}
+            onClick={commitAndNext}
             className="text-sm text-[#1C1E24]"
           >
             Пропустить
@@ -116,7 +124,7 @@ export const Anketa3Page = () => {
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={goNext}
+          onClick={commitAndNext}
           className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
         >
           Далее

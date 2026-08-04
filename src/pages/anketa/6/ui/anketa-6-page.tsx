@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useAnketaDraftStore } from "@/entities/user";
+
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Input } from "@/shared/ui/input";
 import { Pill } from "@/shared/ui/pill";
@@ -22,7 +24,15 @@ const DEGREES = [
 export const Anketa6Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const setField = useAnketaDraftStore((state) => state.setField);
   const [degree, setDegree] = useState("Магистратура");
+  const [educationPlace, setEducationPlace] = useState("");
+
+  const commitAndNext = () => {
+    setField("education", degree);
+    setField("education_place", educationPlace);
+    goNext();
+  };
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -38,7 +48,7 @@ export const Anketa6Page = () => {
           </button>
           <button
             type="button"
-            onClick={goNext}
+            onClick={commitAndNext}
             className="text-sm text-[#1C1E24]"
           >
             Пропустить
@@ -71,7 +81,12 @@ export const Anketa6Page = () => {
 
         {/* Учебное заведение */}
         <div className="mt-8">
-          <Input label="Где учишься(-лся)?" placeholder="Учебное заведение" />
+          <Input
+            label="Где учишься(-лся)?"
+            placeholder="Учебное заведение"
+            value={educationPlace}
+            onChange={(event) => setEducationPlace(event.target.value)}
+          />
         </div>
       </div>
 
@@ -79,7 +94,7 @@ export const Anketa6Page = () => {
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={goNext}
+          onClick={commitAndNext}
           className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
         >
           Далее
