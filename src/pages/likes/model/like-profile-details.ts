@@ -1,6 +1,7 @@
 export type LikeProfileDetails = {
   bio: string;
-  distanceKm: number;
+  // null — когда бэк не смог посчитать дистанцию, а не "0 км от тебя".
+  distanceKm: null | number;
   habits: string[];
   important: string[];
   interests: string[];

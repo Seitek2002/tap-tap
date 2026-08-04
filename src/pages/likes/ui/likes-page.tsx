@@ -7,9 +7,18 @@ import { motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import {
+  useDislikeMutation,
+  useLikeMutation,
+  useLikedByMeQuery,
+  useLikedMeQuery,
+} from "@/entities/user";
+
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useBounce } from "@/shared/lib/use-bounce";
 import { cn } from "@/shared/lib/utils";
 import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import {
   LIKED_YOU,
@@ -17,6 +26,7 @@ import {
   UNLOCKED_LIKES_COUNT,
   YOUR_LIKES,
 } from "../model/likes";
+import { mapLikeUserToProfile } from "../model/map-like-user";
 import { PremiumPaywallModal } from "./premium-paywall-modal";
 
 const TABS = [
@@ -56,10 +66,25 @@ const ProfileCard = ({ profile }: { profile: LikeProfile }) => {
 };
 
 // Открытая карточка «Лайкнули тебя»: фото и панель ♥/✕ — единый скруглённый
-// блок без зазора между ними, с разделителем между кнопками.
-const LikeActionCard = ({ profile }: { profile: LikeProfile }) => {
+// блок без зазора между ними, с разделителем между кнопками. onLike/onDismiss
+// не заданы в mock-режиме — сердечко просто подпрыгивает, крестик ничего не
+// делает, как и было раньше.
+const LikeActionCard = ({
+  onDismiss,
+  onLike,
+  profile,
+}: {
+  onDismiss?: () => void;
+  onLike?: () => void;
+  profile: LikeProfile;
+}) => {
   const navigate = useNavigate();
   const { bounce, scale } = useBounce();
+
+  const handleLike = () => {
+    bounce();
+    onLike?.();
+  };
 
   return (
     <div className="overflow-hidden rounded-3xl bg-white">
@@ -73,7 +98,7 @@ const LikeActionCard = ({ profile }: { profile: LikeProfile }) => {
       <div className="flex border border-[#E4E7EC] rounded-bl-3xl rounded-br-3xl">
         <button
           type="button"
-          onClick={bounce}
+          onClick={handleLike}
           className="flex flex-1 items-center justify-center py-2.75 text-[#1C1E24]"
           aria-label="Нравится"
         >
@@ -84,6 +109,7 @@ const LikeActionCard = ({ profile }: { profile: LikeProfile }) => {
         <div className="w-px bg-[#E4E7EC] h-[25px] my-2.5"></div>
         <button
           type="button"
+          onClick={onDismiss}
           className="flex flex-1 items-center justify-center py-2.75 text-[#1C1E24]"
           aria-label="Пропустить"
         >
@@ -111,10 +137,55 @@ const LockedCard = ({ profile }: { profile: LikeProfile }) => (
 export const LikesPage = () => {
   const [tab, setTab] = useState<TabKey>("likedYou");
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  // Карточки, по которым уже лайкнули/пропустили в этой сессии — сразу
+  // убираем из "лайкнули тебя", не дожидаясь фонового рефетча списка.
+  const [actedIds, setActedIds] = useState<Set<number>>(new Set());
 
-  // Бэкенда нет — просто имитируем сетевой запрос под спиннером.
+  const likedMeQuery = useLikedMeQuery(!isMockMode());
+  const likedByMeQuery = useLikedByMeQuery(!isMockMode());
+  const likeMutation = useLikeMutation();
+  const dislikeMutation = useDislikeMutation();
+
+  const likedYou = isMockMode()
+    ? LIKED_YOU
+    : (likedMeQuery.data ?? [])
+        .filter((u) => !actedIds.has(u.id))
+        .map(mapLikeUserToProfile);
+  const yourLikes = isMockMode()
+    ? YOUR_LIKES
+    : (likedByMeQuery.data ?? []).map(mapLikeUserToProfile);
+  const isLoading =
+    !isMockMode() &&
+    (tab === "likedYou" ? likedMeQuery.isLoading : likedByMeQuery.isLoading);
+
+  const handleLikeBack = async (profile: LikeProfile) => {
+    try {
+      const result = await likeMutation.mutateAsync(profile.id);
+      setActedIds((prev) => new Set(prev).add(profile.id));
+      if (result.match) {
+        toast.success(`Это пара с ${profile.name}! Загляни в чат 💜`);
+      }
+    } catch {
+      toast.error("Не получилось лайкнуть. Попробуй ещё раз");
+    }
+  };
+
+  const handleDismiss = async (profile: LikeProfile) => {
+    try {
+      await dislikeMutation.mutateAsync(profile.id);
+      setActedIds((prev) => new Set(prev).add(profile.id));
+    } catch {
+      toast.error("Не получилось. Попробуй ещё раз");
+    }
+  };
+
   const handleRefresh = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    if (isMockMode()) {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      toast.success("Обновлено");
+      return;
+    }
+    await Promise.all([likedMeQuery.refetch(), likedByMeQuery.refetch()]);
     toast.success("Обновлено");
   };
 
@@ -160,16 +231,35 @@ export const LikesPage = () => {
         onRefresh={handleRefresh}
         className="flex-1 overflow-y-auto px-4 pb-24"
       >
-        {tab === "likedYou" ? (
+        {isLoading ? (
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
+            {Array.from({ length: 6 }, (_, index) => (
+              <Skeleton key={index} className="aspect-4/5" />
+            ))}
+          </div>
+        ) : tab === "likedYou" ? (
           <>
             <p className="mt-6 text-xs text-[#6B7280] text-center">
               Активируй Премиум чтобы посмотреть все лайки
             </p>
 
             <div className="mt-4 grid grid-cols-2 gap-2.5">
-              {LIKED_YOU.map((profile, index) =>
+              {likedYou.map((profile, index) =>
                 index < UNLOCKED_LIKES_COUNT ? (
-                  <LikeActionCard key={profile.id} profile={profile} />
+                  <LikeActionCard
+                    key={profile.id}
+                    profile={profile}
+                    onDismiss={
+                      isMockMode()
+                        ? undefined
+                        : () => void handleDismiss(profile)
+                    }
+                    onLike={
+                      isMockMode()
+                        ? undefined
+                        : () => void handleLikeBack(profile)
+                    }
+                  />
                 ) : (
                   <LockedCard key={profile.id} profile={profile} />
                 ),
@@ -178,7 +268,7 @@ export const LikesPage = () => {
           </>
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-2.5">
-            {YOUR_LIKES.map((profile) => (
+            {yourLikes.map((profile) => (
               <ProfileCard key={profile.id} profile={profile} />
             ))}
           </div>

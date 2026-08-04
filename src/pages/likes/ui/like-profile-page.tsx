@@ -3,11 +3,17 @@ import { useNavigate, useParams } from "react-router";
 
 import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
+import { usePublicProfileQuery } from "@/entities/user";
+
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import { LIKE_PROFILE_DETAILS } from "../model/like-profile-details";
 import { LIKED_YOU, YOUR_LIKES } from "../model/likes";
+import { mapFeedCandidateToLikeDetails } from "../model/map-like-details";
+import { mapLikeUserToProfile } from "../model/map-like-user";
 
 const Section = ({
   children,
@@ -43,12 +49,32 @@ const Chips = ({ items }: { items: string[] }) => (
 export const LikeProfilePage = () => {
   const navigate = useNavigate();
   const { profileId } = useParams<{ profileId: string }>();
-  const profile = [...LIKED_YOU, ...YOUR_LIKES].find(
+  const numericId = profileId ? Number(profileId) : null;
+
+  const mockProfile = [...LIKED_YOU, ...YOUR_LIKES].find(
     (item) => String(item.id) === profileId,
   );
-  const details = profileId
-    ? LIKE_PROFILE_DETAILS[Number(profileId)]
-    : undefined;
+  const mockDetails = numericId ? LIKE_PROFILE_DETAILS[numericId] : undefined;
+
+  const profileQuery = usePublicProfileQuery(isMockMode() ? null : numericId);
+
+  const profile = isMockMode()
+    ? mockProfile
+    : profileQuery.data && mapLikeUserToProfile(profileQuery.data);
+  const details = isMockMode()
+    ? mockDetails
+    : profileQuery.data && mapFeedCandidateToLikeDetails(profileQuery.data);
+
+  if (!isMockMode() && profileQuery.isLoading) {
+    return (
+      <div className="h-dvh overflow-y-auto bg-[#FAF9FD] p-4">
+        <Skeleton className="h-[60vh] w-full" />
+        <Skeleton className="mt-3 h-24 w-full" />
+        <Skeleton className="mt-3 h-16 w-full" />
+        <Skeleton className="mt-3 h-24 w-full" />
+      </div>
+    );
+  }
 
   if (!profile || !details) {
     return (
@@ -97,10 +123,12 @@ export const LikeProfilePage = () => {
                 {profile.name}, {profile.age}
               </h1>
               <div className="mt-1 flex items-center gap-4 text-sm text-white/90">
-                <span className="flex items-center gap-1">
-                  <MapPin className="size-4" />
-                  {details.distanceKm} км от тебя
-                </span>
+                {details.distanceKm !== null && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-4" />
+                    {details.distanceKm} км от тебя
+                  </span>
+                )}
                 <ZodiacBadge sign={details.zodiac} />
               </div>
             </div>

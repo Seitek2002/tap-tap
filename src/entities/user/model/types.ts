@@ -102,25 +102,10 @@ export const MeSchema = z.object({
 
 export type Me = z.infer<typeof MeSchema>;
 
-// GET /api/profile/:id — публичный профиль другого пользователя.
-export const PublicProfileSchema = z.object({
-  age: z.number(),
-  bio: z.string(),
-  city: z.string(),
-  gender: z.string(),
-  height: z.string(),
-  id: z.number(),
-  interests: z.array(z.coerce.string()),
-  name: z.string(),
-  online: z.number(),
-  photos: z.array(z.string()),
-  workplace: z.string(),
-});
-
-export type PublicProfile = z.infer<typeof PublicProfileSchema>;
-
-// GET /api/feed — кандидат в ленте свайпов. distanceKm null, если у одной из
-// сторон нет ни координат, ни известного города — считается на бэке,
+// GET /api/feed и GET /api/profile/:id отдают одинаковый набор полей — один
+// и тот же публичный профиль, что в ленте свайпов, что при просмотре
+// конкретного человека (например, из лайков). distanceKm null, если у одной
+// из сторон нет ни координат, ни известного города — считается на бэке,
 // точные lat/lng чужих анкет клиенту не отдаются.
 export const FeedCandidateSchema = z.object({
   age: z.number(),
@@ -171,3 +156,15 @@ export const UndoResultSchema = z.object({
 });
 
 export type UndoResult = z.infer<typeof UndoResultSchema>;
+
+// GET /api/likes/me и /api/likes/them — облегчённая карточка для списков
+// (полный профиль подгружается отдельно, через GET /api/profile/:id, только
+// когда открывают конкретную анкету).
+export const LikeUserSchema = z.object({
+  age: z.number(),
+  id: z.number(),
+  name: z.string(),
+  photos: z.array(z.string()),
+});
+
+export type LikeUser = z.infer<typeof LikeUserSchema>;
