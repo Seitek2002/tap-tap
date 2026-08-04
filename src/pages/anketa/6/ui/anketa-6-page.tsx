@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useOptionsQuery } from "@/entities/option";
 import { useAnketaDraftStore } from "@/entities/user";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
@@ -10,20 +11,26 @@ import { Input } from "@/shared/ui/input";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
-const DEGREES = [
-  "Бакалавриат",
-  "Средне-специальное",
-  "Техникум",
-  "Доктора наук",
-  "Аспирантура",
-  "Магистратура",
-  "9 классов",
-  "11 классов",
-];
+// Дефолты — на случай, пока реальный ответ /api/options ещё не пришёл.
+// Отдельный ключ от "education" в pages/filters — тот про предпочтение к
+// образованию партнёра, а этот про образование самого владельца аккаунта.
+const OPTIONS_FALLBACK = {
+  education_degree: [
+    "Бакалавриат",
+    "Средне-специальное",
+    "Техникум",
+    "Доктор наук",
+    "Аспирантура",
+    "Магистратура",
+    "9 классов",
+    "11 классов",
+  ],
+};
 
 export const Anketa6Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
+  const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const setField = useAnketaDraftStore((state) => state.setField);
   const [degree, setDegree] = useState("Магистратура");
   const [educationPlace, setEducationPlace] = useState("");
@@ -67,7 +74,7 @@ export const Anketa6Page = () => {
         <div className="mt-6">
           <h2 className="mb-3 text-sm font-bold">Степень</h2>
           <div className="flex flex-wrap gap-2">
-            {DEGREES.map((item) => (
+            {options.education_degree.map((item) => (
               <Pill
                 key={item}
                 selected={degree === item}
