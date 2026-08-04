@@ -156,7 +156,7 @@ export const NearbyPage = () => {
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-2 gap-1.5">
               {NEARBY_PROFILES.map((profile) => {
                 const liked = likedIds.includes(profile.id);
                 return (
