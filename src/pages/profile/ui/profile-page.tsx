@@ -35,6 +35,7 @@ import { cn } from "@/shared/lib/utils";
 import { Checkbox, Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
 import { Pill } from "@/shared/ui/pill";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
 
@@ -269,7 +270,31 @@ export const ProfilePage = () => {
   };
 
   if (!isMockMode() && (profileQuery.isLoading || !ownProfile)) {
-    return <div className="h-dvh bg-[#FAF9FD]" />;
+    return (
+      <div className="flex h-dvh flex-col bg-[#FAF9FD]">
+        <div className="flex-1 overflow-y-auto pb-4">
+          <header className="flex items-center gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))]">
+            <Skeleton className="size-14 shrink-0 rounded-full" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <Skeleton className="size-10 shrink-0 rounded-full" />
+          </header>
+
+          <div className="mt-4 px-4">
+            <Skeleton className="h-1 w-full rounded-full" />
+          </div>
+
+          <Skeleton className="mx-4 mt-5 h-27 rounded-3xl" />
+          <Skeleton className="mx-4 mt-4 h-16 rounded-3xl" />
+          <Skeleton className="mx-4 mt-3 h-20 rounded-3xl" />
+          <Skeleton className="mx-4 mt-3 h-33.25 rounded-3xl" />
+          <Skeleton className="mx-4 mt-3 h-40 rounded-3xl" />
+        </div>
+        <BottomNav />
+      </div>
+    );
   }
 
   const profile = isMockMode() ? mockProfile : (ownProfile ?? mockProfile);

@@ -29,6 +29,7 @@ import { LikeLimitOverlay } from "./like-limit-overlay";
 import { MatchOverlay } from "./match-overlay";
 import { showNewMatchToast } from "./new-match-toast";
 import { SwipeCard } from "./swipe-card";
+import { SwipeCardSkeleton } from "./swipe-card-skeleton";
 
 // Локальный предохранитель — то же значение, что и дефолт бэка
 // (FREE_DAILY_LIKES в swipes.js), чтобы блокировать до сетевого запроса.
@@ -204,9 +205,13 @@ export const FeedPage = () => {
       <div className="min-h-0 flex-1 px-4 pb-3">
         <div className="relative size-full overflow-hidden">
           {stack.length === 0 ? (
-            <div className="flex h-full items-center justify-center px-8 text-center text-[#6B7280]">
-              Пока никого рядом. Загляни позже 👀
-            </div>
+            !isMockMode() && feedQuery.isLoading ? (
+              <SwipeCardSkeleton />
+            ) : (
+              <div className="flex h-full items-center justify-center px-8 text-center text-[#6B7280]">
+                Пока никого рядом. Загляни позже 👀
+              </div>
+            )
           ) : (
             stack
               .slice(0, 2)

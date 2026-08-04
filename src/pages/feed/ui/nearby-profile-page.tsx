@@ -14,6 +14,7 @@ import { REPORT_REASONS } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import { mapFeedCandidateToNearbyProfile } from "../model/map-nearby-candidate";
@@ -93,7 +94,14 @@ export const NearbyProfilePage = () => {
   };
 
   if (!isMockMode() && profileQuery.isLoading) {
-    return <div className="h-dvh bg-[#FAF9FD]" />;
+    return (
+      <div className="h-dvh overflow-y-auto bg-[#FAF9FD] p-4">
+        <Skeleton className="h-[60vh] w-full" />
+        <Skeleton className="mt-3 h-24 w-full" />
+        <Skeleton className="mt-3 h-16 w-full" />
+        <Skeleton className="mt-3 h-24 w-full" />
+      </div>
+    );
   }
 
   if (!profile || !details) {

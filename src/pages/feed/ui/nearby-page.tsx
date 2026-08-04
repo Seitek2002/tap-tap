@@ -14,10 +14,13 @@ import { ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { useBounce } from "@/shared/lib/use-bounce";
 import { cn } from "@/shared/lib/utils";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { mapFeedCandidateToNearbyProfile } from "../model/map-nearby-candidate";
 import { NEARBY_PROFILES } from "../model/nearby";
 import { NearbyLikeIcon } from "./nearby-like-icon";
+
+const SKELETON_COUNT = 6;
 
 const TABS = [
   { key: "all", label: "Все" },
@@ -91,6 +94,7 @@ export const NearbyPage = () => {
   const profiles = isMockMode()
     ? NEARBY_PROFILES
     : (feedQuery.data ?? []).map(mapFeedCandidateToNearbyProfile);
+  const isLoading = !isMockMode() && feedQuery.isLoading;
 
   const handleLike = async (id: number) => {
     if (likedIds.includes(id)) return;
@@ -186,36 +190,40 @@ export const NearbyPage = () => {
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-1.5">
-              {profiles.map((profile) => {
-                const liked = likedIds.includes(profile.id);
-                return (
-                  <div
-                    key={profile.id}
-                    className="overflow-hidden rounded-3xl bg-white border border-[#E4E7EC] p-1"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/nearby/${profile.id}`)}
-                      className="block w-full"
-                    >
-                      <img
-                        src={profile.photo}
-                        alt=""
-                        className="aspect-3/4 w-full object-cover rounded-2xl"
-                      />
-                    </button>
-                    <div className="flex items-center justify-between px-2.5 py-2">
-                      <span className="text-sm font-medium">
-                        {profile.name}, {profile.age}
-                      </span>
-                      <AllTabLikeButton
-                        liked={liked}
-                        onClick={() => void handleLike(profile.id)}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              {isLoading
+                ? Array.from({ length: SKELETON_COUNT }, (_, index) => (
+                    <Skeleton key={index} className="aspect-3/4 w-full" />
+                  ))
+                : profiles.map((profile) => {
+                    const liked = likedIds.includes(profile.id);
+                    return (
+                      <div
+                        key={profile.id}
+                        className="overflow-hidden rounded-3xl bg-white border border-[#E4E7EC] p-1"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/nearby/${profile.id}`)}
+                          className="block w-full"
+                        >
+                          <img
+                            src={profile.photo}
+                            alt=""
+                            className="aspect-3/4 w-full object-cover rounded-2xl"
+                          />
+                        </button>
+                        <div className="flex items-center justify-between px-2.5 py-2">
+                          <span className="text-sm font-medium">
+                            {profile.name}, {profile.age}
+                          </span>
+                          <AllTabLikeButton
+                            liked={liked}
+                            onClick={() => void handleLike(profile.id)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
             </div>
           </>
         ) : (
@@ -229,47 +237,51 @@ export const NearbyPage = () => {
             </div>
 
             <div className="mt-4 flex flex-col gap-4">
-              {profiles.map((profile) => {
-                const liked = likedIds.includes(profile.id);
-                return (
-                  <div
-                    key={profile.id}
-                    className="overflow-hidden rounded-3xl bg-white"
-                  >
-                    <div className="p-1">
+              {isLoading
+                ? Array.from({ length: SKELETON_COUNT }, (_, index) => (
+                    <Skeleton key={index} className="aspect-335/269 w-full" />
+                  ))
+                : profiles.map((profile) => {
+                    const liked = likedIds.includes(profile.id);
+                    return (
                       <div
-                        onClick={() => navigate(`/nearby/${profile.id}`)}
-                        className="relative aspect-335/269 overflow-hidden rounded-2xl"
+                        key={profile.id}
+                        className="overflow-hidden rounded-3xl bg-white"
                       >
-                        <img
-                          src={profile.photo}
-                          alt=""
-                          className="absolute inset-0 size-full object-cover"
-                        />
-                        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent p-4 pt-10">
-                          <span className="text-lg font-bold text-white">
-                            {profile.name}, {profile.age}
-                          </span>
+                        <div className="p-1">
+                          <div
+                            onClick={() => navigate(`/nearby/${profile.id}`)}
+                            className="relative aspect-335/269 overflow-hidden rounded-2xl"
+                          >
+                            <img
+                              src={profile.photo}
+                              alt=""
+                              className="absolute inset-0 size-full object-cover"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent p-4 pt-10">
+                              <span className="text-lg font-bold text-white">
+                                {profile.name}, {profile.age}
+                              </span>
+                            </div>
+                            <ForYouLikeButton
+                              liked={liked}
+                              onClick={() => void handleLike(profile.id)}
+                            />
+                          </div>
                         </div>
-                        <ForYouLikeButton
-                          liked={liked}
-                          onClick={() => void handleLike(profile.id)}
-                        />
+                        <div className="flex flex-wrap gap-2 p-4 pt-3">
+                          {profile.interests.map((interest) => (
+                            <span
+                              key={interest}
+                              className="rounded-full bg-[#F2F1F3] px-3 py-1.5 text-xs font-medium whitespace-nowrap"
+                            >
+                              {interest}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 p-4 pt-3">
-                      {profile.interests.map((interest) => (
-                        <span
-                          key={interest}
-                          className="rounded-full bg-[#F2F1F3] px-3 py-1.5 text-xs font-medium whitespace-nowrap"
-                        >
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
             </div>
           </>
         )}
