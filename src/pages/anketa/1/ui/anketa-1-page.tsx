@@ -5,6 +5,7 @@ import { TriangleAlert } from "lucide-react";
 import { useAnketaDraftStore } from "@/entities/user";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
+import { getZodiacSign } from "@/shared/lib/zodiac";
 import { Dropdown } from "@/shared/ui/dropdown";
 import { Input } from "@/shared/ui/input";
 import { Progress } from "@/shared/ui/progress";
@@ -17,13 +18,49 @@ const MARITAL_OPTIONS = [
   { label: "Всё сложно", value: "complicated" },
 ];
 
+// Только цифры, точки расставляются сами: 21022002 -> 21.02.2002.
+const formatBirthDate = (raw: string) => {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)]
+    .filter(Boolean)
+    .join(".");
+};
+
+// Парсит "ДД.ММ.ГГГГ" в возраст + день/месяц для знака зодиака. null — если
+// строка не полная или дата нереальная (32.13.2000, будущее и т.п.).
+const parseBirthDate = (
+  value: string,
+): { age: number; day: number; month: number } | null => {
+  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  const now = new Date();
+  const hadBirthdayThisYear =
+    now.getMonth() > month - 1 ||
+    (now.getMonth() === month - 1 && now.getDate() >= day);
+  const age = now.getFullYear() - year - (hadBirthdayThisYear ? 0 : 1);
+  if (age < 0 || age > 120) return null;
+
+  return { age, day, month };
+};
+
 export const Anketa1Page = () => {
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
   const [accepted, setAccepted] = useState(false);
   const [name, setName] = useState("");
-  // Дата рождения пока свободный текст без парсинга — на бэке нет поля под
-  // неё (там number age, не дата), только UI-заготовка под будущий пикер.
   const [birthDate, setBirthDate] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("married");
   const isMarried = maritalStatus === "married";
@@ -31,6 +68,14 @@ export const Anketa1Page = () => {
   const commitAndNext = () => {
     setField("name", name);
     setField("marital_status", maritalStatus);
+
+    const parsed = parseBirthDate(birthDate);
+    if (parsed) {
+      setField("birth_date", birthDate);
+      setField("age", parsed.age);
+      setField("zodiac", getZodiacSign(parsed.day, parsed.month));
+    }
+
     goNext();
   };
 
@@ -66,9 +111,13 @@ export const Anketa1Page = () => {
           />
           <Input
             label="Дата рождения"
-            placeholder="24 февраля, 1991 года"
+            placeholder="21.02.2002"
+            inputMode="numeric"
+            maxLength={10}
             value={birthDate}
-            onChange={(event) => setBirthDate(event.target.value)}
+            onChange={(event) =>
+              setBirthDate(formatBirthDate(event.target.value))
+            }
           />
           <Dropdown
             label="Семейное положение"

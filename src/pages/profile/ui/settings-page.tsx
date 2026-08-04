@@ -6,6 +6,8 @@ import { Check, ChevronRight } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { logout } from "@/entities/session";
+
 import { ROUTES } from "@/shared/config";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
@@ -98,6 +100,11 @@ export const SettingsPage = () => {
 
   const handlePremiumClick = () => {
     toast("Premium скоро будет доступен");
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
   };
 
   return (
@@ -278,6 +285,7 @@ export const SettingsPage = () => {
           <button
             type="button"
             data-haptic="heavy"
+            onClick={() => void handleLogout()}
             className="w-full py-4 font-medium text-red-500"
           >
             Выйти

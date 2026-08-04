@@ -9,6 +9,8 @@ export const UserSchema = z.object({
   balance: z.number(),
   banned: z.number(),
   bio: z.string(),
+  // Строка "ДД.ММ.ГГГГ", как её вводят на anketa-1 — не дата/timestamp.
+  birth_date: z.string(),
   // Колонка в БД объявлена INTEGER (дефолт 0), но анкета пишет туда
   // текстовую категорию ("Хочу когда-нибудь" и т.п.) — SQLite это спокойно
   // хранит благодаря динамической типизации. Коэрсим к строке, чтобы не
@@ -58,6 +60,7 @@ export type ProfileUpdate = Partial<
     | "age"
     | "alcohol"
     | "bio"
+    | "birth_date"
     | "children"
     | "citizenship"
     | "city"
