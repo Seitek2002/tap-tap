@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { useOptionsQuery } from "@/entities/option";
+import {
+  type FilterPreferences,
+  useFiltersQuery,
+  useUpdateFiltersMutation,
+} from "@/entities/user";
 
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
 import { ZODIAC_ICONS, ZODIAC_SIGNS } from "@/shared/lib/zodiac";
 import { Modal } from "@/shared/ui/modal";
 import { Pill } from "@/shared/ui/pill";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { RangeSlider, Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
@@ -27,11 +34,13 @@ const TOGGLES = [
   { defaultOn: true, key: "hasCredit", label: "Хорошая кредитная история" },
 ] as const;
 
+// code — то же значение, что candidate.goals на бэке (см. GET /api/feed),
+// нужен чтобы сохранять/применять фильтр "Ищет" без перевода строк туда-обратно.
 const SEEKING_OPTIONS = [
-  { emoji: "💬", label: "Просто общаться" },
-  { emoji: "💕", label: "Серьезные отношения" },
-  { emoji: "💜", label: "Построить семью" },
-];
+  { code: "chat", emoji: "💬", label: "Просто общаться" },
+  { code: "serious", emoji: "💕", label: "Серьезные отношения" },
+  { code: "family", emoji: "💜", label: "Построить семью" },
+] as const;
 
 const DEFAULT_SEEKING = SEEKING_OPTIONS[0].label;
 
@@ -236,6 +245,33 @@ const DEFAULT_TOGGLES = Object.fromEntries(
   TOGGLES.map((toggle) => [toggle.key, toggle.defaultOn]),
 ) as Record<(typeof TOGGLES)[number]["key"], boolean>;
 
+// Payload для PUT /api/filters, соответствующий сбросу "Очистить" — читаем
+// его напрямую, а не из state (setState асинхронный, к моменту отправки
+// значения ещё не обновились бы).
+const DEFAULT_PREFS: FilterPreferences = {
+  ageMax: 28,
+  ageMin: 18,
+  alcohol: DEFAULT_OPTION_VALUES.alcohol[0],
+  audience: "men",
+  children: DEFAULT_OPTION_VALUES.children[0],
+  education: DEFAULT_OPTION_VALUES.education[0],
+  hasBio: DEFAULT_TOGGLES.hasBio,
+  hasCar: DEFAULT_TOGGLES.hasCar,
+  hasCredit: DEFAULT_TOGGLES.hasCredit,
+  hasJob: DEFAULT_TOGGLES.hasJob,
+  hasPhoto: DEFAULT_TOGGLES.hasPhoto,
+  interests: DEFAULT_INTERESTS,
+  loveLanguage: DEFAULT_OPTION_VALUES.loveLanguage,
+  maxDistance: 80,
+  minHeight: 175,
+  pets: DEFAULT_OPTION_VALUES.pets,
+  religion: DEFAULT_OPTION_VALUES.religion[0],
+  seeking: SEEKING_OPTIONS[0].code,
+  smoking: DEFAULT_OPTION_VALUES.smoking[0],
+  sport: DEFAULT_OPTION_VALUES.sport[0],
+  zodiac: DEFAULT_ZODIAC,
+};
+
 /** Склонение «интерес/интереса/интересов» по числу. */
 const interestsWord = (count: number) => {
   const mod10 = count % 10;
@@ -249,13 +285,15 @@ const interestsWord = (count: number) => {
 export const FiltersPage = () => {
   const navigate = useNavigate();
   const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
+  const filtersQuery = useFiltersQuery(!isMockMode());
+  const updateFiltersMutation = useUpdateFiltersMutation();
   const [audience, setAudience] = useState("men");
   const [age, setAge] = useState<[number, number]>([18, 28]);
   const [distance, setDistance] = useState(80);
   const [height, setHeight] = useState(175);
   const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
 
-  const [seeking, setSeeking] = useState(DEFAULT_SEEKING);
+  const [seeking, setSeeking] = useState<string>(DEFAULT_SEEKING);
   const [isSeekingOpen, setIsSeekingOpen] = useState(false);
 
   const [interests, setInterests] = useState<string[]>(DEFAULT_INTERESTS);
@@ -266,6 +304,43 @@ export const FiltersPage = () => {
 
   const [optionValues, setOptionValues] = useState(DEFAULT_OPTION_VALUES);
   const [openField, setOpenField] = useState<null | OptionFieldKey>(null);
+
+  // Реальный режим: как только придёт GET /api/filters, один раз заливаем
+  // локальный черновик сохранёнными значениями — дальше это обычный
+  // редактируемый state, как и в mock-режиме.
+  const hasHydratedFilters = useRef(isMockMode());
+  useEffect(() => {
+    if (hasHydratedFilters.current || !filtersQuery.data) return;
+    hasHydratedFilters.current = true;
+    const prefs = filtersQuery.data;
+    setAudience(prefs.audience);
+    setAge([prefs.ageMin, prefs.ageMax]);
+    setDistance(prefs.maxDistance);
+    setHeight(prefs.minHeight);
+    setToggles({
+      hasBio: prefs.hasBio,
+      hasCar: prefs.hasCar,
+      hasCredit: prefs.hasCredit,
+      hasJob: prefs.hasJob,
+      hasPhoto: prefs.hasPhoto,
+    });
+    setSeeking(
+      SEEKING_OPTIONS.find((option) => option.code === prefs.seeking)?.label ??
+        DEFAULT_SEEKING,
+    );
+    setInterests(prefs.interests);
+    setZodiac(prefs.zodiac);
+    setOptionValues({
+      alcohol: prefs.alcohol ? [prefs.alcohol] : [],
+      children: prefs.children ? [prefs.children] : [],
+      education: prefs.education ? [prefs.education] : [],
+      loveLanguage: prefs.loveLanguage,
+      pets: prefs.pets,
+      religion: prefs.religion ? [prefs.religion] : [],
+      smoking: prefs.smoking ? [prefs.smoking] : [],
+      sport: prefs.sport ? [prefs.sport] : [],
+    });
+  }, [filtersQuery.data]);
 
   const fieldOptions = (field: (typeof OPTION_FIELDS)[number]) =>
     options[BACKEND_OPTION_KEY[field.key] ?? field.key] ?? field.options;
@@ -311,7 +386,58 @@ export const FiltersPage = () => {
     setInterests(DEFAULT_INTERESTS);
     setZodiac(DEFAULT_ZODIAC);
     setOptionValues(DEFAULT_OPTION_VALUES);
+    if (!isMockMode()) updateFiltersMutation.mutate(DEFAULT_PREFS);
   };
+
+  const buildPrefsPayload = (): FilterPreferences => ({
+    ageMax: age[1],
+    ageMin: age[0],
+    alcohol: optionValues.alcohol[0] ?? "",
+    audience,
+    children: optionValues.children[0] ?? "",
+    education: optionValues.education[0] ?? "",
+    hasBio: toggles.hasBio,
+    hasCar: toggles.hasCar,
+    hasCredit: toggles.hasCredit,
+    hasJob: toggles.hasJob,
+    hasPhoto: toggles.hasPhoto,
+    interests,
+    loveLanguage: optionValues.loveLanguage,
+    maxDistance: distance,
+    minHeight: height,
+    pets: optionValues.pets,
+    religion: optionValues.religion[0] ?? "",
+    seeking:
+      SEEKING_OPTIONS.find((option) => option.label === seeking)?.code ?? "",
+    smoking: optionValues.smoking[0] ?? "",
+    sport: optionValues.sport[0] ?? "",
+    zodiac,
+  });
+
+  // Явной кнопки "Сохранить" на экране нет — фильтры применяются, когда
+  // уходишь с экрана (как и очистка — сразу).
+  const handleBack = () => {
+    if (!isMockMode()) updateFiltersMutation.mutate(buildPrefsPayload());
+    navigate(-1);
+  };
+
+  if (!isMockMode() && filtersQuery.isLoading) {
+    return (
+      <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
+        <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
+          <Skeleton className="size-9 rounded-full" />
+          <Skeleton className="h-5 w-20 justify-self-center" />
+          <Skeleton className="h-4 w-16 justify-self-end" />
+        </header>
+        <div className="flex-1 overflow-y-auto px-4 pb-8">
+          <Skeleton className="h-24 w-full rounded-3xl" />
+          <Skeleton className="mt-3 h-40 w-full rounded-3xl" />
+          <Skeleton className="mt-6 h-6 w-40" />
+          <Skeleton className="mt-3 h-96 w-full rounded-3xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -319,7 +445,7 @@ export const FiltersPage = () => {
       <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="flex size-9 items-center justify-center rounded-full border border-[#6B7280] bg-white justify-self-start"
         >
           <ChevronLeft className="size-5" />

@@ -291,3 +291,35 @@ export const ReportResultSchema = z.object({
 });
 
 export type ReportResult = z.infer<typeof ReportResultSchema>;
+
+// GET/PUT /api/filters — настройки поиска партнёра (страница "Фильтры").
+// Хранится на бэке одним JSON-блобом, поэтому пустой ответ ({}) — это
+// нормальный случай для того, кто ещё ни разу не сохранял фильтры; дефолты
+// здесь — те же значения, что в локальном state filters-page.tsx.
+export const FilterPreferencesSchema = z.object({
+  ageMax: z.number().default(28),
+  ageMin: z.number().default(18),
+  alcohol: z.string().default("Пью редко"),
+  audience: z.string().default("men"),
+  children: z.string().default("Пока не знаю"),
+  education: z.string().default("9 классов"),
+  hasBio: z.boolean().default(false),
+  hasCar: z.boolean().default(true),
+  hasCredit: z.boolean().default(true),
+  hasJob: z.boolean().default(true),
+  hasPhoto: z.boolean().default(true),
+  interests: z
+    .array(z.string())
+    .default(["🌱 Вегетерианство", "🧩 Паззлы", "🌲 Природа"]),
+  loveLanguage: z.array(z.string()).default(["Совместное время"]),
+  maxDistance: z.number().default(80),
+  minHeight: z.number().default(175),
+  pets: z.array(z.string()).default(["Собаки"]),
+  religion: z.string().default("Буддизм"),
+  seeking: z.string().default("chat"),
+  smoking: z.string().default("Я не курю"),
+  sport: z.string().default("Иногда"),
+  zodiac: z.string().default("Рак"),
+});
+
+export type FilterPreferences = z.infer<typeof FilterPreferencesSchema>;
