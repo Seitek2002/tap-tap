@@ -7,9 +7,15 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
-import { useChatsQuery } from "@/entities/user";
+import {
+  useBlockUserMutation,
+  useChatsQuery,
+  useReportUserMutation,
+  useUnmatchMutation,
+} from "@/entities/user";
 
 import emptyChatIllustration from "@/shared/assets/images/empty-chat-illustration.png";
+import { REPORT_REASONS } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { useClickAway } from "@/shared/lib/use-click-away";
 import { cn } from "@/shared/lib/utils";
@@ -19,7 +25,6 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
 import { mapChatListItemToChat } from "../model/map-chat-list-item";
-import { REPORT_REASONS } from "../model/report-reasons";
 import { ChatRow } from "./chat-row";
 
 const CHAT_FILTERS = [
@@ -60,18 +65,15 @@ export const ChatPage = () => {
   }, []);
 
   const chatsQuery = useChatsQuery(!isMockMode());
+  const unmatchMutation = useUnmatchMutation();
+  const blockMutation = useBlockUserMutation();
+  const reportMutation = useReportUserMutation();
 
-  // «Отменить лайк»/«Заблокировать» здесь чисто визуальные — бэк пока не
-  // умеет ни то, ни другое, поэтому и в mock-, и в реальном режиме строка
-  // просто перестаёт показываться в списке, без реального запроса.
   const [mockChats, setMockChats] = useState(CHATS);
-  const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
 
   const chats = isMockMode()
     ? mockChats
-    : (chatsQuery.data ?? [])
-        .map(mapChatListItemToChat)
-        .filter((chat) => !hiddenIds.has(chat.id));
+    : (chatsQuery.data ?? []).map(mapChatListItemToChat);
   const isLoadingChats = isMockMode() ? isMockLoading : chatsQuery.isLoading;
 
   const [unmatchChatId, setUnmatchChatId] = useState<null | number>(null);
@@ -79,6 +81,7 @@ export const ChatPage = () => {
   const [reportChatId, setReportChatId] = useState<null | number>(null);
   const unmatchChat = chats.find((chat) => chat.id === unmatchChatId);
   const blockChat = chats.find((chat) => chat.id === blockChatId);
+  const reportChat = chats.find((chat) => chat.id === reportChatId);
 
   const [filter, setFilter] = useState<ChatFilterKey>("all");
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
@@ -130,22 +133,40 @@ export const ChatPage = () => {
     return true;
   });
 
-  const confirmUnmatch = () => {
+  const confirmUnmatch = async () => {
     if (isMockMode()) {
       setMockChats((prev) => prev.filter((chat) => chat.id !== unmatchChatId));
-    } else if (unmatchChatId !== null) {
-      setHiddenIds((prev) => new Set(prev).add(unmatchChatId));
+      setUnmatchChatId(null);
+      return;
+    }
+    if (!unmatchChat) {
+      setUnmatchChatId(null);
+      return;
     }
     setUnmatchChatId(null);
+    try {
+      await unmatchMutation.mutateAsync(unmatchChat.partnerId);
+    } catch {
+      toast.error("Не получилось удалить пару. Попробуй ещё раз");
+    }
   };
 
-  const confirmBlock = () => {
+  const confirmBlock = async () => {
     if (isMockMode()) {
       setMockChats((prev) => prev.filter((chat) => chat.id !== blockChatId));
-    } else if (blockChatId !== null) {
-      setHiddenIds((prev) => new Set(prev).add(blockChatId));
+      setBlockChatId(null);
+      return;
+    }
+    if (!blockChat) {
+      setBlockChatId(null);
+      return;
     }
     setBlockChatId(null);
+    try {
+      await blockMutation.mutateAsync(blockChat.partnerId);
+    } catch {
+      toast.error("Не получилось заблокировать. Попробуй ещё раз");
+    }
   };
 
   const reportFromUnmatch = () => {
@@ -156,6 +177,20 @@ export const ChatPage = () => {
   const reportFromBlock = () => {
     setReportChatId(blockChatId);
     setBlockChatId(null);
+  };
+
+  const submitReport = async (reason: string) => {
+    setReportChatId(null);
+    if (isMockMode() || !reportChat) return;
+    try {
+      await reportMutation.mutateAsync({
+        reason,
+        reportedId: reportChat.partnerId,
+      });
+      toast.success("Жалоба отправлена");
+    } catch {
+      toast.error("Не получилось отправить жалобу");
+    }
   };
 
   const handleRefresh = async () => {
@@ -360,7 +395,7 @@ export const ChatPage = () => {
         <button
           type="button"
           data-haptic="heavy"
-          onClick={confirmUnmatch}
+          onClick={() => void confirmUnmatch()}
           className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Отменить лайк
@@ -387,7 +422,7 @@ export const ChatPage = () => {
         <button
           type="button"
           data-haptic="heavy"
-          onClick={confirmBlock}
+          onClick={() => void confirmBlock()}
           className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Заблокировать
@@ -412,7 +447,7 @@ export const ChatPage = () => {
               key={reason}
               type="button"
               data-haptic="heavy"
-              onClick={() => setReportChatId(null)}
+              onClick={() => void submitReport(reason)}
               className="w-full py-4 text-center text-[#1C1E24]"
             >
               {reason}

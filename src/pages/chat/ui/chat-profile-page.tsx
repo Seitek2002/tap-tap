@@ -1,12 +1,20 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router";
 
 import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
-import { useChatQuery, usePublicProfileQuery } from "@/entities/user";
+import {
+  useBlockUserMutation,
+  useChatQuery,
+  usePublicProfileQuery,
+  useReportUserMutation,
+} from "@/entities/user";
 
+import { REPORT_REASONS } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
+import { Modal } from "@/shared/ui/modal";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
@@ -56,11 +64,27 @@ export const ChatProfilePage = () => {
   const chatQuery = useChatQuery(isMockMode() ? null : numericChatId);
   const partnerId = isMockMode() ? null : (chatQuery.data?.partner.id ?? null);
   const profileQuery = usePublicProfileQuery(partnerId);
+  const blockMutation = useBlockUserMutation();
+  const reportMutation = useReportUserMutation();
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const name = isMockMode() ? mockChat?.name : chatQuery.data?.partner.name;
   const profile = isMockMode()
     ? mockProfile
     : profileQuery.data && mapFeedCandidateToChatProfile(profileQuery.data);
+
+  const submitReportAndBlock = async (reason: string) => {
+    setIsReportOpen(false);
+    if (partnerId === null) return;
+    try {
+      await reportMutation.mutateAsync({ reason, reportedId: partnerId });
+      await blockMutation.mutateAsync(partnerId);
+      toast.success("Жалоба отправлена, пользователь заблокирован");
+      navigate(-1);
+    } catch {
+      toast.error("Не получилось отправить жалобу");
+    }
+  };
 
   if (!isMockMode() && (chatQuery.isLoading || profileQuery.isLoading)) {
     return (
@@ -204,11 +228,35 @@ export const ChatProfilePage = () => {
 
         <button
           type="button"
+          onClick={() => setIsReportOpen(true)}
           className="mt-4 w-full rounded-2xl bg-red-50 py-4 text-center text-sm font-semibold text-red-500"
         >
           Пожаловаться и заблокировать
         </button>
       </div>
+
+      <Modal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)}>
+        <h2 className="text-center text-lg font-bold">Укажи причину жалобы</h2>
+        <div className="mt-2 divide-y divide-[#E4E7EC]">
+          {REPORT_REASONS.map((reason) => (
+            <button
+              key={reason}
+              type="button"
+              onClick={() => void submitReportAndBlock(reason)}
+              className="w-full py-4 text-center text-[#1C1E24]"
+            >
+              {reason}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsReportOpen(false)}
+          className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Отмена
+        </button>
+      </Modal>
     </div>
   );
 };

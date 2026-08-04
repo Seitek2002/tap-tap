@@ -269,3 +269,25 @@ export const BuyPremiumResultSchema = z.object({
 });
 
 export type BuyPremiumResult = z.infer<typeof BuyPremiumResultSchema>;
+
+// DELETE /api/swipes/unmatch/:userId
+export const UnmatchResultSchema = z.object({
+  hadChat: z.boolean().optional(),
+  ok: z.boolean(),
+});
+
+export type UnmatchResult = z.infer<typeof UnmatchResultSchema>;
+
+// POST /api/blocks/:userId
+export const BlockResultSchema = z.object({ ok: z.boolean() });
+
+export type BlockResult = z.infer<typeof BlockResultSchema>;
+
+// POST /api/reports  { reportedId, reason }
+export const ReportResultSchema = z.object({
+  alreadyReported: z.boolean().optional(),
+  ok: z.boolean(),
+  reportCount: z.number().optional(),
+});
+
+export type ReportResult = z.infer<typeof ReportResultSchema>;

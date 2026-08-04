@@ -25,15 +25,18 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { useSessionStore } from "@/entities/session";
 import {
+  useBlockUserMutation,
   useChatMessagesQuery,
   useChatQuery,
   useChatSocket,
+  useReportUserMutation,
+  useUnmatchMutation,
   useUploadChatAttachmentMutation,
 } from "@/entities/user";
 
 import { resolveUploadUrl } from "@/shared/api";
 import person1 from "@/shared/assets/images/person-1.jpg";
-import { ROUTES } from "@/shared/config";
+import { REPORT_REASONS, ROUTES } from "@/shared/config";
 import { formatLastSeen } from "@/shared/lib/format-last-seen";
 import {
   NotificationType,
@@ -53,7 +56,6 @@ import {
   INITIAL_MESSAGES,
   type Message,
 } from "../model/messages";
-import { REPORT_REASONS } from "../model/report-reasons";
 import { PhotoViewer } from "./photo-viewer";
 import { TypingIndicator } from "./typing-indicator";
 
@@ -239,6 +241,9 @@ export const ChatRoomPage = () => {
   const uploadAttachmentMutation = useUploadChatAttachmentMutation(
     isMockMode() ? null : numericChatId,
   );
+  const unmatchMutation = useUnmatchMutation();
+  const blockMutation = useBlockUserMutation();
+  const reportMutation = useReportUserMutation();
   const [isSendingAttachments, setIsSendingAttachments] = useState(false);
 
   const displayName = isMockMode()
@@ -546,14 +551,45 @@ export const ChatRoomPage = () => {
   // Переписка и её элемент в списке живут в разных страницах, поэтому
   // «удалить»/«заблокировать» здесь не мутируют список — просто возвращают
   // к нему, как будто чата больше нет.
-  const confirmUnmatch = () => {
+  const confirmUnmatch = async () => {
     setIsUnmatchOpen(false);
+    if (isMockMode() || partnerId === null) {
+      navigate(ROUTES.chat);
+      return;
+    }
+    try {
+      await unmatchMutation.mutateAsync(partnerId);
+    } catch {
+      toast.error("Не получилось удалить пару. Попробуй ещё раз");
+      return;
+    }
     navigate(ROUTES.chat);
   };
 
-  const confirmBlock = () => {
+  const confirmBlock = async () => {
     setIsBlockOpen(false);
+    if (isMockMode() || partnerId === null) {
+      navigate(ROUTES.chat);
+      return;
+    }
+    try {
+      await blockMutation.mutateAsync(partnerId);
+    } catch {
+      toast.error("Не получилось заблокировать. Попробуй ещё раз");
+      return;
+    }
     navigate(ROUTES.chat);
+  };
+
+  const submitReport = async (reason: string) => {
+    setIsReportOpen(false);
+    if (isMockMode() || partnerId === null) return;
+    try {
+      await reportMutation.mutateAsync({ reason, reportedId: partnerId });
+      toast.success("Жалоба отправлена");
+    } catch {
+      toast.error("Не получилось отправить жалобу");
+    }
   };
 
   if (!isMockMode() && (chatQuery.isLoading || messagesQuery.isLoading)) {
@@ -825,7 +861,7 @@ export const ChatRoomPage = () => {
         </div>
         <button
           type="button"
-          onClick={confirmUnmatch}
+          onClick={() => void confirmUnmatch()}
           className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Отменить лайк
@@ -849,7 +885,7 @@ export const ChatRoomPage = () => {
         </div>
         <button
           type="button"
-          onClick={confirmBlock}
+          onClick={() => void confirmBlock()}
           className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Заблокировать
@@ -870,7 +906,7 @@ export const ChatRoomPage = () => {
             <button
               key={reason}
               type="button"
-              onClick={() => setIsReportOpen(false)}
+              onClick={() => void submitReport(reason)}
               className="w-full py-4 text-center text-[#1C1E24]"
             >
               {reason}

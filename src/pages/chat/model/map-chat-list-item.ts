@@ -14,6 +14,7 @@ export function mapChatListItemToChat(item: ChatListItem): Chat {
     lastMessage: item.lastMsg,
     name: item.partner.name || "Без имени",
     online: item.partner.online === 1,
+    partnerId: item.partner.id,
     photo: item.partner.photo
       ? resolveUploadUrl(item.partner.photo)
       : FALLBACK_PHOTO,

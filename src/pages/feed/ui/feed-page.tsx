@@ -7,9 +7,11 @@ import { Settings2 } from "lucide-react";
 import { BottomNav } from "@/widgets/bottom-nav";
 
 import {
+  useBlockUserMutation,
   useDislikeMutation,
   useFeedQuery,
   useLikeMutation,
+  useReportUserMutation,
   useUndoMutation,
 } from "@/entities/user";
 
@@ -44,6 +46,8 @@ export const FeedPage = () => {
   const likeMutation = useLikeMutation();
   const dislikeMutation = useDislikeMutation();
   const undoMutation = useUndoMutation();
+  const blockMutation = useBlockUserMutation();
+  const reportMutation = useReportUserMutation();
 
   const [stack, setStack] = useState<Profile[]>(() =>
     isMockMode() ? [GUIDE_PROFILE, ...PROFILES] : [GUIDE_PROFILE],
@@ -145,6 +149,34 @@ export const FeedPage = () => {
     }
   };
 
+  const handleBlock = async (id: number) => {
+    if (isMockMode()) {
+      setStack((prev) => prev.filter((profile) => profile.id !== id));
+      toast.success("Пользователь заблокирован");
+      return;
+    }
+    try {
+      await blockMutation.mutateAsync(id);
+      setStack((prev) => prev.filter((profile) => profile.id !== id));
+      toast.success("Пользователь заблокирован");
+    } catch {
+      toast.error("Не получилось заблокировать. Попробуй ещё раз");
+    }
+  };
+
+  const handleReport = async (id: number, reason: string) => {
+    if (isMockMode()) {
+      toast.success("Жалоба отправлена");
+      return;
+    }
+    try {
+      await reportMutation.mutateAsync({ reason, reportedId: id });
+      toast.success("Жалоба отправлена");
+    } catch {
+      toast.error("Не получилось отправить жалобу");
+    }
+  };
+
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       {/* Верхний бар */}
@@ -189,7 +221,9 @@ export const FeedPage = () => {
                     returning?.id === profile.id ? returning.from : undefined
                   }
                   likesLocked={likesLocked}
+                  onBlock={(id) => void handleBlock(id)}
                   onLikeBlocked={() => setIsLimitReached(true)}
+                  onReport={(id, reason) => void handleReport(id, reason)}
                   onRewind={() => void handleRewind()}
                   onSwipe={(direction, id) => void handleSwipe(direction, id)}
                 />

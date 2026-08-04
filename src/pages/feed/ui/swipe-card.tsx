@@ -28,6 +28,7 @@ import {
 
 import guideHand from "@/shared/assets/icons/guide-hand.svg";
 import guideScroll from "@/shared/assets/icons/guide-scroll.svg";
+import { REPORT_REASONS } from "@/shared/config";
 import {
   ImpactStyle,
   NotificationType,
@@ -35,17 +36,24 @@ import {
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
 import { cn } from "@/shared/lib/utils";
+import { Modal } from "@/shared/ui/modal";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import type { Profile } from "../model/profiles";
 
 type SwipeDirection = "left" | "right";
 
+// null — закрыт; "report" — только жалоба (из меню «Ещё»); "reportAndBlock" —
+// жалоба + блокировка одним действием (из нижней кнопки в деталях профиля).
+type ReportMode = "report" | "reportAndBlock" | null;
+
 type SwipeCardProps = {
   enterFrom?: SwipeDirection;
   isTop: boolean;
   likesLocked: boolean;
+  onBlock: (id: number) => Promise<void> | void;
   onLikeBlocked: () => void;
+  onReport: (id: number, reason: string) => Promise<void> | void;
   onRewind: () => void;
   onSwipe: (direction: SwipeDirection, id: number) => void;
   profile: Profile;
@@ -86,14 +94,49 @@ export const SwipeCard = ({
   enterFrom,
   isTop,
   likesLocked,
+  onBlock,
   onLikeBlocked,
+  onReport,
   onRewind,
   onSwipe,
   profile,
 }: SwipeCardProps) => {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
+  const [reportMode, setReportMode] = useState<ReportMode>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const openReportFromMenu = () => {
+    setIsMenuOpen(false);
+    setReportMode("report");
+  };
+
+  const openBlockConfirmFromMenu = () => {
+    setIsMenuOpen(false);
+    setIsBlockConfirmOpen(true);
+  };
+
+  const reportFromBlockConfirm = () => {
+    setIsBlockConfirmOpen(false);
+    setReportMode("report");
+  };
+
+  const confirmBlockOnly = async () => {
+    setIsBlockConfirmOpen(false);
+    await onBlock(profile.id);
+  };
+
+  const submitReport = async (reason: string) => {
+    const mode = reportMode;
+    setReportMode(null);
+    if (mode === "report") {
+      await onReport(profile.id, reason);
+    } else if (mode === "reportAndBlock") {
+      await onReport(profile.id, reason);
+      await onBlock(profile.id);
+    }
+  };
 
   const scrollToDetails = () => {
     const el = cardRef.current;
@@ -249,7 +292,7 @@ export const SwipeCard = ({
             <div className="absolute top-12 right-3 z-40 w-68 overflow-hidden rounded-2xl bg-white shadow-xl">
               <button
                 type="button"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={openReportFromMenu}
                 className="text-nowrap flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm leading-none font-medium tracking-normal text-red-500"
               >
                 <Ban className="size-5 shrink-0" />
@@ -258,7 +301,7 @@ export const SwipeCard = ({
               <div className="border-t border-[#E4E7EC]" />
               <button
                 type="button"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={openBlockConfirmFromMenu}
                 className="text-nowrap flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm leading-none font-medium tracking-normal text-red-500"
               >
                 <MessageSquareWarning className="size-5 shrink-0" />
@@ -420,11 +463,64 @@ export const SwipeCard = ({
 
         <button
           type="button"
+          onClick={() => setReportMode("reportAndBlock")}
           className="mt-4 w-full rounded-2xl bg-red-50 py-4 text-center text-sm font-semibold text-red-500"
         >
           Пожаловаться и заблокировать
         </button>
       </div>
+
+      <Modal
+        isOpen={isBlockConfirmOpen}
+        onClose={() => setIsBlockConfirmOpen(false)}
+      >
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h2 className="text-lg font-bold">Заблокировать {profile.name}?</h2>
+          <p className="text-sm text-[#6B7280]">
+            Мы скроем ваш профиль друг от друга,
+            <br />а общение станет недоступно.
+          </p>
+        </div>
+        <button
+          type="button"
+          data-haptic="heavy"
+          onClick={() => void confirmBlockOnly()}
+          className="mt-6 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Заблокировать
+        </button>
+        <button
+          type="button"
+          onClick={reportFromBlockConfirm}
+          className="mt-4 w-full text-center text-sm font-semibold text-red-500"
+        >
+          Пожаловаться
+        </button>
+      </Modal>
+
+      <Modal isOpen={reportMode !== null} onClose={() => setReportMode(null)}>
+        <h2 className="text-center text-lg font-bold">Укажи причину жалобы</h2>
+        <div className="mt-2 divide-y divide-[#E4E7EC]">
+          {REPORT_REASONS.map((reason) => (
+            <button
+              key={reason}
+              type="button"
+              data-haptic="heavy"
+              onClick={() => void submitReport(reason)}
+              className="w-full py-4 text-center text-[#1C1E24]"
+            >
+              {reason}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setReportMode(null)}
+          className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Отмена
+        </button>
+      </Modal>
 
       <div className="sticky bottom-0 z-20 px-6 pb-4">
         {/* Прогрессивный blur (0 → 3px от верха к низу) — CSS не умеет
