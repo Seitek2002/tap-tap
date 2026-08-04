@@ -28,6 +28,8 @@ export const UserSchema = z.object({
   has_car: z.number(),
   has_realty: z.number(),
   height: z.string(),
+  hide_last_seen: z.number(),
+  hide_online_status: z.number(),
   id: z.number(),
   interests: z.array(z.coerce.string()),
   latitude: z.number().nullable(),
@@ -72,6 +74,8 @@ export type ProfileUpdate = Partial<
     | "has_car"
     | "has_realty"
     | "height"
+    | "hide_last_seen"
+    | "hide_online_status"
     | "interests"
     | "latitude"
     | "longitude"
@@ -334,3 +338,23 @@ export const BlockedContactSchema = z.object({
 });
 
 export type BlockedContact = z.infer<typeof BlockedContactSchema>;
+
+// GET/PUT /api/notifications/preferences — тот же паттерн, что filters и
+// blocked-контакты: JSON-блоб целиком на совести фронта. Реальной доставки
+// пушей/писем пока нет (нужны отдельно service worker/VAPID и почтовый
+// провайдер) — здесь только хранение настроек на будущее.
+export const NotificationPreferencesSchema = z.object({
+  email: z.string().default(""),
+  emailNewMatches: z.boolean().default(false),
+  emailNewMessages: z.boolean().default(false),
+  emailNewsletters: z.boolean().default(false),
+  emailPromos: z.boolean().default(false),
+  messages: z.boolean().default(true),
+  newMatches: z.boolean().default(true),
+  promos: z.boolean().default(true),
+  superLikes: z.boolean().default(true),
+});
+
+export type NotificationPreferences = z.infer<
+  typeof NotificationPreferencesSchema
+>;

@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
@@ -6,17 +6,26 @@ import { Check, ChevronRight } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
-import { logout } from "@/entities/session";
+import { deleteAccount, logout } from "@/entities/session";
+import {
+  useFiltersQuery,
+  useProfileQuery,
+  useUpdateFiltersMutation,
+  useUpdateProfileMutation,
+} from "@/entities/user";
 
 import { ROUTES } from "@/shared/config";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { RangeSlider, Slider } from "@/shared/ui/slider";
 import { Spinner } from "@/shared/ui/spinner";
 import { Toggle } from "@/shared/ui/toggle";
 
 import {
   APP_VERSION,
+  AUDIENCE_TO_SHOW_TO,
   DEFAULT_AGE_RANGE,
   DEFAULT_DISTANCE_KM,
   DEFAULT_LANGUAGE,
@@ -27,6 +36,7 @@ import {
   SEEKING_OPTIONS,
   SETTINGS_ACCOUNT,
   SHOW_TO_OPTIONS,
+  SHOW_TO_TO_AUDIENCE,
 } from "../model/settings";
 import { PremiumFeatureIcon } from "./premium-feature-icon";
 
@@ -70,13 +80,18 @@ const SettingsRow = ({
 
 export const SettingsPage = () => {
   const navigate = useNavigate();
+  const filtersQuery = useFiltersQuery(!isMockMode());
+  const updateFiltersMutation = useUpdateFiltersMutation();
+  const profileQuery = useProfileQuery(!isMockMode());
+  const updateProfileMutation = useUpdateProfileMutation();
+
   const [ageRange, setAgeRange] = useState(DEFAULT_AGE_RANGE);
   const [distance, setDistance] = useState(DEFAULT_DISTANCE_KM);
 
   const [showTo, setShowTo] = useState(DEFAULT_SHOW_TO);
   const [isShowToOpen, setIsShowToOpen] = useState(false);
 
-  const [seeking, setSeeking] = useState(DEFAULT_SEEKING);
+  const [seeking, setSeeking] = useState<string>(DEFAULT_SEEKING);
   const [isSeekingOpen, setIsSeekingOpen] = useState(false);
 
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
@@ -86,16 +101,84 @@ export const SettingsPage = () => {
   const [hideStatus, setHideStatus] = useState(false);
   const [hideActivity, setHideActivity] = useState(false);
 
-  // Бэкенда нет — имитируем сетевой раунд-трип: галочка на кнопке "Готово"
-  // на мгновение сменяется спиннером, и только потом всплывает тост.
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  // Реальный режим: "Рекомендации" и "Невидимка" — это сохранённые /api/filters
+  // и /api/profile, заливаем их в локальный черновик один раз, как только оба
+  // ответа пришли.
+  const hasHydratedSettings = useRef(isMockMode());
+  useEffect(() => {
+    if (
+      hasHydratedSettings.current ||
+      !filtersQuery.data ||
+      !profileQuery.data
+    ) {
+      return;
+    }
+    hasHydratedSettings.current = true;
+    const prefs = filtersQuery.data;
+    setAgeRange([prefs.ageMin, prefs.ageMax]);
+    setDistance(prefs.maxDistance);
+    setShowTo(AUDIENCE_TO_SHOW_TO[prefs.audience] ?? DEFAULT_SHOW_TO);
+    setSeeking(
+      SEEKING_OPTIONS.find((option) => option.code === prefs.seeking)?.label ??
+        DEFAULT_SEEKING,
+    );
+    setHideStatus(profileQuery.data.hide_online_status === 1);
+    setHideActivity(profileQuery.data.hide_last_seen === 1);
+  }, [filtersQuery.data, profileQuery.data]);
+
+  // Бэкенда нет (mock-режим) — имитируем сетевой раунд-трип: галочка на
+  // кнопке "Готово" на мгновение сменяется спиннером, и только потом
+  // всплывает тост.
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    if (isMockMode()) {
+      setTimeout(() => {
+        toast.success("Изменения сохранены");
+        navigate(-1);
+      }, 500);
+      return;
+    }
+    const current = filtersQuery.data;
+    if (!current) {
+      setIsSaving(false);
+      return;
+    }
+    try {
+      await updateFiltersMutation.mutateAsync({
+        ...current,
+        ageMax: ageRange[1],
+        ageMin: ageRange[0],
+        audience: SHOW_TO_TO_AUDIENCE[showTo] ?? "all",
+        maxDistance: distance,
+        seeking:
+          SEEKING_OPTIONS.find((option) => option.label === seeking)?.code ??
+          "",
+      });
       toast.success("Изменения сохранены");
       navigate(-1);
-    }, 500);
+    } catch {
+      toast.error("Не получилось сохранить");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const confirmInvisibleMode = async () => {
+    setIsInvisibleModeOpen(false);
+    if (isMockMode()) return;
+    try {
+      await updateProfileMutation.mutateAsync({
+        hide_last_seen: hideActivity ? 1 : 0,
+        hide_online_status: hideStatus ? 1 : 0,
+      });
+    } catch {
+      toast.error("Не получилось сохранить");
+    }
   };
 
   const handlePremiumClick = () => {
@@ -107,6 +190,41 @@ export const SettingsPage = () => {
     navigate("/");
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      await deleteAccount();
+      navigate("/");
+    } catch {
+      toast.error("Не получилось удалить аккаунт");
+      setIsDeletingAccount(false);
+    }
+  };
+
+  const displayName = isMockMode()
+    ? SETTINGS_ACCOUNT.name
+    : (profileQuery.data?.name ?? "");
+  const displayPhone = isMockMode()
+    ? SETTINGS_ACCOUNT.phone
+    : (profileQuery.data?.phone ?? "");
+
+  if (!isMockMode() && (filtersQuery.isLoading || profileQuery.isLoading)) {
+    return (
+      <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
+        <div className="flex-1 overflow-y-auto pb-4">
+          <header className="flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3">
+            <h1 className="text-2xl font-extrabold">Настройки</h1>
+            <Skeleton className="size-9 rounded-full" />
+          </header>
+          <Skeleton className="mx-4 h-20 rounded-3xl" />
+          <Skeleton className="mx-4 mt-5 h-20 rounded-3xl" />
+          <Skeleton className="mx-4 mt-5 h-56 rounded-3xl" />
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       <div className="flex-1 overflow-y-auto pb-4">
@@ -114,7 +232,7 @@ export const SettingsPage = () => {
           <h1 className="text-2xl font-extrabold">Настройки</h1>
           <button
             type="button"
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             disabled={isSaving}
             aria-label="Готово"
             className="flex size-9 items-center justify-center rounded-full border border-[#E4E7EC] disabled:opacity-60"
@@ -157,12 +275,12 @@ export const SettingsPage = () => {
             <SettingsRow
               variant="grouped"
               label="Номер телефона"
-              value={SETTINGS_ACCOUNT.phone}
+              value={displayPhone}
             />
             <SettingsRow
               variant="grouped"
               label="Твое имя"
-              value={SETTINGS_ACCOUNT.name}
+              value={displayName}
             />
           </div>
         </div>
@@ -293,6 +411,7 @@ export const SettingsPage = () => {
           <button
             type="button"
             data-haptic="heavy"
+            onClick={() => setIsDeleteAccountOpen(true)}
             className="w-full py-4 font-medium text-[#1C1E24]"
           >
             Удалить аккаунт
@@ -428,10 +547,40 @@ export const SettingsPage = () => {
 
         <button
           type="button"
-          onClick={() => setIsInvisibleModeOpen(false)}
+          onClick={() => void confirmInvisibleMode()}
           className="mt-5 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Готово
+        </button>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteAccountOpen}
+        onClose={() => setIsDeleteAccountOpen(false)}
+      >
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h2 className="text-lg font-bold">Удалить аккаунт?</h2>
+          <p className="text-sm text-[#6B7280]">
+            Это действие необратимо: анкета, переписки и пары будут удалены
+            безвозвратно
+          </p>
+        </div>
+        <button
+          type="button"
+          data-haptic="heavy"
+          disabled={isDeletingAccount}
+          onClick={() => void handleDeleteAccount()}
+          className="mt-6 w-full rounded-full bg-red-500 py-4 font-bold text-white disabled:opacity-60"
+        >
+          {isDeletingAccount ? "Удаляем..." : "Да, удалить"}
+        </button>
+        <button
+          type="button"
+          disabled={isDeletingAccount}
+          onClick={() => setIsDeleteAccountOpen(false)}
+          className="mt-4 w-full text-center text-sm font-semibold text-[#6B7280]"
+        >
+          Отмена
         </button>
       </Modal>
 

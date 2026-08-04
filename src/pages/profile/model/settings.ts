@@ -9,12 +9,27 @@ export const DEFAULT_DISTANCE_KM = 80;
 export const DEFAULT_SHOW_TO = "Мужчин";
 export const SHOW_TO_OPTIONS = ["Мужчин", "Женщин", "Всех"];
 
-// Тот же список, что в pages/filters (SEEKING_OPTIONS) — независимый мок.
+// value — то же значение, что audience в /api/filters (см. pages/filters) —
+// оба экрана редактируют одни и те же сохранённые фильтры поиска партнёра.
+export const SHOW_TO_TO_AUDIENCE: Record<string, string> = {
+  Всех: "all",
+  Женщин: "women",
+  Мужчин: "men",
+};
+
+export const AUDIENCE_TO_SHOW_TO: Record<string, string> = {
+  all: "Всех",
+  men: "Мужчин",
+  women: "Женщин",
+};
+
+// code — то же значение, что candidate.goals на бэке (см. pages/filters) —
+// нужен, чтобы сохранять/применять "Ты ищешь" через тот же /api/filters.
 export const SEEKING_OPTIONS = [
-  { emoji: "💬", label: "Просто общаться" },
-  { emoji: "💕", label: "Серьезные отношения" },
-  { emoji: "💜", label: "Построить семью" },
-];
+  { code: "chat", emoji: "💬", label: "Просто общаться" },
+  { code: "serious", emoji: "💕", label: "Серьезные отношения" },
+  { code: "family", emoji: "💜", label: "Построить семью" },
+] as const;
 
 export const DEFAULT_SEEKING = SEEKING_OPTIONS[0].label;
 

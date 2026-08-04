@@ -10,6 +10,7 @@ export { useFeedQuery } from "./api/get-feed";
 export { useFiltersQuery } from "./api/get-filters";
 export { useLikedByMeQuery, useLikedMeQuery } from "./api/get-likes";
 export { useMeQuery } from "./api/get-me";
+export { useNotificationPreferencesQuery } from "./api/get-notification-preferences";
 export { useProfileQuery } from "./api/get-profile";
 export { usePublicProfileQuery } from "./api/get-public-profile";
 export { useTransactionsQuery } from "./api/get-transactions";
@@ -22,6 +23,7 @@ export { useUndoMutation } from "./api/undo";
 export { useUnblockContactMutation } from "./api/unblock-contact";
 export { useUnmatchMutation } from "./api/unmatch";
 export { useUpdateFiltersMutation } from "./api/update-filters";
+export { useUpdateNotificationPreferencesMutation } from "./api/update-notification-preferences";
 export { useUpdateProfileMutation } from "./api/update-profile";
 export { useUploadChatAttachmentMutation } from "./api/upload-chat-attachment";
 export { useAnketaDraftStore } from "./model/anketa-draft-store";
@@ -38,6 +40,7 @@ export type {
   LikeResult,
   LikeUser,
   Me,
+  NotificationPreferences,
   ProfileUpdate,
   ReportResult,
   Transaction,
