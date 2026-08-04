@@ -75,6 +75,11 @@ export const ChatProfilePage = () => {
 
   const submitReportAndBlock = async (reason: string) => {
     setIsReportOpen(false);
+    if (isMockMode()) {
+      toast.success("Жалоба отправлена, пользователь заблокирован");
+      navigate(-1);
+      return;
+    }
     if (partnerId === null) return;
     try {
       await reportMutation.mutateAsync({ reason, reportedId: partnerId });

@@ -77,7 +77,12 @@ export const LikeProfilePage = () => {
 
   const submitReportAndBlock = async (reason: string) => {
     setIsReportOpen(false);
-    if (isMockMode() || numericId === null) return;
+    if (isMockMode()) {
+      toast.success("Жалоба отправлена, пользователь заблокирован");
+      navigate(-1);
+      return;
+    }
+    if (numericId === null) return;
     try {
       await reportMutation.mutateAsync({ reason, reportedId: numericId });
       await blockMutation.mutateAsync(numericId);
