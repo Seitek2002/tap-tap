@@ -28,6 +28,7 @@ export const ROUTES = {
   profileHideFromContacts: "/profile/hide-from-contacts",
   profileNotifications: "/profile/notifications",
   profileSettings: "/profile/settings",
+  wallet: "/wallet",
   welcome: "/welcome",
 } as const;
 

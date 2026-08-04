@@ -26,6 +26,7 @@ import {
   ProfilePage,
   SettingsPage,
 } from "@/pages/profile";
+import { WalletPage } from "@/pages/wallet";
 import { WelcomePage } from "@/pages/welcome";
 
 import { ROUTES } from "@/shared/config";
@@ -160,6 +161,10 @@ export const router = createHashRouter([
       {
         element: <Anketa12Page />,
         path: ROUTES.anketa12,
+      },
+      {
+        element: <WalletPage />,
+        path: ROUTES.wallet,
       },
     ],
     element: <PageTransition />,

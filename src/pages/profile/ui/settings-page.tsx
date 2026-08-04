@@ -99,7 +99,7 @@ export const SettingsPage = () => {
   };
 
   const handlePremiumClick = () => {
-    toast("Premium скоро будет доступен");
+    navigate(ROUTES.wallet);
   };
 
   const handleLogout = async () => {

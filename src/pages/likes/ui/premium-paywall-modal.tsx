@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router";
 
 import { AnimatePresence, motion } from "motion/react";
 
@@ -8,6 +9,7 @@ import personEmir from "@/shared/assets/images/person-emir.png";
 import personNight from "@/shared/assets/images/person-night.png";
 import personSeitek from "@/shared/assets/images/person-seitek.png";
 import personZalkar from "@/shared/assets/images/person-zalkar.png";
+import { ROUTES } from "@/shared/config";
 import { useMounted } from "@/shared/lib/use-mounted";
 import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 import { cn } from "@/shared/lib/utils";
@@ -34,8 +36,14 @@ export const PremiumPaywallModal = ({
   isOpen,
   onClose,
 }: PremiumPaywallModalProps) => {
+  const navigate = useNavigate();
   const mounted = useMounted();
   useScrollLock(isOpen);
+
+  const goToWallet = () => {
+    onClose();
+    navigate(ROUTES.wallet);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -170,7 +178,7 @@ export const PremiumPaywallModal = ({
                 </div>
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={goToWallet}
                   className="relative rounded-full w-full bg-[#F5A623] py-2.75 text-base font-semibold text-[#1C1E24] transition-transform active:scale-[0.99]"
                 >
                   Смотреть

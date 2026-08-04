@@ -226,3 +226,43 @@ export const TypingEventSchema = z.object({
 });
 
 export type TypingEvent = z.infer<typeof TypingEventSchema>;
+
+// GET /api/wallet
+export const WalletSchema = z.object({
+  balance: z.number(),
+  gender: z.string(),
+  isPremium: z.boolean(),
+  premiumUntil: z.number().nullable(),
+});
+
+export type Wallet = z.infer<typeof WalletSchema>;
+
+// GET /api/wallet/transactions
+export const TransactionSchema = z.object({
+  amount: z.number(),
+  created_at: z.string(),
+  description: z.string(),
+  id: z.number(),
+  type: z.enum(["topup", "purchase"]),
+});
+
+export type Transaction = z.infer<typeof TransactionSchema>;
+
+// POST /api/wallet/topup
+export const TopUpResultSchema = z.object({
+  balance: z.number(),
+  ok: z.boolean(),
+});
+
+export type TopUpResult = z.infer<typeof TopUpResultSchema>;
+
+// POST /api/wallet/buy-premium — {error, needed, balance} при нехватке
+// средств (обрабатывается через ApiError по статусу 400, не эту схему).
+export const BuyPremiumResultSchema = z.object({
+  balance: z.number(),
+  isPremium: z.boolean(),
+  ok: z.boolean(),
+  premiumUntil: z.number(),
+});
+
+export type BuyPremiumResult = z.infer<typeof BuyPremiumResultSchema>;
