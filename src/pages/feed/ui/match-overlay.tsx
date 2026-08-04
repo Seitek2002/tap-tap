@@ -14,13 +14,18 @@ import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 import type { Profile } from "../model/profiles";
 
 type MatchOverlayProps = {
+  chatId: null | number;
   onClose: () => void;
   profile: null | Profile;
 };
 
 const SUGGESTIONS = ["Сходим на ужин?", "Мне нравятся твои фотки"];
 
-export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
+export const MatchOverlay = ({
+  chatId,
+  onClose,
+  profile,
+}: MatchOverlayProps) => {
   const mounted = useMounted();
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
@@ -40,9 +45,9 @@ export const MatchOverlay = ({ onClose, profile }: MatchOverlayProps) => {
   // Отправка (кнопкой или готовым вариантом первого сообщения) сразу
   // переносит в чат с этим человеком — не просто закрывает оверлей.
   const goToChat = () => {
-    if (!profile) return;
+    if (!profile || chatId === null) return;
     onClose();
-    navigate(`/chat/${profile.id}`);
+    navigate(`/chat/${chatId}`);
   };
 
   const handleSend = () => {

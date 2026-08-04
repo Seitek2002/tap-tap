@@ -3,7 +3,9 @@ import person1 from "@/shared/assets/images/person-1.jpg";
 export type Profile = {
   age: number;
   bio: string;
-  distanceKm: number;
+  // null — когда бэк не смог посчитать дистанцию (нет координат/города ни у
+  // одной из сторон), а не "0 км от тебя".
+  distanceKm: null | number;
   habits: string[];
   id: number;
   important: string[];

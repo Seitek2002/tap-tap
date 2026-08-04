@@ -29,7 +29,7 @@ export const UserSchema = z.object({
   has_realty: z.number(),
   height: z.string(),
   id: z.number(),
-  interests: z.array(z.string()),
+  interests: z.array(z.coerce.string()),
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
   love_language: z.string(),
@@ -110,7 +110,7 @@ export const PublicProfileSchema = z.object({
   gender: z.string(),
   height: z.string(),
   id: z.number(),
-  interests: z.array(z.string()),
+  interests: z.array(z.coerce.string()),
   name: z.string(),
   online: z.number(),
   photos: z.array(z.string()),
@@ -118,3 +118,56 @@ export const PublicProfileSchema = z.object({
 });
 
 export type PublicProfile = z.infer<typeof PublicProfileSchema>;
+
+// GET /api/feed — кандидат в ленте свайпов. distanceKm null, если у одной из
+// сторон нет ни координат, ни известного города — считается на бэке,
+// точные lat/lng чужих анкет клиенту не отдаются.
+export const FeedCandidateSchema = z.object({
+  age: z.number(),
+  alcohol: z.string(),
+  bio: z.string(),
+  city: z.string(),
+  company: z.string(),
+  credit_ok: z.number(),
+  distanceKm: z.number().nullable(),
+  education: z.string(),
+  gender: z.string(),
+  goals: z.string(),
+  has_car: z.number(),
+  has_realty: z.number(),
+  height: z.string(),
+  id: z.number(),
+  interests: z.array(z.coerce.string()),
+  marital_status: z.string(),
+  name: z.string(),
+  online: z.number(),
+  photos: z.array(z.string()),
+  religion: z.string(),
+  smoking: z.string(),
+  sport: z.string(),
+  workplace: z.string(),
+  zodiac: z.string(),
+});
+
+export type FeedCandidate = z.infer<typeof FeedCandidateSchema>;
+
+// POST /api/swipes/like/:id — { ok:true, match, chatId } при обычном
+// исходе, { ok:false, limitReached:true, limit } при исчерпанном лимите.
+export const LikeResultSchema = z.object({
+  chatId: z.number().nullable().optional(),
+  limit: z.number().optional(),
+  limitReached: z.boolean().optional(),
+  match: z.boolean().optional(),
+  ok: z.boolean(),
+});
+
+export type LikeResult = z.infer<typeof LikeResultSchema>;
+
+// DELETE /api/swipes/undo
+export const UndoResultSchema = z.object({
+  message: z.string().optional(),
+  ok: z.boolean(),
+  undoneUserId: z.number().optional(),
+});
+
+export type UndoResult = z.infer<typeof UndoResultSchema>;

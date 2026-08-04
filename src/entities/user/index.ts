@@ -1,6 +1,18 @@
+export { useDislikeMutation } from "./api/dislike";
+export { useFeedQuery } from "./api/get-feed";
 export { useMeQuery } from "./api/get-me";
 export { useProfileQuery } from "./api/get-profile";
+export { useLikeMutation } from "./api/like";
 export { submitAnketa } from "./api/submit-anketa";
+export { useUndoMutation } from "./api/undo";
 export { useUpdateProfileMutation } from "./api/update-profile";
 export { useAnketaDraftStore } from "./model/anketa-draft-store";
-export type { Me, ProfileUpdate, PublicProfile, User } from "./model/types";
+export type {
+  FeedCandidate,
+  LikeResult,
+  Me,
+  ProfileUpdate,
+  PublicProfile,
+  UndoResult,
+  User,
+} from "./model/types";

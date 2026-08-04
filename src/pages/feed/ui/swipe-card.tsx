@@ -307,10 +307,12 @@ export const SwipeCard = ({
                 </span>
               </div>
               <div className="mt-1.5 flex items-center gap-4 text-xs text-white/90">
-                <span className="flex items-center gap-1">
-                  <MapPin className="size-4" />
-                  {profile.distanceKm} км от тебя
-                </span>
+                {profile.distanceKm !== null && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-4" />
+                    {profile.distanceKm} км от тебя
+                  </span>
+                )}
                 <ZodiacBadge sign={profile.zodiac} />
               </div>
             </div>

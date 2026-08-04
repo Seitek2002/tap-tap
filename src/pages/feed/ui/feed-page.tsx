@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { Settings2 } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
+
+import {
+  useDislikeMutation,
+  useFeedQuery,
+  useLikeMutation,
+  useUndoMutation,
+} from "@/entities/user";
 
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
@@ -12,28 +20,45 @@ import {
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
 
-import { GUIDE_PROFILE, PROFILES, type Profile } from "../model/profiles";
+import { mapFeedCandidateToProfile } from "../model/map-feed-candidate";
+import { GUIDE_PROFILE, type Profile } from "../model/profiles";
 import { LikeLimitOverlay } from "./like-limit-overlay";
 import { MatchOverlay } from "./match-overlay";
-import { showNewMatchToast } from "./new-match-toast";
 import { SwipeCard } from "./swipe-card";
 
+// Локальный предохранитель — то же значение, что и дефолт бэка
+// (FREE_DAILY_LIKES в swipes.js), чтобы блокировать до сетевого запроса.
+// Источник истины всё равно бэк: если он ответит limitReached, override.
 const LIKE_LIMIT = 4;
-// Показать "Это взаимно!" / тост о паре на этих по счёту лайках — для
-// демонстрации механики (реальная логика взаимности придёт с бэком).
-const MATCH_ON_LIKE_NUMBER = 2;
-const TOAST_MATCH_ON_LIKE_NUMBER = 3;
 
 export const FeedPage = () => {
   const navigate = useNavigate();
-  // Пока гайд-карточка встречает всех первой.
-  const [stack, setStack] = useState([GUIDE_PROFILE, ...PROFILES]);
+  const feedQuery = useFeedQuery();
+  const likeMutation = useLikeMutation();
+  const dislikeMutation = useDislikeMutation();
+  const undoMutation = useUndoMutation();
+
+  const [stack, setStack] = useState<Profile[]>([GUIDE_PROFILE]);
+  const hasSeededFeed = useRef(false);
+
+  useEffect(() => {
+    if (hasSeededFeed.current || !feedQuery.data) return;
+    hasSeededFeed.current = true;
+    setStack((prev) => [
+      ...prev,
+      ...feedQuery.data.map(mapFeedCandidateToProfile),
+    ]);
+  }, [feedQuery.data]);
+
   const [history, setHistory] = useState<
     { direction: "left" | "right"; profile: Profile }[]
   >([]);
   const [likeCount, setLikeCount] = useState(0);
   const [isLimitReached, setIsLimitReached] = useState(false);
-  const [matchedProfile, setMatchedProfile] = useState<null | Profile>(null);
+  const [matched, setMatched] = useState<{
+    chatId: null | number;
+    profile: Profile;
+  } | null>(null);
   // Карточка, которую только что вернули (для анимации влёта).
   const [returning, setReturning] = useState<{
     from: "left" | "right";
@@ -41,30 +66,49 @@ export const FeedPage = () => {
   } | null>(null);
   const likesLocked = likeCount >= LIKE_LIMIT;
 
-  const handleSwipe = (direction: "left" | "right", id: number) => {
+  const handleSwipe = async (direction: "left" | "right", id: number) => {
     const swiped = stack.find((profile) => profile.id === id);
     setStack((prev) => prev.filter((profile) => profile.id !== id));
     if (swiped) setHistory((prev) => [...prev, { direction, profile: swiped }]);
 
-    // Считаем только лайки реальных людей (не гайд, не дизлайки).
-    if (direction === "right" && id !== GUIDE_PROFILE.id) {
-      const nextCount = likeCount + 1;
-      setLikeCount(nextCount);
-      if (nextCount >= LIKE_LIMIT) setIsLimitReached(true);
-      if (nextCount === MATCH_ON_LIKE_NUMBER && swiped) {
+    // Гайд-карточка не реальный человек — на бэке для неё ничего не свайпаем.
+    if (id === GUIDE_PROFILE.id) return;
+
+    if (direction === "left") {
+      dislikeMutation.mutate(id);
+      return;
+    }
+
+    try {
+      const result = await likeMutation.mutateAsync(id);
+      if (result.limitReached) {
+        setIsLimitReached(true);
+        return;
+      }
+      setLikeCount((count) => count + 1);
+      if (result.match && swiped) {
         triggerNotificationHaptic(NotificationType.Success);
-        setMatchedProfile(swiped);
+        setMatched({ chatId: result.chatId ?? null, profile: swiped });
       }
-      if (nextCount === TOAST_MATCH_ON_LIKE_NUMBER && swiped) {
-        showNewMatchToast(swiped);
-      }
+    } catch {
+      toast.error("Не получилось лайкнуть. Попробуй ещё раз");
     }
   };
 
   // Вернуть последнюю свайпнутую карточку.
-  const handleRewind = () => {
+  const handleRewind = async () => {
     if (history.length === 0) return;
     const last = history[history.length - 1];
+
+    if (last.profile.id !== GUIDE_PROFILE.id) {
+      try {
+        await undoMutation.mutateAsync();
+      } catch {
+        toast.error("Не получилось отменить свайп");
+        return;
+      }
+    }
+
     setHistory((prev) => prev.slice(0, -1));
     setStack((prev) => [last.profile, ...prev]);
     setReturning({ from: last.direction, id: last.profile.id });
@@ -119,8 +163,8 @@ export const FeedPage = () => {
                   }
                   likesLocked={likesLocked}
                   onLikeBlocked={() => setIsLimitReached(true)}
-                  onRewind={handleRewind}
-                  onSwipe={handleSwipe}
+                  onRewind={() => void handleRewind()}
+                  onSwipe={(direction, id) => void handleSwipe(direction, id)}
                 />
               ))
           )}
@@ -140,8 +184,9 @@ export const FeedPage = () => {
       <BottomNav />
 
       <MatchOverlay
-        profile={matchedProfile}
-        onClose={() => setMatchedProfile(null)}
+        chatId={matched?.chatId ?? null}
+        profile={matched?.profile ?? null}
+        onClose={() => setMatched(null)}
       />
     </div>
   );
