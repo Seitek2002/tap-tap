@@ -323,3 +323,14 @@ export const FilterPreferencesSchema = z.object({
 });
 
 export type FilterPreferences = z.infer<typeof FilterPreferencesSchema>;
+
+// GET /api/blocks — единый список для "Скрыться от знакомых": id > 0 —
+// уже зарегистрированный пользователь, id < 0 — номер, который заблокировали
+// заранее и ещё не зарегистрирован (см. POST /api/blocks/by-phone).
+export const BlockedContactSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  phone: z.string(),
+});
+
+export type BlockedContact = z.infer<typeof BlockedContactSchema>;

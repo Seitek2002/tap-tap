@@ -1,9 +1,11 @@
+export { useBlockContactMutation } from "./api/block-contact";
 export { useBlockUserMutation } from "./api/block-user";
 export { useBuyPremiumMutation } from "./api/buy-premium";
 export { useDislikeMutation } from "./api/dislike";
 export { useChatQuery } from "./api/get-chat";
 export { useChatMessagesQuery } from "./api/get-chat-messages";
 export { useChatsQuery } from "./api/get-chats";
+export { useBlockedContactsQuery } from "./api/get-blocks";
 export { useFeedQuery } from "./api/get-feed";
 export { useFiltersQuery } from "./api/get-filters";
 export { useLikedByMeQuery, useLikedMeQuery } from "./api/get-likes";
@@ -17,6 +19,7 @@ export { useReportUserMutation } from "./api/report-user";
 export { submitAnketa } from "./api/submit-anketa";
 export { useTopUpMutation } from "./api/top-up";
 export { useUndoMutation } from "./api/undo";
+export { useUnblockContactMutation } from "./api/unblock-contact";
 export { useUnmatchMutation } from "./api/unmatch";
 export { useUpdateFiltersMutation } from "./api/update-filters";
 export { useUpdateProfileMutation } from "./api/update-profile";
@@ -24,6 +27,7 @@ export { useUploadChatAttachmentMutation } from "./api/upload-chat-attachment";
 export { useAnketaDraftStore } from "./model/anketa-draft-store";
 export { useChatSocket } from "./model/use-chat-socket";
 export type {
+  BlockedContact,
   BlockResult,
   BuyPremiumResult,
   ChatDetail,

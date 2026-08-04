@@ -1,16 +1,42 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { useBlockContactMutation } from "@/entities/user";
+
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { Input } from "@/shared/ui/input";
 
 export const AddContactManuallyPage = () => {
   const navigate = useNavigate();
+  const blockContactMutation = useBlockContactMutation();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleDone = async () => {
+    if (isMockMode()) {
+      navigate(-1);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await blockContactMutation.mutateAsync({
+        name: name.trim(),
+        phone: `+996${phone.trim()}`,
+      });
+      toast.success("Контакт заблокирован");
+      navigate(-1);
+    } catch {
+      toast.error("Не получилось заблокировать. Попробуй ещё раз");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
@@ -61,11 +87,11 @@ export const AddContactManuallyPage = () => {
 
         <button
           type="button"
-          disabled={!name.trim() || !phone.trim()}
-          onClick={() => navigate(-1)}
+          disabled={!name.trim() || !phone.trim() || isSaving}
+          onClick={() => void handleDone()}
           className="mt-5 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white disabled:bg-[#D1D5DB] disabled:text-white/70"
         >
-          Готово
+          {isSaving ? "Сохраняем..." : "Готово"}
         </button>
       </div>
 

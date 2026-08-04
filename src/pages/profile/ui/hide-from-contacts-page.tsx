@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { Check, ChevronLeft, Search, TriangleAlert } from "lucide-react";
@@ -7,11 +8,19 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import {
+  useBlockContactMutation,
+  useBlockedContactsQuery,
+  useUnblockContactMutation,
+} from "@/entities/user";
+
 import { ROUTES } from "@/shared/config";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useMounted } from "@/shared/lib/use-mounted";
 import { useScrollLock } from "@/shared/lib/use-scroll-lock";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { Toggle } from "@/shared/ui/toggle";
 
 import { type Contact, MOCK_BLACKLIST, MOCK_CONTACTS } from "../model/contacts";
@@ -109,17 +118,43 @@ export const HideFromContactsPage = () => {
   const [isAccessSettingsOpen, setIsAccessSettingsOpen] = useState(false);
   const [contactsAccessGranted, setContactsAccessGranted] = useState(false);
 
-  // Черный список — свой набор, независимый от импортированных контактов,
-  // но пополняемый из них (см. blockSelectedContacts).
-  const [blacklist, setBlacklist] = useState<Contact[]>(MOCK_BLACKLIST);
-  const [blockedIds, setBlockedIds] = useState<number[]>(
+  // Черный список — в mock-режиме свой набор, пополняемый локально (см.
+  // blockSelectedContacts); в реальном — то, что реально хранится на бэке
+  // (см. POST/GET/DELETE /api/blocks).
+  const [mockBlacklist, setMockBlacklist] = useState<Contact[]>(MOCK_BLACKLIST);
+  const [mockBlockedIds, setMockBlockedIds] = useState<number[]>(
     MOCK_BLACKLIST.map((contact) => contact.id),
   );
+  const blockedContactsQuery = useBlockedContactsQuery(!isMockMode());
+  const blockContactMutation = useBlockContactMutation();
+  const unblockContactMutation = useUnblockContactMutation();
 
-  const toggleBlocked = (id: number) =>
-    setBlockedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+  const blacklist = isMockMode()
+    ? mockBlacklist
+    : (blockedContactsQuery.data ?? []);
+  // В реальном режиме blacklist и есть список заблокированных — совпадает
+  // тавтологично, зато кнопка строки ниже сама становится всегда
+  // "Разблокировать", без отдельной ветки для реального режима.
+  const blockedIds = isMockMode()
+    ? mockBlockedIds
+    : blacklist.map((contact) => contact.id);
+
+  const toggleBlocked = async (contact: Contact) => {
+    if (isMockMode()) {
+      setMockBlockedIds((prev) =>
+        prev.includes(contact.id)
+          ? prev.filter((item) => item !== contact.id)
+          : [...prev, contact.id],
+      );
+      return;
+    }
+    try {
+      await unblockContactMutation.mutateAsync(contact.id);
+      toast.success(`${contact.name} разблокирован(а)`);
+    } catch {
+      toast.error("Не получилось разблокировать");
+    }
+  };
 
   // Выбор контактов на вкладке «Контакты» для массовой блокировки.
   const [selectedContactIds, setSelectedContactIds] = useState<number[]>([]);
@@ -129,16 +164,38 @@ export const HideFromContactsPage = () => {
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
 
-  const blockSelectedContacts = () => {
+  const blockSelectedContacts = async () => {
     const toBlock = contacts.filter((contact) =>
       selectedContactIds.includes(contact.id),
     );
-    setBlacklist((prev) => {
-      const existingIds = new Set(prev.map((contact) => contact.id));
-      return [...prev, ...toBlock.filter((c) => !existingIds.has(c.id))];
-    });
-    setBlockedIds((prev) => [...new Set([...prev, ...selectedContactIds])]);
-    setSelectedContactIds([]);
+
+    if (isMockMode()) {
+      setMockBlacklist((prev) => {
+        const existingIds = new Set(prev.map((contact) => contact.id));
+        return [...prev, ...toBlock.filter((c) => !existingIds.has(c.id))];
+      });
+      setMockBlockedIds((prev) => [
+        ...new Set([...prev, ...selectedContactIds]),
+      ]);
+      setSelectedContactIds([]);
+      return;
+    }
+
+    try {
+      // Последовательно, не Promise.all — тот же паттерн, что заливка фото
+      // анкеты: одна за одной, без риска гонки на бэке.
+      for (const contact of toBlock) {
+        await blockContactMutation.mutateAsync({
+          name: contact.name,
+          phone: contact.phone,
+        });
+      }
+      toast.success("Контакты заблокированы");
+    } catch {
+      toast.error("Не получилось заблокировать. Попробуй ещё раз");
+    } finally {
+      setSelectedContactIds([]);
+    }
   };
 
   const activeList = tab === "contacts" ? contacts : blacklist;
@@ -291,29 +348,73 @@ export const HideFromContactsPage = () => {
           </div>
         )}
 
-        {(tab === "blacklist" || contacts.length > 0) && (
-          <div className="relative mt-6 pr-8">
-            <div className="flex flex-col gap-4 px-4">
-              {groupedList.map(([letter, items]) => (
-                <div
-                  key={letter}
-                  ref={(el) => {
-                    sectionRefs.current[letter] = el;
-                  }}
-                >
-                  <span className="text-sm text-[#9CA3AF]">{letter}</span>
-                  <div className="mt-2 divide-y divide-[#E4E7EC] overflow-hidden rounded-2xl bg-white">
-                    {tab === "contacts"
-                      ? items.map((contact) => {
-                          const selected = selectedContactIds.includes(
-                            contact.id,
-                          );
-                          return (
-                            <button
+        {tab === "blacklist" &&
+        !isMockMode() &&
+        blockedContactsQuery.isLoading ? (
+          <div className="mt-6 space-y-2 px-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-14 w-full" />
+            ))}
+          </div>
+        ) : (
+          (tab === "blacklist" || contacts.length > 0) && (
+            <div className="relative mt-6 pr-8">
+              <div className="flex flex-col gap-4 px-4">
+                {groupedList.map(([letter, items]) => (
+                  <div
+                    key={letter}
+                    ref={(el) => {
+                      sectionRefs.current[letter] = el;
+                    }}
+                  >
+                    <span className="text-sm text-[#9CA3AF]">{letter}</span>
+                    <div className="mt-2 divide-y divide-[#E4E7EC] overflow-hidden rounded-2xl bg-white">
+                      {tab === "contacts"
+                        ? items.map((contact) => {
+                            const selected = selectedContactIds.includes(
+                              contact.id,
+                            );
+                            return (
+                              <button
+                                key={contact.id}
+                                type="button"
+                                onClick={() =>
+                                  toggleContactSelected(contact.id)
+                                }
+                                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                              >
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium">
+                                    {contact.name}
+                                  </p>
+                                  <p className="text-sm text-[#6B7280]">
+                                    {contact.phone}
+                                  </p>
+                                </div>
+                                <AnimatePresence>
+                                  {selected && (
+                                    <motion.span
+                                      initial={{ opacity: 0, scale: 0.4 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      exit={{ opacity: 0, scale: 0.4 }}
+                                      transition={{
+                                        damping: 22,
+                                        stiffness: 500,
+                                        type: "spring",
+                                      }}
+                                      className="bg-primary flex size-6 shrink-0 items-center justify-center rounded-full text-white"
+                                    >
+                                      <Check className="size-3.5" />
+                                    </motion.span>
+                                  )}
+                                </AnimatePresence>
+                              </button>
+                            );
+                          })
+                        : items.map((contact) => (
+                            <div
                               key={contact.id}
-                              type="button"
-                              onClick={() => toggleContactSelected(contact.id)}
-                              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                              className="flex items-center justify-between gap-3 px-4 py-3"
                             >
                               <div className="min-w-0">
                                 <p className="truncate font-medium">
@@ -323,68 +424,36 @@ export const HideFromContactsPage = () => {
                                   {contact.phone}
                                 </p>
                               </div>
-                              <AnimatePresence>
-                                {selected && (
-                                  <motion.span
-                                    initial={{ opacity: 0, scale: 0.4 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.4 }}
-                                    transition={{
-                                      damping: 22,
-                                      stiffness: 500,
-                                      type: "spring",
-                                    }}
-                                    className="bg-primary flex size-6 shrink-0 items-center justify-center rounded-full text-white"
-                                  >
-                                    <Check className="size-3.5" />
-                                  </motion.span>
-                                )}
-                              </AnimatePresence>
-                            </button>
-                          );
-                        })
-                      : items.map((contact) => (
-                          <div
-                            key={contact.id}
-                            className="flex items-center justify-between gap-3 px-4 py-3"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate font-medium">
-                                {contact.name}
-                              </p>
-                              <p className="text-sm text-[#6B7280]">
-                                {contact.phone}
-                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void toggleBlocked(contact)}
+                                className="shrink-0 rounded-full bg-[#1C1E24] px-3 py-2 text-xs font-semibold whitespace-nowrap text-white"
+                              >
+                                {blockedIds.includes(contact.id)
+                                  ? "Разблокировать"
+                                  : "Заблокировать"}
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => toggleBlocked(contact.id)}
-                              className="shrink-0 rounded-full bg-[#1C1E24] px-3 py-2 text-xs font-semibold whitespace-nowrap text-white"
-                            >
-                              {blockedIds.includes(contact.id)
-                                ? "Разблокировать"
-                                : "Заблокировать"}
-                            </button>
-                          </div>
-                        ))}
+                          ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div className="fixed top-32 right-1 bottom-24 z-10 flex flex-col items-center justify-between py-1">
-              {ALPHABET.map((letter) => (
-                <button
-                  key={letter}
-                  type="button"
-                  onClick={() => scrollToLetter(letter)}
-                  className="text-[10px] leading-none font-medium text-[#9CA3AF]"
-                >
-                  {letter}
-                </button>
-              ))}
+              <div className="fixed top-32 right-1 bottom-24 z-10 flex flex-col items-center justify-between py-1">
+                {ALPHABET.map((letter) => (
+                  <button
+                    key={letter}
+                    type="button"
+                    onClick={() => scrollToLetter(letter)}
+                    className="text-[10px] leading-none font-medium text-[#9CA3AF]"
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
 
@@ -432,7 +501,7 @@ export const HideFromContactsPage = () => {
           >
             <button
               type="button"
-              onClick={blockSelectedContacts}
+              onClick={() => void blockSelectedContacts()}
               className="w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
             >
               Заблокировать
