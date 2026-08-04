@@ -7,7 +7,10 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { useChatsQuery } from "@/entities/user";
+
 import emptyChatIllustration from "@/shared/assets/images/empty-chat-illustration.png";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useClickAway } from "@/shared/lib/use-click-away";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
@@ -15,6 +18,7 @@ import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { CHATS, LIKES_AND_MATCHES } from "../model/chats";
+import { mapChatListItemToChat } from "../model/map-chat-list-item";
 import { REPORT_REASONS } from "../model/report-reasons";
 import { ChatRow } from "./chat-row";
 
@@ -45,18 +49,31 @@ const ChatRowSkeleton = () => (
 export const ChatPage = () => {
   const navigate = useNavigate();
 
-  // Бэкенда нет — имитируем короткую загрузку списка чатов при заходе на
-  // страницу скелетонами вместо реальных строк.
-  const [isLoadingChats, setIsLoadingChats] = useState(true);
+  // Mock-режим без бэка — имитируем короткую загрузку списка чатов при
+  // заходе на страницу скелетонами вместо реальных строк.
+  const [isMockLoading, setIsMockLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoadingChats(false), 500);
+    if (!isMockMode()) return;
+    const timer = setTimeout(() => setIsMockLoading(false), 500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Локальная копия — «Отменить лайк»/«Заблокировать» из подтверждения
-  // реально убирают переписку из списка, без бэкенда.
-  const [chats, setChats] = useState(CHATS);
+  const chatsQuery = useChatsQuery(!isMockMode());
+
+  // «Отменить лайк»/«Заблокировать» здесь чисто визуальные — бэк пока не
+  // умеет ни то, ни другое, поэтому и в mock-, и в реальном режиме строка
+  // просто перестаёт показываться в списке, без реального запроса.
+  const [mockChats, setMockChats] = useState(CHATS);
+  const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
+
+  const chats = isMockMode()
+    ? mockChats
+    : (chatsQuery.data ?? [])
+        .map(mapChatListItemToChat)
+        .filter((chat) => !hiddenIds.has(chat.id));
+  const isLoadingChats = isMockMode() ? isMockLoading : chatsQuery.isLoading;
+
   const [unmatchChatId, setUnmatchChatId] = useState<null | number>(null);
   const [blockChatId, setBlockChatId] = useState<null | number>(null);
   const [reportChatId, setReportChatId] = useState<null | number>(null);
@@ -114,12 +131,20 @@ export const ChatPage = () => {
   });
 
   const confirmUnmatch = () => {
-    setChats((prev) => prev.filter((chat) => chat.id !== unmatchChatId));
+    if (isMockMode()) {
+      setMockChats((prev) => prev.filter((chat) => chat.id !== unmatchChatId));
+    } else if (unmatchChatId !== null) {
+      setHiddenIds((prev) => new Set(prev).add(unmatchChatId));
+    }
     setUnmatchChatId(null);
   };
 
   const confirmBlock = () => {
-    setChats((prev) => prev.filter((chat) => chat.id !== blockChatId));
+    if (isMockMode()) {
+      setMockChats((prev) => prev.filter((chat) => chat.id !== blockChatId));
+    } else if (blockChatId !== null) {
+      setHiddenIds((prev) => new Set(prev).add(blockChatId));
+    }
     setBlockChatId(null);
   };
 
@@ -133,9 +158,12 @@ export const ChatPage = () => {
     setBlockChatId(null);
   };
 
-  // Бэкенда нет — просто имитируем сетевой запрос под спиннером.
   const handleRefresh = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    if (isMockMode()) {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    } else {
+      await chatsQuery.refetch();
+    }
     toast.success("Обновлено");
   };
 
@@ -208,11 +236,11 @@ export const ChatPage = () => {
                   "size-16 rounded-full object-cover",
                   index === 0
                     ? "border-2 border-primary"
-                    : "border-2 border-transparent",
+                    : "border-2 border-white",
                 )}
               />
               {index === 0 && (
-                <span className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold whitespace-nowrap text-white">
+                <span className="absolute border-2 border-[#faf9fd] -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold whitespace-nowrap text-white">
                   <Heart className="size-2.5 fill-current" />
                   99+
                 </span>

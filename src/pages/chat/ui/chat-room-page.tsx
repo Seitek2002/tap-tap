@@ -23,15 +23,26 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
+import { useSessionStore } from "@/entities/session";
+import {
+  useChatMessagesQuery,
+  useChatQuery,
+  useChatSocket,
+} from "@/entities/user";
+
+import person1 from "@/shared/assets/images/person-1.jpg";
 import { ROUTES } from "@/shared/config";
+import { formatLastSeen } from "@/shared/lib/format-last-seen";
 import {
   NotificationType,
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { isAndroid } from "@/shared/lib/platform";
 import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { cn } from "@/shared/lib/utils";
 import { Modal } from "@/shared/ui/modal";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { CHATS } from "../model/chats";
@@ -42,6 +53,10 @@ import {
 } from "../model/messages";
 import { REPORT_REASONS } from "../model/report-reasons";
 import { PhotoViewer } from "./photo-viewer";
+import { TypingIndicator } from "./typing-indicator";
+
+// Пока у собеседника нет ни одного загруженного фото.
+const FALLBACK_PHOTO = person1;
 
 // Вложения выбраны, но ещё не отправлены — лежат рядом с инпутом до нажатия
 // на иконку отправки, как в Telegram/WhatsApp. Можно накопить несколько штук.
@@ -189,10 +204,62 @@ const MessageBubble = ({
 export const ChatRoomPage = () => {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
-  const chat = CHATS.find((item) => String(item.id) === chatId);
+  const numericChatId = chatId ? Number(chatId) : null;
+  const mockChat = CHATS.find((item) => String(item.id) === chatId);
   const keyboardInset = useKeyboardInset();
+  const myUserId = useSessionStore((state) => state.userId);
 
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const chatQuery = useChatQuery(isMockMode() ? null : numericChatId);
+  const messagesQuery = useChatMessagesQuery(
+    isMockMode() ? null : numericChatId,
+  );
+  const partnerId = isMockMode() ? null : (chatQuery.data?.partner.id ?? null);
+  const {
+    liveMessages,
+    notifyStopTyping,
+    notifyTyping,
+    partnerStatus,
+    partnerTyping,
+    sendMessage: sendSocketMessage,
+  } = useChatSocket(isMockMode() ? null : numericChatId, partnerId);
+
+  const displayName = isMockMode()
+    ? (mockChat?.name ?? "Собеседник")
+    : chatQuery.data?.partner.name || "Собеседник";
+  const displayPhoto = isMockMode()
+    ? mockChat?.photo
+    : (chatQuery.data?.partner.photo ?? FALLBACK_PHOTO);
+  const isOnline = isMockMode()
+    ? (mockChat?.online ?? false)
+    : (partnerStatus?.online ?? chatQuery.data?.partner.online === 1);
+  const lastSeenAt = isMockMode()
+    ? null
+    : (partnerStatus?.lastSeenAt ?? chatQuery.data?.partner.lastSeenAt ?? null);
+
+  const [mockMessages, setMockMessages] = useState(INITIAL_MESSAGES);
+  // Реальный режим: объединяем историю с REST и то, что доливает сокет, пока
+  // страница открыта — сортируем и убираем дубли (история может пересечься с
+  // уже пришедшим по сокету сообщением при повторном фетче).
+  const realMessages: Message[] = isMockMode()
+    ? []
+    : Array.from(
+        new Map(
+          [...(messagesQuery.data ?? []), ...liveMessages].map((message) => [
+            message.id,
+            message,
+          ]),
+        ).values(),
+      )
+        .sort((a, b) => a.id - b.id)
+        .map((message) => ({
+          id: message.id,
+          kind: "text",
+          seen: message.read === 1,
+          text: message.text,
+          type: message.sender_id === myUserId ? "outgoing" : "incoming",
+        }));
+  const messages = isMockMode() ? mockMessages : realMessages;
+
   const [draft, setDraft] = useState("");
   const [pendingAttachments, setPendingAttachments] = useState<
     PendingAttachment[]
@@ -232,18 +299,15 @@ export const ChatRoomPage = () => {
     };
   }, []);
 
-  // Бэкенда нет — имитируем сетевой раунд-трип: сообщение сразу появляется
-  // со статусом "Отправка..." (Spinner), через SEND_DELAY_MS помечается
-  // отправленным.
+  // Mock-режим без бэка — имитируем сетевой раунд-трип: сообщение сразу
+  // появляется со статусом "Отправка..." (Spinner), через SEND_DELAY_MS
+  // помечается отправленным.
   const SEND_DELAY_MS = 600;
 
-  const sendMessage = (event: FormEvent) => {
-    event.preventDefault();
+  const sendMockMessage = () => {
     const text = draft.trim();
-    if (!text && pendingAttachments.length === 0) return;
-
     const newMessages: Message[] = [];
-    let nextId = messages.length + 1;
+    let nextId = mockMessages.length + 1;
 
     for (const attachment of pendingAttachments) {
       if (attachment.kind === "image") {
@@ -276,18 +340,50 @@ export const ChatRoomPage = () => {
       });
     }
 
-    setMessages((prev) => [...prev, ...newMessages]);
-    setDraft("");
-    setPendingAttachments([]);
+    setMockMessages((prev) => [...prev, ...newMessages]);
 
     const sentIds = new Set(newMessages.map((message) => message.id));
     setTimeout(() => {
-      setMessages((prev) =>
+      setMockMessages((prev) =>
         prev.map((message) =>
           sentIds.has(message.id) ? { ...message, sending: false } : message,
         ),
       );
     }, SEND_DELAY_MS);
+  };
+
+  const sendMessage = (event: FormEvent) => {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text && pendingAttachments.length === 0) return;
+
+    if (isMockMode()) {
+      sendMockMessage();
+    } else {
+      // Вложения бэк пока не умеет — только текстовые сообщения через сокет.
+      if (pendingAttachments.length > 0) {
+        toast.error(
+          "Файлы и фото пока нельзя отправить — бэк это не поддерживает",
+        );
+      }
+      if (text) {
+        sendSocketMessage(text);
+        notifyStopTyping();
+      }
+    }
+
+    setDraft("");
+    setPendingAttachments([]);
+  };
+
+  const handleDraftChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setDraft(event.target.value);
+    if (isMockMode()) return;
+    if (event.target.value.trim()) {
+      notifyTyping();
+    } else {
+      notifyStopTyping();
+    }
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -399,6 +495,20 @@ export const ChatRoomPage = () => {
     navigate(ROUTES.chat);
   };
 
+  if (!isMockMode() && (chatQuery.isLoading || messagesQuery.isLoading)) {
+    return (
+      <div className="flex h-dvh flex-col gap-2 bg-[#FAF9FD] p-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-11 rounded-full" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+        <Skeleton className="mt-4 h-16 w-2/3 self-start" />
+        <Skeleton className="h-10 w-1/2 self-end" />
+        <Skeleton className="h-16 w-2/3 self-start" />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]"
@@ -418,13 +528,24 @@ export const ChatRoomPage = () => {
           <ChevronLeft className="size-5" />
         </button>
         <img
-          src={chat?.photo}
+          src={displayPhoto}
           alt=""
           className="size-11 shrink-0 rounded-full object-cover"
         />
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-bold">{chat?.name ?? "Собеседник"}</h1>
-          <p className="text-sm text-[#6B7280]">Печатает...</p>
+          <h1 className="truncate font-bold">{displayName}</h1>
+          <p className="flex items-center gap-1 text-sm text-[#6B7280]">
+            {partnerTyping ? (
+              <>
+                Печатает
+                <TypingIndicator />
+              </>
+            ) : isOnline ? (
+              "В сети"
+            ) : (
+              `Был(а) в сети ${formatLastSeen(lastSeenAt)}`
+            )}
+          </p>
         </div>
         <button
           type="button"
@@ -520,7 +641,7 @@ export const ChatRoomPage = () => {
           </button>
           <input
             value={draft}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={handleDraftChange}
             placeholder="Напиши сообщение"
             className="h-11 min-w-0 flex-1 rounded-full bg-[#F2F1F6] px-4 text-sm outline-none placeholder:text-[#9CA3AF]"
           />
@@ -631,7 +752,7 @@ export const ChatRoomPage = () => {
 
       <Modal isOpen={isUnmatchOpen} onClose={() => setIsUnmatchOpen(false)}>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h2 className="text-lg font-bold">Удалить пару с {chat?.name}?</h2>
+          <h2 className="text-lg font-bold">Удалить пару с {displayName}?</h2>
           <p className="text-sm text-[#6B7280]">
             Ваша пара будет аннулирована и удалится чат у обоих
           </p>
@@ -654,7 +775,7 @@ export const ChatRoomPage = () => {
 
       <Modal isOpen={isBlockOpen} onClose={() => setIsBlockOpen(false)}>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h2 className="text-lg font-bold">Заблокировать {chat?.name}?</h2>
+          <h2 className="text-lg font-bold">Заблокировать {displayName}?</h2>
           <p className="text-sm text-[#6B7280]">
             Мы скроем ваш профиль друг от друга,
             <br />а общение станет недоступно.

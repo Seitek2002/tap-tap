@@ -3,11 +3,16 @@ import { useNavigate, useParams } from "react-router";
 
 import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
+import { useChatQuery, usePublicProfileQuery } from "@/entities/user";
+
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
 import { CHAT_PROFILES } from "../model/chat-profiles";
 import { CHATS } from "../model/chats";
+import { mapFeedCandidateToChatProfile } from "../model/map-chat-profile";
 
 const Section = ({
   children,
@@ -43,10 +48,32 @@ const Chips = ({ items }: { items: string[] }) => (
 export const ChatProfilePage = () => {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
-  const chat = CHATS.find((item) => String(item.id) === chatId);
-  const profile = chatId ? CHAT_PROFILES[Number(chatId)] : undefined;
+  const numericChatId = chatId ? Number(chatId) : null;
 
-  if (!chat || !profile) {
+  const mockChat = CHATS.find((item) => String(item.id) === chatId);
+  const mockProfile = numericChatId ? CHAT_PROFILES[numericChatId] : undefined;
+
+  const chatQuery = useChatQuery(isMockMode() ? null : numericChatId);
+  const partnerId = isMockMode() ? null : (chatQuery.data?.partner.id ?? null);
+  const profileQuery = usePublicProfileQuery(partnerId);
+
+  const name = isMockMode() ? mockChat?.name : chatQuery.data?.partner.name;
+  const profile = isMockMode()
+    ? mockProfile
+    : profileQuery.data && mapFeedCandidateToChatProfile(profileQuery.data);
+
+  if (!isMockMode() && (chatQuery.isLoading || profileQuery.isLoading)) {
+    return (
+      <div className="h-dvh overflow-y-auto bg-[#FAF9FD] p-4">
+        <Skeleton className="h-[60vh] w-full" />
+        <Skeleton className="mt-3 h-24 w-full" />
+        <Skeleton className="mt-3 h-16 w-full" />
+        <Skeleton className="mt-3 h-24 w-full" />
+      </div>
+    );
+  }
+
+  if (!name || !profile) {
     return (
       <div className="flex h-dvh flex-col items-center justify-center gap-3 bg-[#FAF9FD] p-6 text-center text-[#6B7280]">
         <p>Профиль не найден</p>
@@ -104,13 +131,15 @@ export const ChatProfilePage = () => {
           <div className="mt-2 flex items-end justify-between">
             <div>
               <h1 className="text-3xl font-bold">
-                {chat.name}, {profile.age}
+                {name}, {profile.age}
               </h1>
               <div className="mt-1 flex items-center gap-4 text-sm text-white/90">
-                <span className="flex items-center gap-1">
-                  <MapPin className="size-4" />
-                  {profile.distanceKm} км от тебя
-                </span>
+                {profile.distanceKm !== null && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="size-4" />
+                    {profile.distanceKm} км от тебя
+                  </span>
+                )}
                 <ZodiacBadge sign={profile.zodiac} />
               </div>
             </div>

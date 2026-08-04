@@ -168,3 +168,61 @@ export const LikeUserSchema = z.object({
 });
 
 export type LikeUser = z.infer<typeof LikeUserSchema>;
+
+const ChatPartnerSchema = z.object({
+  id: z.number(),
+  lastSeenAt: z.number().nullable(),
+  name: z.string(),
+  online: z.number(),
+  photo: z.nullable(z.string()),
+});
+
+// GET /api/chats — список чатов текущего пользователя.
+export const ChatListItemSchema = z.object({
+  id: z.number(),
+  lastMsg: z.string(),
+  lastTime: z.string(),
+  partner: ChatPartnerSchema,
+  unread: z.number(),
+  yourTurn: z.boolean(),
+});
+
+export type ChatListItem = z.infer<typeof ChatListItemSchema>;
+
+// GET /api/chats/:id — данные для шапки конкретного чата.
+export const ChatDetailSchema = z.object({
+  id: z.number(),
+  partner: ChatPartnerSchema,
+});
+
+export type ChatDetail = z.infer<typeof ChatDetailSchema>;
+
+// GET /api/chats/:id/messages и событие сокета new_message — одна и та же
+// форма строки из таблицы messages.
+export const ChatMessageSchema = z.object({
+  chat_id: z.number(),
+  created_at: z.string(),
+  id: z.number(),
+  read: z.number(),
+  sender_id: z.number(),
+  text: z.string(),
+});
+
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+// Событие сокета user_status — обновление статуса партнёра в реальном времени.
+export const UserStatusEventSchema = z.object({
+  lastSeenAt: z.number().nullable().optional(),
+  online: z.boolean(),
+  userId: z.number(),
+});
+
+export type UserStatusEvent = z.infer<typeof UserStatusEventSchema>;
+
+// typing / stop_typing
+export const TypingEventSchema = z.object({
+  chatId: z.number(),
+  userId: z.number(),
+});
+
+export type TypingEvent = z.infer<typeof TypingEventSchema>;
