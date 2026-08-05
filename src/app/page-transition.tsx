@@ -31,14 +31,38 @@ const FrozenOutlet = () => {
 export const PageTransition = () => {
   const location = useLocation();
   const token = useSessionStore((state) => state.token);
+  const isPublicPath = PUBLIC_PATHS.has(location.pathname);
+
+  // auth-page.tsx получает токен и тут же зовёт navigate() на
+  // number-verification — но react-router оседает на новом location не
+  // сразу, а спустя несколько рендеров (сколько именно — не гарантировано).
+  // На этих промежуточных рендерах (token уже есть, pathname всё ещё
+  // "/auth") гейт ниже принял бы это за "уже залогинен, но почему-то на
+  // публичной странице" и увёл бы на /feed, затерев ещё не подхваченный
+  // переход. Поэтому держим флаг с момента появления токена и до первого
+  // рендера с непубличным pathname — то есть пока переход реально не осел.
+  // (setState прямо в теле рендера — официальный паттерн подстройки state
+  // под изменившийся проп/внешний стор, не побочный эффект.)
+  const [prevToken, setPrevToken] = useState(token);
+  const [awaitingPostAuthNavigation, setAwaitingPostAuthNavigation] =
+    useState(false);
+  if (prevToken !== token) {
+    setPrevToken(token);
+    if (prevToken === null && token !== null) {
+      setAwaitingPostAuthNavigation(true);
+    }
+  } else if (awaitingPostAuthNavigation && !isPublicPath) {
+    setAwaitingPostAuthNavigation(false);
+  }
 
   // Проверка сессии: есть токен → нечего делать на welcome/auth, в ленту;
   // нет токена → нечего делать нигде, кроме welcome/auth. В mock-режиме
   // бэка нет вообще — сессии неоткуда взяться, гейт просто выключен.
-  const isPublicPath = PUBLIC_PATHS.has(location.pathname);
   if (!isMockMode()) {
     if (!token && !isPublicPath) return <Navigate to="/" replace />;
-    if (token && isPublicPath) return <Navigate to={ROUTES.feed} replace />;
+    if (token && isPublicPath && !awaitingPostAuthNavigation) {
+      return <Navigate to={ROUTES.feed} replace />;
+    }
   }
 
   return (

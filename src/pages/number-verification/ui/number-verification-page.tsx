@@ -15,9 +15,12 @@ export const NumberVerificationPage = () => {
   // false для уже существующих аккаунтов (→ сразу в ленту). SMS-провайдера
   // пока нет (это к другому бек-разработчику), поэтому код тут ничем не
   // проверяется — подходит любой заполненный набор цифр.
-  const isNewUser = Boolean(
-    (useLocation().state as { isNewUser?: boolean } | null)?.isNewUser,
-  );
+  // Захватываем один раз при монтировании: naviate() ниже не передаёт state,
+  // а FrozenOutlet держит этот же инстанс страницы смонтированным на время
+  // exit-анимации — успей location.state за это время смениться на null от
+  // самого же перехода, isNewUser считался бы заново и получился неверным.
+  const locationState = useLocation().state as { isNewUser?: boolean } | null;
+  const [isNewUser] = useState(() => Boolean(locationState?.isNewUser));
 
   // Автофокус на первую ячейку при заходе на страницу.
   useEffect(() => {

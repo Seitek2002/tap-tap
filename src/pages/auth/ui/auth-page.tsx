@@ -55,8 +55,8 @@ export const AuthPage = () => {
     setIsSubmitting(true);
     try {
       const { isNewUser, token, userId } = await registerOrLogin(phone, gender);
-      setSession({ token, userId });
       navigate(ROUTES.numberVerification, { state: { isNewUser } });
+      setSession({ token, userId });
     } catch {
       toast.error("Не получилось войти. Попробуй ещё раз");
     } finally {
