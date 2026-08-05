@@ -5,7 +5,7 @@ export const PREMIUM_ORIGINAL_PRICE_PER_DAY = 50;
 
 // Настоящей оплаты ещё нет (см. buy-premium в bakai-server/src/routes/wallet.js)
 // — кнопка "Получить Premium" сразу включает подписку на этот срок.
-export const FREE_PREMIUM_DAYS = 30;
+export const FREE_PREMIUM_DAYS = 1;
 
 export const PREMIUM_FEATURES = [
   "Узнай, кто тебя лайкнул",
