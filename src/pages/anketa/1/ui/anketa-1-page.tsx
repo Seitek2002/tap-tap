@@ -2,21 +2,13 @@ import { useState } from "react";
 
 import { TriangleAlert } from "lucide-react";
 
-import { useAnketaDraftStore } from "@/entities/user";
+import { useAnketaDraftStore, useProfileQuery } from "@/entities/user";
 
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { getZodiacSign } from "@/shared/lib/zodiac";
-import { Dropdown } from "@/shared/ui/dropdown";
 import { Input } from "@/shared/ui/input";
 import { Progress } from "@/shared/ui/progress";
-
-const MARITAL_OPTIONS = [
-  { label: "Не в браке", value: "single" },
-  { label: "В браке", value: "married" },
-  { label: "В разводе", value: "divorced" },
-  { label: "Вдовец / вдова", value: "widowed" },
-  { label: "Всё сложно", value: "complicated" },
-];
 
 // Только цифры, точки расставляются сами: 21022002 -> 21.02.2002.
 const formatBirthDate = (raw: string) => {
@@ -62,12 +54,16 @@ export const Anketa1Page = () => {
   const [accepted, setAccepted] = useState(false);
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [maritalStatus, setMaritalStatus] = useState("married");
-  const isMarried = maritalStatus === "married";
+
+  // Семейное положение больше не спрашиваем на этом экране — бек сам
+  // разыгрывает один из двух вариантов при регистрации (временная замена
+  // данным, которые в будущем придёт от хост-приложения, см. auth.js).
+  // Здесь только показываем предупреждение, если бек назначил "в браке".
+  const profileQuery = useProfileQuery(!isMockMode());
+  const isMarried = profileQuery.data?.marital_status === "married";
 
   const commitAndNext = () => {
     setField("name", name);
-    setField("marital_status", maritalStatus);
 
     const parsed = parseBirthDate(birthDate);
     if (parsed) {
@@ -118,14 +114,6 @@ export const Anketa1Page = () => {
             onChange={(event) =>
               setBirthDate(formatBirthDate(event.target.value))
             }
-          />
-          <Dropdown
-            label="Семейное положение"
-            placeholder="Выберите..."
-            options={MARITAL_OPTIONS}
-            value={maritalStatus}
-            onChange={setMaritalStatus}
-            className="bg-transparent"
           />
         </div>
       </div>

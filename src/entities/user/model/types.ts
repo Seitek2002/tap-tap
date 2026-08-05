@@ -80,7 +80,6 @@ export type ProfileUpdate = Partial<
     | "latitude"
     | "longitude"
     | "love_language"
-    | "marital_status"
     | "name"
     | "pets"
     | "religion"
