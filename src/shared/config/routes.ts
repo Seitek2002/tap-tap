@@ -23,6 +23,7 @@ export const ROUTES = {
   nearby: "/nearby",
   nearbyProfile: "/nearby/:profileId",
   numberVerification: "/number-verification",
+  premium: "/premium",
   profile: "/profile",
   profileAbout: "/profile/about",
   profileAddContactManually: "/profile/add-contact",

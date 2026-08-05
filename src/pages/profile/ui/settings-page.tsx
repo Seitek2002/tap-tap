@@ -192,7 +192,7 @@ export const SettingsPage = () => {
   };
 
   const handlePremiumClick = () => {
-    navigate(ROUTES.wallet);
+    navigate(ROUTES.premium);
   };
 
   const handleLogout = async () => {

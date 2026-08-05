@@ -346,6 +346,7 @@ export const ProfilePage = () => {
               <span className="text-sm font-bold italic">9 сом »</span>
               <button
                 type="button"
+                onClick={() => navigate(ROUTES.premium)}
                 className="rounded-full bg-[#1C1E24] px-3 py-1.5 text-xs font-bold whitespace-nowrap text-white"
               >
                 Еще функции

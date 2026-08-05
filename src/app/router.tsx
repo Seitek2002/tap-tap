@@ -19,6 +19,7 @@ import { FeedPage, NearbyPage, NearbyProfilePage } from "@/pages/feed";
 import { FiltersPage } from "@/pages/filters";
 import { LikeProfilePage, LikesPage } from "@/pages/likes";
 import { NumberVerificationPage } from "@/pages/number-verification";
+import { PremiumPage } from "@/pages/premium";
 import {
   AboutPage,
   AddContactManuallyPage,
@@ -185,6 +186,10 @@ export const router = createHashRouter([
       {
         element: <WalletPage />,
         path: ROUTES.wallet,
+      },
+      {
+        element: <PremiumPage />,
+        path: ROUTES.premium,
       },
     ],
     element: <PageTransition />,
