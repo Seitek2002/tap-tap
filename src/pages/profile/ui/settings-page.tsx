@@ -26,6 +26,7 @@ import { Toggle } from "@/shared/ui/toggle";
 import {
   APP_VERSION,
   AUDIENCE_TO_SHOW_TO,
+  CAR_OPTIONS,
   DEFAULT_AGE_RANGE,
   DEFAULT_DISTANCE_KM,
   DEFAULT_LANGUAGE,
@@ -111,6 +112,10 @@ export const SettingsPage = () => {
   const [hideStatus, setHideStatus] = useState(false);
   const [hideActivity, setHideActivity] = useState(false);
 
+  const [isCarOpen, setIsCarOpen] = useState(false);
+  const [carModel, setCarModel] = useState(CAR_OPTIONS[0]);
+  const [showCar, setShowCar] = useState(true);
+
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
@@ -137,6 +142,8 @@ export const SettingsPage = () => {
     );
     setHideStatus(profileQuery.data.hide_online_status === 1);
     setHideActivity(profileQuery.data.hide_last_seen === 1);
+    setCarModel(profileQuery.data.car_model || CAR_OPTIONS[0]);
+    setShowCar(profileQuery.data.show_car !== 0);
   }, [filtersQuery.data, profileQuery.data]);
 
   // Бэкенда нет (mock-режим) — имитируем сетевой раунд-трип: галочка на
@@ -185,6 +192,20 @@ export const SettingsPage = () => {
       await updateProfileMutation.mutateAsync({
         hide_last_seen: hideActivity ? 1 : 0,
         hide_online_status: hideStatus ? 1 : 0,
+      });
+    } catch {
+      toast.error("Не получилось сохранить");
+    }
+  };
+
+  const confirmCar = async () => {
+    setIsCarOpen(false);
+    if (isMockMode()) return;
+    try {
+      await updateProfileMutation.mutateAsync({
+        car_model: carModel,
+        has_car: 1,
+        show_car: showCar ? 1 : 0,
       });
     } catch {
       toast.error("Не получилось сохранить");
@@ -357,6 +378,9 @@ export const SettingsPage = () => {
                     <PremiumFeatureIcon className="h-4.5 w-6.75 shrink-0" />
                   }
                   label={feature.label}
+                  onClick={
+                    feature.key === "car" ? () => setIsCarOpen(true) : undefined
+                  }
                 />
               ))}
             </div>
@@ -571,6 +595,52 @@ export const SettingsPage = () => {
         <button
           type="button"
           onClick={() => void confirmInvisibleMode()}
+          className="mt-5 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+        >
+          Готово
+        </button>
+      </Modal>
+
+      <Modal isOpen={isCarOpen} onClose={() => setIsCarOpen(false)}>
+        <h2 className="text-center text-lg font-bold">Какая у тебя машина?</h2>
+
+        <div className="mt-4 divide-y divide-[#E4E7EC]">
+          {CAR_OPTIONS.map((option) => {
+            const selected = carModel === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setCarModel(option)}
+                className="flex w-full items-center justify-between py-3.5 text-left"
+              >
+                <span className="text-sm font-medium">{option}</span>
+                <span
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full border-2",
+                    selected ? "border-primary" : "border-[#E4E7EC]",
+                  )}
+                >
+                  {selected && (
+                    <span className="size-2.5 rounded-full bg-primary" />
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 flex items-center justify-between">
+          <span className="font-medium">Показывать машину</span>
+          <Toggle
+            checked={showCar}
+            onChange={(event) => setShowCar(event.target.checked)}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void confirmCar()}
           className="mt-5 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Готово

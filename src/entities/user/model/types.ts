@@ -11,6 +11,10 @@ export const UserSchema = z.object({
   bio: z.string(),
   // Строка "ДД.ММ.ГГГГ", как её вводят на anketa-1 — не дата/timestamp.
   birth_date: z.string(),
+  // Конкретная модель машины (боттомшит "Указать машину" в настройках) — не
+  // путать с has_car, тот участвует в подборе кандидатов через фильтры
+  // партнёра, а не в отображении своей машины.
+  car_model: z.string(),
   // Колонка в БД объявлена INTEGER (дефолт 0), но анкета пишет туда
   // текстовую категорию ("Хочу когда-нибудь" и т.п.) — SQLite это спокойно
   // хранит благодаря динамической типизации. Коэрсим к строке, чтобы не
@@ -43,6 +47,9 @@ export const UserSchema = z.object({
   photos: z.array(z.string()),
   premium_until: z.number().nullable(),
   religion: z.string(),
+  // Показывать ли car_model другим (боттомшит "Указать машину") — не влияет
+  // на has_car, который остаётся источником истины для фильтров партнёра.
+  show_car: z.number(),
   show_gender_preference: z.string(),
   smoking: z.string(),
   sport: z.string(),
@@ -63,6 +70,7 @@ export type ProfileUpdate = Partial<
     | "alcohol"
     | "bio"
     | "birth_date"
+    | "car_model"
     | "children"
     | "citizenship"
     | "city"
@@ -83,6 +91,7 @@ export type ProfileUpdate = Partial<
     | "name"
     | "pets"
     | "religion"
+    | "show_car"
     | "show_gender_preference"
     | "smoking"
     | "sport"
@@ -114,6 +123,7 @@ export const FeedCandidateSchema = z.object({
   age: z.number(),
   alcohol: z.string(),
   bio: z.string(),
+  car_model: z.string(),
   city: z.string(),
   company: z.string(),
   credit_ok: z.number(),
@@ -131,6 +141,7 @@ export const FeedCandidateSchema = z.object({
   online: z.number(),
   photos: z.array(z.string()),
   religion: z.string(),
+  show_car: z.number(),
   smoking: z.string(),
   sport: z.string(),
   workplace: z.string(),

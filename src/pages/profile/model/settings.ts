@@ -41,4 +41,6 @@ export const PREMIUM_SETTINGS_FEATURES = [
   { key: "credit", label: "Указать кредитную историю" },
 ];
 
+export const CAR_OPTIONS = ["Toyota Prius", "BMW X7", "Lexus LX570"];
+
 export const APP_VERSION = "7.56.0";

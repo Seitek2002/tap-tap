@@ -42,8 +42,15 @@ export function mapFeedCandidateToNearbyDetails(
       ...(candidate.credit_ok
         ? [{ label: "💳 Хорошая кредитная история", tone: "green" as const }]
         : []),
-      ...(candidate.has_car
-        ? [{ label: "🚗 Есть автомобиль", tone: "gold" as const }]
+      ...(candidate.has_car && candidate.show_car
+        ? [
+            {
+              label: candidate.car_model
+                ? `🚗 ${candidate.car_model}`
+                : "🚗 Есть автомобиль",
+              tone: "gold" as const,
+            },
+          ]
         : []),
     ],
     seeking: GOALS_LABELS[candidate.goals] ?? "Не указано",
