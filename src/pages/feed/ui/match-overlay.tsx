@@ -43,21 +43,24 @@ export const MatchOverlay = ({
   }
 
   // Отправка (кнопкой или готовым вариантом первого сообщения) сразу
-  // переносит в чат с этим человеком — не просто закрывает оверлей.
-  const goToChat = () => {
+  // переносит в чат с этим человеком — не просто закрывает оверлей. Сам текст
+  // тут никуда не отправляется (сокет чата ещё не подключён на этом экране) —
+  // передаём его через navigate state, а chat-room-page подставляет как
+  // черновик, чтобы он не терялся молча.
+  const goToChat = (initialMessage: string) => {
     if (!profile || chatId === null) return;
     onClose();
-    navigate(`/chat/${chatId}`);
+    navigate(`/chat/${chatId}`, { state: { initialMessage } });
   };
 
   const handleSend = () => {
     if (!message.trim()) return;
-    goToChat();
+    goToChat(message);
   };
 
   const handleSuggestionClick = (text: string) => {
     setMessage(text);
-    goToChat();
+    goToChat(text);
   };
 
   useEffect(() => {
@@ -140,8 +143,8 @@ export const MatchOverlay = ({
           >
             <h1 className="text-3xl font-bold text-white">Это взаимно!</h1>
             <p className="mt-2 text-base text-white/90">
-              💖 Ты и {profile.name} нравитесь друг другу. Напиши ей, не упусти
-              свою искру!
+              💖 Ты и {profile.name} нравитесь друг другу. Не упусти свою искру
+              — напиши!
             </p>
           </motion.div>
 

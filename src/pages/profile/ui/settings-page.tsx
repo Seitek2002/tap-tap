@@ -44,6 +44,10 @@ const SectionTitle = ({ children }: { children: ReactNode }) => (
   <h2 className="mb-2 text-base font-bold">{children}</h2>
 );
 
+// Без onClick строка чисто информационная (например, номер телефона —
+// в проде он приходит из хост-приложения и не редактируется) — рендерим её
+// как div без courserа "клика" и шеврона, чтобы не обещать действие, которого
+// нет.
 const SettingsRow = ({
   icon,
   label,
@@ -56,27 +60,33 @@ const SettingsRow = ({
   onClick?: () => void;
   value?: string;
   variant?: "bare" | "grouped" | "standalone";
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      "flex w-full items-center justify-between text-left",
-      variant !== "bare" && "px-4 py-4",
-      variant === "standalone" &&
-        "rounded-2xl border border-[#E4E7EC] bg-white",
-    )}
-  >
-    <span className="flex items-center gap-2.5 text-sm leading-[120%] font-normal text-[#1C1E24]">
-      {icon}
-      {label}
-    </span>
-    <span className="flex items-center gap-1 text-sm leading-[120%] font-normal text-[#1C1E24]">
-      {value}
-      <ChevronRight className="size-4 shrink-0" />
-    </span>
-  </button>
-);
+}) => {
+  const className = cn(
+    "flex w-full items-center justify-between text-left",
+    variant !== "bare" && "px-4 py-4",
+    variant === "standalone" && "rounded-2xl border border-[#E4E7EC] bg-white",
+  );
+  const content = (
+    <>
+      <span className="flex items-center gap-2.5 text-sm leading-[120%] font-normal text-[#1C1E24]">
+        {icon}
+        {label}
+      </span>
+      <span className="flex items-center gap-1 text-sm leading-[120%] font-normal text-[#1C1E24]">
+        {value}
+        {onClick && <ChevronRight className="size-4 shrink-0" />}
+      </span>
+    </>
+  );
+
+  if (!onClick) return <div className={className}>{content}</div>;
+
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
+    </button>
+  );
+};
 
 export const SettingsPage = () => {
   const navigate = useNavigate();

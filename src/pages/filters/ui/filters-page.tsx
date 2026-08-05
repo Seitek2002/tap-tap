@@ -26,12 +26,18 @@ const AUDIENCE = [
   { label: "Все", value: "all" },
 ];
 
+// hasJob/hasCar/hasCredit жили с defaultOn: true — премиальные критерии
+// незаметно включались сами по себе для всех, кто ни разу не открывал
+// "Больше фильтров", и молча вырезали из ленты кандидатов без машины/с
+// плохой кредитной историей/без работы. hasPhoto — единственный тут, для
+// которого "включён по умолчанию" — обычная практика дейтинг-приложений, а
+// не premium-ограничение.
 const TOGGLES = [
   { defaultOn: true, key: "hasPhoto", label: "Только с фото" },
   { defaultOn: false, key: "hasBio", label: "Есть описание" },
-  { defaultOn: true, key: "hasJob", label: "Есть работа" },
-  { defaultOn: true, key: "hasCar", label: "Есть машина" },
-  { defaultOn: true, key: "hasCredit", label: "Хорошая кредитная история" },
+  { defaultOn: false, key: "hasJob", label: "Есть работа" },
+  { defaultOn: false, key: "hasCar", label: "Есть машина" },
+  { defaultOn: false, key: "hasCredit", label: "Хорошая кредитная история" },
 ] as const;
 
 // code — то же значение, что candidate.goals на бэке (см. GET /api/feed),
@@ -42,7 +48,8 @@ const SEEKING_OPTIONS = [
   { code: "family", emoji: "💜", label: "Построить семью" },
 ] as const;
 
-const DEFAULT_SEEKING = SEEKING_OPTIONS[0].label;
+// Пусто — критерий не участвует в отборе (см. комментарий у DEFAULT_INTERESTS).
+const DEFAULT_SEEKING = "";
 
 const INTERESTS = [
   "🎳 Боулинг",
@@ -80,9 +87,14 @@ const INTERESTS = [
   "🏍️ Мотоциклы",
 ];
 
-const DEFAULT_INTERESTS = ["🌱 Вегетерианство", "🧩 Паззлы", "🌲 Природа"];
+// Пустое — значит критерий не участвует в отборе (см. matchesPreferences на
+// бэке). Раньше тут были конкретные значения "для примера", из-за чего любой
+// первый заход в фильтры (и even "Очистить") незаметно навешивал жёсткие
+// ограничения по знаку зодиака/религии/питомцам и т.д., которым мало кто
+// из кандидатов соответствует — лента внезапно оказывалась пустой.
+const DEFAULT_INTERESTS: string[] = [];
 
-const DEFAULT_ZODIAC = "Рак";
+const DEFAULT_ZODIAC = "";
 
 // Поля с вертикальным списком пилюль (одиночный или до max=2 вариантов).
 // Конфиг вместо восьми одинаковых блоков разметки — вся разница между ними в
@@ -231,14 +243,14 @@ const OPTIONS_FALLBACK: Record<string, string[]> = {
 };
 
 const DEFAULT_OPTION_VALUES: Record<OptionFieldKey, string[]> = {
-  alcohol: ["Пью редко"],
-  children: ["Пока не знаю"],
-  education: ["9 классов"],
-  loveLanguage: ["Совместное время"],
-  pets: ["Собаки"],
-  religion: ["Буддизм"],
-  smoking: ["Я не курю"],
-  sport: ["Иногда"],
+  alcohol: [],
+  children: [],
+  education: [],
+  loveLanguage: [],
+  pets: [],
+  religion: [],
+  smoking: [],
+  sport: [],
 };
 
 const DEFAULT_TOGGLES = Object.fromEntries(
@@ -251,10 +263,10 @@ const DEFAULT_TOGGLES = Object.fromEntries(
 const DEFAULT_PREFS: FilterPreferences = {
   ageMax: 28,
   ageMin: 18,
-  alcohol: DEFAULT_OPTION_VALUES.alcohol[0],
+  alcohol: DEFAULT_OPTION_VALUES.alcohol[0] ?? "",
   audience: "men",
-  children: DEFAULT_OPTION_VALUES.children[0],
-  education: DEFAULT_OPTION_VALUES.education[0],
+  children: DEFAULT_OPTION_VALUES.children[0] ?? "",
+  education: DEFAULT_OPTION_VALUES.education[0] ?? "",
   hasBio: DEFAULT_TOGGLES.hasBio,
   hasCar: DEFAULT_TOGGLES.hasCar,
   hasCredit: DEFAULT_TOGGLES.hasCredit,
@@ -263,12 +275,12 @@ const DEFAULT_PREFS: FilterPreferences = {
   interests: DEFAULT_INTERESTS,
   loveLanguage: DEFAULT_OPTION_VALUES.loveLanguage,
   maxDistance: 80,
-  minHeight: 175,
+  minHeight: 0,
   pets: DEFAULT_OPTION_VALUES.pets,
-  religion: DEFAULT_OPTION_VALUES.religion[0],
-  seeking: SEEKING_OPTIONS[0].code,
-  smoking: DEFAULT_OPTION_VALUES.smoking[0],
-  sport: DEFAULT_OPTION_VALUES.sport[0],
+  religion: DEFAULT_OPTION_VALUES.religion[0] ?? "",
+  seeking: "",
+  smoking: DEFAULT_OPTION_VALUES.smoking[0] ?? "",
+  sport: DEFAULT_OPTION_VALUES.sport[0] ?? "",
   zodiac: DEFAULT_ZODIAC,
 };
 
@@ -290,7 +302,10 @@ export const FiltersPage = () => {
   const [audience, setAudience] = useState("men");
   const [age, setAge] = useState<[number, number]>([18, 28]);
   const [distance, setDistance] = useState(80);
-  const [height, setHeight] = useState(175);
+  // 140 — нижняя граница слайдера же (см. min= у Slider ниже), а не
+  // конкретное пожелание по росту партнёра: как и в остальных полях этой
+  // страницы, "ещё не трогал" не должно означать реальное ограничение.
+  const [height, setHeight] = useState(140);
   const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
 
   const [seeking, setSeeking] = useState<string>(DEFAULT_SEEKING);
@@ -565,7 +580,7 @@ export const FiltersPage = () => {
           >
             <span className="text-sm font-medium">Ищет</span>
             <span className="flex items-center gap-1 text-sm text-[#6B7280]">
-              {seeking}
+              {seeking || "Указать"}
               <ChevronRight className="size-4" />
             </span>
           </button>
@@ -591,7 +606,7 @@ export const FiltersPage = () => {
           >
             <span className="text-sm font-medium">Знак зодиака</span>
             <span className="flex items-center gap-1 text-sm text-[#6B7280]">
-              <ZodiacBadge sign={zodiac} />
+              {zodiac ? <ZodiacBadge sign={zodiac} /> : "Указать"}
               <ChevronRight className="size-4" />
             </span>
           </button>

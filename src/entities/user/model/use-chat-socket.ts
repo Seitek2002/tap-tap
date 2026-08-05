@@ -5,6 +5,7 @@ import { connectSocket } from "@/shared/api";
 import {
   type ChatMessage,
   ChatMessageSchema,
+  ChatRemovedEventSchema,
   TypingEventSchema,
   UserStatusEventSchema,
 } from "./types";
@@ -28,6 +29,7 @@ export function useChatSocket(chatId: null | number, partnerId: null | number) {
   const [partnerStatus, setPartnerStatus] = useState<null | PartnerStatus>(
     null,
   );
+  const [chatRemoved, setChatRemoved] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
@@ -39,6 +41,13 @@ export function useChatSocket(chatId: null | number, partnerId: null | number) {
       const parsed = ChatMessageSchema.safeParse(payload);
       if (parsed.success && parsed.data.chat_id === chatId) {
         setLiveMessages((prev) => [...prev, parsed.data]);
+      }
+    };
+
+    const handleChatRemoved = (payload: unknown) => {
+      const parsed = ChatRemovedEventSchema.safeParse(payload);
+      if (parsed.success && parsed.data.chatId === chatId) {
+        setChatRemoved(true);
       }
     };
 
@@ -79,12 +88,14 @@ export function useChatSocket(chatId: null | number, partnerId: null | number) {
     socket.on("typing", handleTyping);
     socket.on("stop_typing", handleStopTyping);
     socket.on("user_status", handleUserStatus);
+    socket.on("chat_removed", handleChatRemoved);
 
     return () => {
       socket.off("new_message", handleNewMessage);
       socket.off("typing", handleTyping);
       socket.off("stop_typing", handleStopTyping);
       socket.off("user_status", handleUserStatus);
+      socket.off("chat_removed", handleChatRemoved);
       clearTimeout(typingTimeoutRef.current);
     };
   }, [chatId, partnerId]);
@@ -105,6 +116,7 @@ export function useChatSocket(chatId: null | number, partnerId: null | number) {
   };
 
   return {
+    chatRemoved,
     liveMessages,
     notifyStopTyping,
     notifyTyping,

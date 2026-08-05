@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import toast from "react-hot-toast";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import {
   Camera,
@@ -219,6 +219,13 @@ const MessageBubble = ({
 
 export const ChatRoomPage = () => {
   const navigate = useNavigate();
+  // Из MatchOverlay — текст, который написали прямо на экране "Это
+  // взаимно!". Подставляем как черновик один раз при монтировании, а не
+  // отправляем сами — сокет чата подключается чуть ниже и ещё не готов
+  // принимать сообщения на этом же рендере.
+  const locationState = useLocation().state as {
+    initialMessage?: string;
+  } | null;
   const { chatId } = useParams<{ chatId: string }>();
   const numericChatId = chatId ? Number(chatId) : null;
   const mockChat = CHATS.find((item) => String(item.id) === chatId);
@@ -231,6 +238,7 @@ export const ChatRoomPage = () => {
   );
   const partnerId = isMockMode() ? null : (chatQuery.data?.partner.id ?? null);
   const {
+    chatRemoved,
     liveMessages,
     notifyStopTyping,
     notifyTyping,
@@ -238,6 +246,14 @@ export const ChatRoomPage = () => {
     partnerTyping,
     sendMessage: sendSocketMessage,
   } = useChatSocket(isMockMode() ? null : numericChatId, partnerId);
+
+  // Партнёр разорвал пару/заблокировал, пока этот чат был открыт — сам чат на
+  // бэке уже удалён, дальше тут делать нечего.
+  useEffect(() => {
+    if (!chatRemoved) return;
+    toast.error("Собеседник разорвал пару — переписка удалена");
+    navigate(ROUTES.chat, { replace: true });
+  }, [chatRemoved, navigate]);
   const uploadAttachmentMutation = useUploadChatAttachmentMutation(
     isMockMode() ? null : numericChatId,
   );
@@ -309,7 +325,7 @@ export const ChatRoomPage = () => {
         });
   const messages = isMockMode() ? mockMessages : realMessages;
 
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(() => locationState?.initialMessage ?? "");
   const [pendingAttachments, setPendingAttachments] = useState<
     PendingAttachment[]
   >([]);

@@ -234,6 +234,15 @@ export const TypingEventSchema = z.object({
 
 export type TypingEvent = z.infer<typeof TypingEventSchema>;
 
+// chat_removed — партнёр разорвал пару/заблокировал (или отменил свайп), пока
+// этот чат был открыт: чата на бэке больше нет, дальнейшие sendMessage в него
+// молча проваливались бы в никуда.
+export const ChatRemovedEventSchema = z.object({
+  chatId: z.number(),
+});
+
+export type ChatRemovedEvent = z.infer<typeof ChatRemovedEventSchema>;
+
 // GET /api/wallet
 export const WalletSchema = z.object({
   balance: z.number(),
@@ -298,32 +307,40 @@ export type ReportResult = z.infer<typeof ReportResultSchema>;
 
 // GET/PUT /api/filters — настройки поиска партнёра (страница "Фильтры").
 // Хранится на бэке одним JSON-блобом, поэтому пустой ответ ({}) — это
-// нормальный случай для того, кто ещё ни разу не сохранял фильтры; дефолты
-// здесь — те же значения, что в локальном state filters-page.tsx.
+// нормальный случай для того, кто ещё ни разу не сохранял фильтры. Дефолты
+// для полей из "Больше фильтров" — пустая строка/массив (= критерий не
+// участвует в отборе, см. matchesPreferences в bakai-server/routes/feed.js).
+// Раньше тут были конкретные значения "для примера" (например zodiac:
+// "Рак"), из-за чего у любого, кто ни разу не открывал фильтры, GET
+// /api/filters незаметно возвращал жёсткий набор ограничений — лента могла
+// оказаться пустой без каких-либо действий самого пользователя.
 export const FilterPreferencesSchema = z.object({
   ageMax: z.number().default(28),
   ageMin: z.number().default(18),
-  alcohol: z.string().default("Пью редко"),
+  alcohol: z.string().default(""),
   audience: z.string().default("men"),
-  children: z.string().default("Пока не знаю"),
-  education: z.string().default("9 классов"),
+  children: z.string().default(""),
+  education: z.string().default(""),
   hasBio: z.boolean().default(false),
-  hasCar: z.boolean().default(true),
-  hasCredit: z.boolean().default(true),
-  hasJob: z.boolean().default(true),
+  // hasCar/hasCredit/hasJob — premium-критерии из "Больше фильтров", не
+  // должны молча резать ленту до первого явного включения (см. комментарий
+  // у TOGGLES в filters-page.tsx).
+  hasCar: z.boolean().default(false),
+  hasCredit: z.boolean().default(false),
+  hasJob: z.boolean().default(false),
   hasPhoto: z.boolean().default(true),
-  interests: z
-    .array(z.string())
-    .default(["🌱 Вегетерианство", "🧩 Паззлы", "🌲 Природа"]),
-  loveLanguage: z.array(z.string()).default(["Совместное время"]),
+  interests: z.array(z.string()).default([]),
+  loveLanguage: z.array(z.string()).default([]),
   maxDistance: z.number().default(80),
-  minHeight: z.number().default(175),
-  pets: z.array(z.string()).default(["Собаки"]),
-  religion: z.string().default("Буддизм"),
-  seeking: z.string().default("chat"),
-  smoking: z.string().default("Я не курю"),
-  sport: z.string().default("Иногда"),
-  zodiac: z.string().default("Рак"),
+  // 140 — нижняя граница слайдера роста на странице фильтров, то есть
+  // фактическое "без ограничения" (см. комментарий у filters-page.tsx).
+  minHeight: z.number().default(140),
+  pets: z.array(z.string()).default([]),
+  religion: z.string().default(""),
+  seeking: z.string().default(""),
+  smoking: z.string().default(""),
+  sport: z.string().default(""),
+  zodiac: z.string().default(""),
 });
 
 export type FilterPreferences = z.infer<typeof FilterPreferencesSchema>;
