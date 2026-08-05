@@ -8,13 +8,23 @@ import { registerOrLogin, useSessionStore } from "@/entities/session";
 
 import { ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
+import { cn } from "@/shared/lib/utils";
 
 const PHONE_LENGTH = 9;
+
+// Пока приложение не встроено в хост (МБанк/БакайБанк и т.п.), который уже
+// знает пол пользователя и передавал бы его сам при входе — спрашиваем его
+// здесь же, на экране ввода номера, как временную замену этому.
+const GENDER_OPTIONS = [
+  { label: "Мужчина", value: "men" },
+  { label: "Женщина", value: "women" },
+] as const;
 
 export const AuthPage = () => {
   const navigate = useNavigate();
   const setSession = useSessionStore((state) => state.setSession);
   const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState<null | string>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,8 +40,12 @@ export const AuthPage = () => {
     setPhone(digits.slice(0, PHONE_LENGTH)); // максимум 9 цифр после +996
   };
 
+  const canContinue = phone.length >= PHONE_LENGTH && gender !== null;
+
   const handleContinue = async () => {
-    if (phone.length < PHONE_LENGTH || isSubmitting) return;
+    if (phone.length < PHONE_LENGTH || gender === null || isSubmitting) {
+      return;
+    }
 
     if (isMockMode()) {
       navigate(ROUTES.numberVerification, { state: { isNewUser: true } });
@@ -40,7 +54,7 @@ export const AuthPage = () => {
 
     setIsSubmitting(true);
     try {
-      const { isNewUser, token, userId } = await registerOrLogin(phone);
+      const { isNewUser, token, userId } = await registerOrLogin(phone, gender);
       setSession({ token, userId });
       navigate(ROUTES.numberVerification, { state: { isNewUser } });
     } catch {
@@ -77,6 +91,30 @@ export const AuthPage = () => {
             />
           </div>
         </div>
+
+        {/* Пол — временно спрашиваем здесь же (см. комментарий у GENDER_OPTIONS) */}
+        <div className="mt-8">
+          <span className="text-[10px] font-bold tracking-wider text-white/50 uppercase">
+            Твой пол
+          </span>
+          <div className="mt-3 flex gap-2">
+            {GENDER_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setGender(option.value)}
+                className={cn(
+                  "flex-1 rounded-full py-2.5 text-sm font-medium transition-colors",
+                  gender === option.value
+                    ? "bg-white text-[#1C1E24]"
+                    : "border border-white/40 text-white",
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1" />
@@ -100,7 +138,7 @@ export const AuthPage = () => {
         </div>
         <button
           type="button"
-          disabled={phone.length < PHONE_LENGTH || isSubmitting}
+          disabled={!canContinue || isSubmitting}
           onClick={() => void handleContinue()}
           className="mt-4 w-full rounded-full bg-[#1C1C1E] py-3 text-sm font-semibold text-white active:scale-[0.99] disabled:opacity-50"
         >
