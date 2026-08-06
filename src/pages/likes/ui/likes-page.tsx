@@ -12,6 +12,7 @@ import {
   useLikeMutation,
   useLikedByMeQuery,
   useLikedMeQuery,
+  useWalletQuery,
 } from "@/entities/user";
 
 import { isMockMode } from "@/shared/lib/mock-mode";
@@ -143,8 +144,13 @@ export const LikesPage = () => {
 
   const likedMeQuery = useLikedMeQuery(!isMockMode());
   const likedByMeQuery = useLikedByMeQuery(!isMockMode());
+  const walletQuery = useWalletQuery(!isMockMode());
   const likeMutation = useLikeMutation();
   const dislikeMutation = useDislikeMutation();
+
+  const isPremium = isMockMode()
+    ? false
+    : (walletQuery.data?.isPremium ?? false);
 
   const likedYou = isMockMode()
     ? LIKED_YOU
@@ -239,13 +245,15 @@ export const LikesPage = () => {
           </div>
         ) : tab === "likedYou" ? (
           <>
-            <p className="mt-6 text-xs text-[#6B7280] text-center">
-              Активируй Премиум чтобы посмотреть все лайки
-            </p>
+            {!isPremium && (
+              <p className="mt-6 text-xs text-[#6B7280] text-center">
+                Активируй Премиум чтобы посмотреть все лайки
+              </p>
+            )}
 
             <div className="mt-4 grid grid-cols-2 gap-2.5">
               {likedYou.map((profile, index) =>
-                index < UNLOCKED_LIKES_COUNT ? (
+                isPremium || index < UNLOCKED_LIKES_COUNT ? (
                   <LikeActionCard
                     key={profile.id}
                     profile={profile}
@@ -280,7 +288,7 @@ export const LikesPage = () => {
           (translateY), а это делает его containing block'ом для любых
           fixed-потомков — кнопка со своим bottom-20 внезапно съезжала
           относительно уже сдвинутого контейнера, а не вьюпорта. */}
-      {tab === "likedYou" && (
+      {tab === "likedYou" && !isPremium && (
         <div className="px-4 pb-4 fixed bottom-20 w-full left-0">
           <button
             type="button"

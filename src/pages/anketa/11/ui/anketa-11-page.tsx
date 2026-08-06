@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ChevronLeft, Eye, ShieldCheck, Sparkles } from "lucide-react";
 
 import carPremium from "@/shared/assets/images/car-premium.png";
+import { ROUTES } from "@/shared/config";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Progress } from "@/shared/ui/progress";
 
@@ -78,7 +79,7 @@ export const Anketa11Page = () => {
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={goNext}
+          onClick={() => navigate(ROUTES.premium)}
           className="relative flex w-full items-center justify-center rounded-full bg-gradient-to-r from-primary to-[#F5A623] py-3 text-white transition-transform active:scale-[0.99]"
         >
           <span className="text-center">

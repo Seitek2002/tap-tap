@@ -49,12 +49,10 @@ export const Anketa8Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
-  const [selected, setSelected] = useState<string[]>([
-    "🌱 Вегетерианство",
-    "🧩 Паззлы",
-    "🌲 Природа",
-    "🎉 Вечеринки",
-  ]);
+  // Пусто, а не набор "для примера" — иначе каждый новый пользователь
+  // молча получал бы эти интересы в профиле без своего выбора (влияет на
+  // сортировку по совпадению интересов в ленте, см. feed.js byInterests).
+  const [selected, setSelected] = useState<string[]>([]);
 
   const toggle = (value: string) =>
     setSelected((prev) =>

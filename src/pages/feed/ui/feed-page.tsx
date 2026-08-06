@@ -237,11 +237,7 @@ export const FeedPage = () => {
 
           <LikeLimitOverlay
             isOpen={isLimitReached}
-            onRemoveLimit={() => {
-              // TODO: покупка Premium. Пока просто сбрасываем лимит.
-              setLikeCount(0);
-              setIsLimitReached(false);
-            }}
+            onRemoveLimit={() => navigate(ROUTES.premium)}
             onWait={() => setIsLimitReached(false)}
           />
         </div>
