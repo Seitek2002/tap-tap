@@ -284,6 +284,17 @@ export const LikesPage = () => {
               </div>
             </>
           )
+        ) : yourLikes.length === 0 ? (
+          <div className="mt-16 flex flex-col items-center px-8 text-center">
+            <Heart className="size-10 text-[#6B7280]" />
+            <h2 className="mt-4 text-lg font-bold">
+              Ты пока никого не лайкнул(а)
+            </h2>
+            <p className="mt-2 max-w-xs text-sm text-[#6B7280]">
+              Полайкай анкеты в ленте — те, кому ты понравишься в ответ,
+              появятся здесь
+            </p>
+          </div>
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-2.5">
             {yourLikes.map((profile) => (
