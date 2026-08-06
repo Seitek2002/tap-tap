@@ -17,6 +17,7 @@ export { useTransactionsQuery } from "./api/get-transactions";
 export { useWalletQuery } from "./api/get-wallet";
 export { useLikeMutation } from "./api/like";
 export { useReportUserMutation } from "./api/report-user";
+export { useResetFiltersMutation } from "./api/reset-filters";
 export { submitAnketa } from "./api/submit-anketa";
 export { useTopUpMutation } from "./api/top-up";
 export { useUndoMutation } from "./api/undo";

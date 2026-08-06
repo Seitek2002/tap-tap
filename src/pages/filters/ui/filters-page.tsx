@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -7,6 +8,7 @@ import { useOptionsQuery } from "@/entities/option";
 import {
   type FilterPreferences,
   useFiltersQuery,
+  useResetFiltersMutation,
   useUpdateFiltersMutation,
 } from "@/entities/user";
 
@@ -299,6 +301,7 @@ export const FiltersPage = () => {
   const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const filtersQuery = useFiltersQuery(!isMockMode());
   const updateFiltersMutation = useUpdateFiltersMutation();
+  const resetFiltersMutation = useResetFiltersMutation();
   const [audience, setAudience] = useState("men");
   const [age, setAge] = useState<[number, number]>([18, 28]);
   const [distance, setDistance] = useState(80);
@@ -320,14 +323,11 @@ export const FiltersPage = () => {
   const [optionValues, setOptionValues] = useState(DEFAULT_OPTION_VALUES);
   const [openField, setOpenField] = useState<null | OptionFieldKey>(null);
 
-  // Реальный режим: как только придёт GET /api/filters, один раз заливаем
-  // локальный черновик сохранёнными значениями — дальше это обычный
-  // редактируемый state, как и в mock-режиме.
-  const hasHydratedFilters = useRef(isMockMode());
-  useEffect(() => {
-    if (hasHydratedFilters.current || !filtersQuery.data) return;
-    hasHydratedFilters.current = true;
-    const prefs = filtersQuery.data;
+  // Общее место применения prefs к локальному черновику — и для начальной
+  // гидратации от GET /api/filters, и для "Очистить" (см. clearFilters):
+  // тот сбрасывает не к одному фиксированному набору для всех, а к тем же
+  // анкетным дефолтам, что отдаёт DELETE /api/filters (см. bakai-server).
+  const applyPrefs = (prefs: FilterPreferences) => {
     setAudience(prefs.audience);
     setAge([prefs.ageMin, prefs.ageMax]);
     setDistance(prefs.maxDistance);
@@ -355,6 +355,17 @@ export const FiltersPage = () => {
       smoking: prefs.smoking ? [prefs.smoking] : [],
       sport: prefs.sport ? [prefs.sport] : [],
     });
+  };
+
+  // Реальный режим: как только придёт GET /api/filters, один раз заливаем
+  // локальный черновик сохранёнными значениями (или анкетными дефолтами,
+  // если фильтры ещё ни разу не сохранялись) — дальше это обычный
+  // редактируемый state, как и в mock-режиме.
+  const hasHydratedFilters = useRef(isMockMode());
+  useEffect(() => {
+    if (hasHydratedFilters.current || !filtersQuery.data) return;
+    hasHydratedFilters.current = true;
+    applyPrefs(filtersQuery.data);
   }, [filtersQuery.data]);
 
   const fieldOptions = (field: (typeof OPTION_FIELDS)[number]) =>
@@ -391,17 +402,29 @@ export const FiltersPage = () => {
     });
   };
 
-  const clearFilters = () => {
-    setAudience("men");
-    setAge([18, 28]);
-    setDistance(80);
-    setHeight(175);
-    setToggles(DEFAULT_TOGGLES);
-    setSeeking(DEFAULT_SEEKING);
-    setInterests(DEFAULT_INTERESTS);
-    setZodiac(DEFAULT_ZODIAC);
-    setOptionValues(DEFAULT_OPTION_VALUES);
-    if (!isMockMode()) updateFiltersMutation.mutate(DEFAULT_PREFS);
+  // В реальном режиме "Очистить" возвращает не один фиксированный набор
+  // для всех, а анкетные дефолты этого конкретного пользователя (см.
+  // useResetFiltersMutation → DELETE /api/filters) — поэтому дожидаемся
+  // ответа и применяем его через applyPrefs, а не пишем DEFAULT_PREFS сразу.
+  const clearFilters = async () => {
+    if (isMockMode()) {
+      setAudience(DEFAULT_PREFS.audience);
+      setAge([DEFAULT_PREFS.ageMin, DEFAULT_PREFS.ageMax]);
+      setDistance(DEFAULT_PREFS.maxDistance);
+      setHeight(DEFAULT_PREFS.minHeight);
+      setToggles(DEFAULT_TOGGLES);
+      setSeeking(DEFAULT_SEEKING);
+      setInterests(DEFAULT_INTERESTS);
+      setZodiac(DEFAULT_ZODIAC);
+      setOptionValues(DEFAULT_OPTION_VALUES);
+      return;
+    }
+    try {
+      const prefs = await resetFiltersMutation.mutateAsync();
+      applyPrefs(prefs);
+    } catch {
+      toast.error("Не получилось сбросить фильтры");
+    }
   };
 
   const buildPrefsPayload = (): FilterPreferences => ({
@@ -468,7 +491,7 @@ export const FiltersPage = () => {
         <h1 className="text-center text-base font-bold">Фильтры</h1>
         <button
           type="button"
-          onClick={clearFilters}
+          onClick={() => void clearFilters()}
           className="text-sm font-medium text-[#1C1E24] underline underline-offset-2 justify-self-end"
         >
           Очистить
