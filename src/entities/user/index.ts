@@ -28,6 +28,7 @@ export { useUpdateProfileMutation } from "./api/update-profile";
 export { useUploadChatAttachmentMutation } from "./api/upload-chat-attachment";
 export { useAnketaDraftStore } from "./model/anketa-draft-store";
 export { useChatSocket } from "./model/use-chat-socket";
+export { useMatchNotifications } from "./model/use-match-notifications";
 export type {
   BlockedContact,
   BlockResult,
@@ -40,6 +41,7 @@ export type {
   LikeResult,
   LikeUser,
   Me,
+  NewMatchEvent,
   NotificationPreferences,
   ProfileUpdate,
   ReportResult,

@@ -125,7 +125,10 @@ export const FeedPage = () => {
           setMatched({ chatId: swiped.id, profile: swiped });
         }
         if (nextCount === MOCK_TOAST_MATCH_ON_LIKE_NUMBER && swiped) {
-          showNewMatchToast(swiped);
+          // Настоящего чата нет — тот же приём, что и у MatchOverlay выше:
+          // id профиля вместо chatId, чтобы клик по тосту вёл хоть куда-то
+          // предсказуемое в мок-режиме.
+          showNewMatchToast(swiped, () => navigate(`/chat/${swiped.id}`));
         }
       }
       return;

@@ -256,6 +256,21 @@ export const ChatRemovedEventSchema = z.object({
 
 export type ChatRemovedEvent = z.infer<typeof ChatRemovedEventSchema>;
 
+// new_match — приходит ОБЕИМ сторонам сразу, как только на бэке появляется
+// новая пара (см. POST /api/swipes/like/:userId) — не только тому, кто
+// только что лайкнул, но и тому, кто лайкнул раньше и мог быть в этот момент
+// на любой другой странице приложения.
+export const NewMatchEventSchema = z.object({
+  chatId: z.number(),
+  partner: z.object({
+    id: z.number(),
+    name: z.string(),
+    photo: z.string().nullable(),
+  }),
+});
+
+export type NewMatchEvent = z.infer<typeof NewMatchEventSchema>;
+
 // GET /api/wallet
 export const WalletSchema = z.object({
   balance: z.number(),

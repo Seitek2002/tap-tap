@@ -13,9 +13,11 @@ const SWIPE_DISMISS_THRESHOLD = 80;
 const SWIPE_DISMISS_VELOCITY = 500;
 
 export const MatchToastCard = ({
+  onClick,
   profile,
   t,
 }: {
+  onClick?: () => void;
   profile: Profile;
   t: Toast;
 }) => {
@@ -46,6 +48,12 @@ export const MatchToastCard = ({
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.6}
       onDragEnd={handleDragEnd}
+      onClick={() => {
+        if (!onClick) return;
+        toast.dismiss(t.id);
+        onClick();
+      }}
+      role={onClick ? "button" : undefined}
       style={{
         background: "linear-gradient(90deg, #7C3AED 0%, #F4B740 100%)",
         x,

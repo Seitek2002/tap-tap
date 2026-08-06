@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Navigate, useLocation, useOutlet } from "react-router";
 
 import { AnimatePresence, motion } from "motion/react";
+
+import { MatchNotifications } from "@/widgets/match-notification";
 
 import { useSessionStore } from "@/entities/session";
 import { useMeQuery } from "@/entities/user";
@@ -70,51 +72,67 @@ export const PageTransition = () => {
   // Проверка сессии: есть токен → нечего делать на welcome/auth, в ленту;
   // нет токена → нечего делать нигде, кроме welcome/auth. В mock-режиме
   // бэка нет вообще — сессии неоткуда взяться, гейт просто выключен.
-  if (!isMockMode()) {
-    if (!token && !isPublicPath) return <Navigate to="/" replace />;
-    if (token && isPublicPath && !awaitingPostAuthNavigation) {
-      // meQuery.data ещё не пришёл — isOnboardingComplete на этом рендере
-      // ложно false (не "точно не пройдена", а "пока не знаем"). Увести на
-      // anketa-1 по этому неверному значению нельзя: anketa-1 сам входит в
-      // isAnketaPath, и следующая проверка ниже уже не смогла бы поправить
-      // ошибочный увод оттуда — человек застрял бы там навсегда.
-      if (!meQuery.data) return null;
-      return (
-        <Navigate
-          to={isOnboardingComplete ? ROUTES.feed : ROUTES.anketa1}
-          replace
-        />
-      );
-    }
+  let content: ReactNode;
+  if (!isMockMode() && !token && !isPublicPath) {
+    content = <Navigate to="/" replace />;
+  } else if (
+    !isMockMode() &&
+    token &&
+    isPublicPath &&
+    !awaitingPostAuthNavigation
+  ) {
+    // meQuery.data ещё не пришёл — isOnboardingComplete на этом рендере
+    // ложно false (не "точно не пройдена", а "пока не знаем"). Увести на
+    // anketa-1 по этому неверному значению нельзя: anketa-1 сам входит в
+    // isAnketaPath, и следующая проверка ниже уже не смогла бы поправить
+    // ошибочный увод оттуда — человек застрял бы там навсегда.
+    content = meQuery.data ? (
+      <Navigate
+        to={isOnboardingComplete ? ROUTES.feed : ROUTES.anketa1}
+        replace
+      />
+    ) : null;
+  } else if (
     // Токен есть, анкета не пройдена, но человек уже сбежал с неё на другую
     // защищённую страницу (например, стёр весь путь из адресной строки) —
     // возвращаем в анкету. Ждём meQuery.data, чтобы не увести по ложному
     // срабатыванию на пустом первом рендере, пока /api/auth/me ещё грузится.
-    if (
-      token &&
-      !isPublicPath &&
-      !isAnketaPath &&
-      meQuery.data &&
-      !isOnboardingComplete
-    ) {
-      return <Navigate to={ROUTES.anketa1} replace />;
-    }
+    !isMockMode() &&
+    token &&
+    !isPublicPath &&
+    !isAnketaPath &&
+    meQuery.data &&
+    !isOnboardingComplete
+  ) {
+    content = <Navigate to={ROUTES.anketa1} replace />;
+  } else {
+    content = (
+      <div className="relative h-dvh overflow-hidden">
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={location.pathname}
+            className="absolute inset-0"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-30%" }}
+            transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+          >
+            <FrozenOutlet />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    );
   }
 
   return (
-    <div className="relative h-dvh overflow-hidden">
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={location.pathname}
-          className="absolute inset-0"
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "-30%" }}
-          transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
-        >
-          <FrozenOutlet />
-        </motion.div>
-      </AnimatePresence>
-    </div>
+    <>
+      {content}
+      {/* Смонтирован вне зависимости от того, что показывает content выше
+          (в т.ч. во время редиректов) — иначе уведомление о паре пропадало бы
+          именно на те рендеры, когда идёт проверка/редирект анкеты. */}
+      <MatchNotifications
+        enabled={!isMockMode() && Boolean(token) && isOnboardingComplete}
+      />
+    </>
   );
 };
