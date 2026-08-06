@@ -128,7 +128,7 @@ const MessageBubble = ({
     return (
       <div
         className={cn(
-          "flex flex-col gap-1",
+          "flex flex-col gap-1 w-full",
           isOutgoing ? "self-end items-end" : "self-start items-start",
         )}
       >
@@ -156,7 +156,7 @@ const MessageBubble = ({
         className={cn(
           "flex max-w-[75%] items-center gap-3 rounded-2xl px-3 py-3",
           isOutgoing
-            ? "bg-primary self-end text-white"
+            ? "bg-primary text-white"
             : "self-start bg-[#EFEDF6] text-[#1C1E24]",
         )}
       >
@@ -177,7 +177,7 @@ const MessageBubble = ({
     return (
       <div
         className={cn(
-          "flex flex-col gap-1",
+          "flex flex-col gap-1 w-full",
           isOutgoing ? "self-end items-end" : "self-start items-start",
         )}
       >
@@ -198,7 +198,7 @@ const MessageBubble = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-1",
+        "flex flex-col gap-1 w-full",
         isOutgoing ? "self-end items-end" : "self-start items-start",
       )}
     >
