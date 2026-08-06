@@ -1,42 +1,52 @@
 import { createHashRouter } from "react-router";
 
-import { Anketa1Page } from "@/pages/anketa/1";
-import { Anketa2Page } from "@/pages/anketa/2";
-import { Anketa3Page } from "@/pages/anketa/3";
-import { Anketa4Page } from "@/pages/anketa/4";
-import { Anketa5Page } from "@/pages/anketa/5";
-import { Anketa6Page } from "@/pages/anketa/6";
-import { Anketa7Page } from "@/pages/anketa/7";
-import { Anketa8Page } from "@/pages/anketa/8";
-import { Anketa9Page } from "@/pages/anketa/9";
-import { Anketa10Page } from "@/pages/anketa/10";
-import { Anketa11Page } from "@/pages/anketa/11";
-import { Anketa12Page } from "@/pages/anketa/12";
-import { AuthPage } from "@/pages/auth";
-import { ChatPage, ChatProfilePage, ChatRoomPage } from "@/pages/chat";
-import { ComponentsPage } from "@/pages/components";
-import { FeedPage, NearbyPage, NearbyProfilePage } from "@/pages/feed";
-import { FiltersPage } from "@/pages/filters";
-import { LikeProfilePage, LikesPage } from "@/pages/likes";
-import { NumberVerificationPage } from "@/pages/number-verification";
-import { PremiumPage } from "@/pages/premium";
+import { ROUTES } from "@/shared/config";
+
 import {
   AboutPage,
   AddContactManuallyPage,
+  Anketa1Page,
+  Anketa2Page,
+  Anketa3Page,
+  Anketa4Page,
+  Anketa5Page,
+  Anketa6Page,
+  Anketa7Page,
+  Anketa8Page,
+  Anketa9Page,
+  Anketa10Page,
+  Anketa11Page,
+  Anketa12Page,
+  AuthPage,
+  ChatPage,
+  ChatProfilePage,
+  ChatRoomPage,
+  ComponentsPage,
+  FeedPage,
+  FiltersPage,
   GuidelinesPage,
   HideFromContactsPage,
+  LikeProfilePage,
+  LikesPage,
+  NearbyPage,
+  NearbyProfilePage,
   NotificationsPage,
+  NumberVerificationPage,
+  PremiumPage,
   PrivacyPage,
   ProfilePage,
   SettingsPage,
   SupportPage,
-} from "@/pages/profile";
-import { WalletPage } from "@/pages/wallet";
-import { WelcomePage } from "@/pages/welcome";
-
-import { ROUTES } from "@/shared/config";
-
+  WalletPage,
+  WelcomePage,
+} from "./lazy-pages";
 import { PageTransition } from "./page-transition";
+
+// React.lazy (см. lazy-pages.tsx) — вместо одного бандла на ~1 МБ, куда
+// попадали все ~35 страниц сразу (анкета, лента, чат, профиль и т.д.),
+// каждая страница теперь свой чанк, догружаемый только когда на неё реально
+// заходят. Фоллбэк на время загрузки чанка — один Suspense вокруг
+// FrozenOutlet в PageTransition, а не здесь: не плодить его на каждый роут.
 
 // createHashRouter, а не browser: в Capacitor WebView перезагрузка на любом
 // маршруте не улетает в 404 и не требует серверного rewrite.

@@ -36,6 +36,7 @@ import {
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
 import { cn } from "@/shared/lib/utils";
+import { ImageWithSkeleton } from "@/shared/ui/image-with-skeleton";
 import { Modal } from "@/shared/ui/modal";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
@@ -240,10 +241,11 @@ export const SwipeCard = ({
     >
       {/* Фото на всю высоту карточки */}
       <div className="relative h-full">
-        <img
+        <ImageWithSkeleton
           src={profile.photos[photoIndex]}
           alt=""
-          className="absolute inset-0 size-full object-cover"
+          loading={isTop ? "eager" : "lazy"}
+          className="absolute inset-0 size-full"
         />
 
         {/* Тап по бокам фото — листать фото */}

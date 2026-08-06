@@ -3,6 +3,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Ban, Flag, HeartCrack } from "lucide-react";
 import { type PanInfo, animate, motion, useMotionValue } from "motion/react";
 
+import { ImageWithSkeleton } from "@/shared/ui/image-with-skeleton";
+
 import type { Chat } from "../model/chats";
 
 type ChatRowProps = {
@@ -119,10 +121,10 @@ export const ChatRow = ({
           className="flex w-full shrink-0 items-center gap-3 px-4 py-3 text-left"
         >
           <div className="relative shrink-0">
-            <img
+            <ImageWithSkeleton
               src={chat.photo}
               alt=""
-              className="size-14 rounded-full object-cover"
+              className="size-14 rounded-full"
             />
             {/* Один статус-бэйдж сверху, не два одновременно — непрочитанное
                 важнее и перекрывает индикатор онлайна. */}

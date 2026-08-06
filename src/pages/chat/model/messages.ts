@@ -1,4 +1,8 @@
 export type Message = {
+  // Есть только у сообщений с бэка (мок-сообщения ничего не знают о
+  // времени) — используется, чтобы показать реальную дату начала переписки
+  // вместо заглушки (см. formatDateRu в chat-room-page.tsx).
+  created_at?: string;
   fileName?: string;
   // Реальный URL вложения — есть только у сообщений с бэка, не у
   // моковых/ещё не загруженных.
@@ -11,8 +15,6 @@ export type Message = {
   text?: string;
   type: "incoming" | "outgoing";
 };
-
-export const CONVERSATION_DATE = "12 июля 2026, 12:56";
 
 export const INITIAL_MESSAGES: Message[] = [
   {

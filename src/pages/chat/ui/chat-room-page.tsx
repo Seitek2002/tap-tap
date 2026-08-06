@@ -2,6 +2,7 @@ import {
   type ChangeEvent,
   type FormEvent,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -37,6 +38,7 @@ import {
 import { resolveUploadUrl } from "@/shared/api";
 import person1 from "@/shared/assets/images/person-1.jpg";
 import { REPORT_REASONS, ROUTES } from "@/shared/config";
+import { formatDateRu } from "@/shared/lib/format-date-ru";
 import { formatLastSeen } from "@/shared/lib/format-last-seen";
 import {
   NotificationType,
@@ -46,16 +48,13 @@ import { isMockMode } from "@/shared/lib/mock-mode";
 import { isAndroid } from "@/shared/lib/platform";
 import { useKeyboardInset } from "@/shared/lib/use-keyboard-inset";
 import { cn } from "@/shared/lib/utils";
+import { ImageWithSkeleton } from "@/shared/ui/image-with-skeleton";
 import { Modal } from "@/shared/ui/modal";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Spinner } from "@/shared/ui/spinner";
 
 import { CHATS } from "../model/chats";
-import {
-  CONVERSATION_DATE,
-  INITIAL_MESSAGES,
-  type Message,
-} from "../model/messages";
+import { INITIAL_MESSAGES, type Message } from "../model/messages";
 import { PhotoViewer } from "./photo-viewer";
 import { TypingIndicator } from "./typing-indicator";
 
@@ -266,7 +265,7 @@ export const ChatRoomPage = () => {
     ? (mockChat?.name ?? "Собеседник")
     : chatQuery.data?.partner.name || "Собеседник";
   const displayPhoto = isMockMode()
-    ? mockChat?.photo
+    ? (mockChat?.photo ?? FALLBACK_PHOTO)
     : chatQuery.data?.partner.photo
       ? resolveUploadUrl(chatQuery.data.partner.photo)
       : FALLBACK_PHOTO;
@@ -280,50 +279,70 @@ export const ChatRoomPage = () => {
   const [mockMessages, setMockMessages] = useState(INITIAL_MESSAGES);
   // Реальный режим: объединяем историю с REST и то, что доливает сокет, пока
   // страница открыта — сортируем и убираем дубли (история может пересечься с
-  // уже пришедшим по сокету сообщением при повторном фетче).
-  const realMessages: Message[] = isMockMode()
-    ? []
-    : Array.from(
-        new Map(
-          [...(messagesQuery.data ?? []), ...liveMessages].map((message) => [
-            message.id,
-            message,
-          ]),
-        ).values(),
-      )
-        .sort((a, b) => a.id - b.id)
-        .map((message): Message => {
-          const type = message.sender_id === myUserId ? "outgoing" : "incoming";
-          const seen = message.read === 1;
+  // уже пришедшим по сокету сообщением при повторном фетче). useMemo — эта
+  // страница держит черновик сообщения в своём же state, и без мемоизации
+  // весь список пересобирался бы заново на каждое нажатие клавиши.
+  const realMessages: Message[] = useMemo(() => {
+    if (isMockMode()) return [];
+    return Array.from(
+      new Map(
+        [...(messagesQuery.data ?? []), ...liveMessages].map((message) => [
+          message.id,
+          message,
+        ]),
+      ).values(),
+    )
+      .sort((a, b) => a.id - b.id)
+      .map((message): Message => {
+        const type = message.sender_id === myUserId ? "outgoing" : "incoming";
+        const seen = message.read === 1;
 
-          if (message.kind === "image" && message.attachment_url) {
-            return {
-              id: message.id,
-              imageUrl: resolveUploadUrl(message.attachment_url),
-              kind: "image",
-              seen,
-              type,
-            };
-          }
-          if (message.kind === "file" && message.attachment_url) {
-            return {
-              fileName: message.file_name ?? "Файл",
-              fileUrl: resolveUploadUrl(message.attachment_url),
-              id: message.id,
-              kind: "file",
-              seen,
-              type,
-            };
-          }
+        if (message.kind === "image" && message.attachment_url) {
           return {
+            created_at: message.created_at,
             id: message.id,
-            kind: "text",
+            imageUrl: resolveUploadUrl(message.attachment_url),
+            kind: "image",
             seen,
-            text: message.text,
             type,
           };
-        });
+        }
+        if (message.kind === "file" && message.attachment_url) {
+          return {
+            created_at: message.created_at,
+            fileName: message.file_name ?? "Файл",
+            fileUrl: resolveUploadUrl(message.attachment_url),
+            id: message.id,
+            kind: "file",
+            seen,
+            type,
+          };
+        }
+        return {
+          created_at: message.created_at,
+          id: message.id,
+          kind: "text",
+          seen,
+          text: message.text,
+          type,
+        };
+      });
+  }, [messagesQuery.data, liveMessages, myUserId]);
   const messages = isMockMode() ? mockMessages : realMessages;
+  // Date.now() — импюрный вызов, нельзя звать прямо в теле рендера (React
+  // Compiler это ловит) — фиксируем один раз при монтировании тем же
+  // паттерном, что и лениво инициализированный useState ниже.
+  const [mockToday] = useState(() => Date.now());
+  // Дата начала переписки — раньше тут была статичная строка-заглушка,
+  // никогда не менявшаяся ни в одном чате. В мок-режиме у сообщений нет
+  // created_at вообще — показываем сегодняшнюю дату для демо; в реальном —
+  // дату самого раннего сообщения, а если сообщений ещё нет (только что
+  // созданный мэтч) — не показываем плашку вообще, датировать пока нечего.
+  const conversationDate = messages[0]?.created_at
+    ? formatDateRu(messages[0].created_at)
+    : isMockMode()
+      ? formatDateRu(mockToday)
+      : null;
 
   const [draft, setDraft] = useState(() => locationState?.initialMessage ?? "");
   const [pendingAttachments, setPendingAttachments] = useState<
@@ -640,10 +659,11 @@ export const ChatRoomPage = () => {
         >
           <ChevronLeft className="size-5" />
         </button>
-        <img
+        <ImageWithSkeleton
           src={displayPhoto}
           alt=""
-          className="size-11 shrink-0 rounded-full object-cover"
+          loading="eager"
+          className="size-11 shrink-0 rounded-full"
         />
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-bold">{displayName}</h1>
@@ -670,9 +690,11 @@ export const ChatRoomPage = () => {
         </button>
       </header>
 
-      <p className="py-2 text-center text-xs text-[#6B7280]">
-        {CONVERSATION_DATE}
-      </p>
+      {conversationDate && (
+        <p className="py-2 text-center text-xs text-[#6B7280]">
+          {conversationDate}
+        </p>
+      )}
 
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 pb-4">
         {messages.map((message) => (

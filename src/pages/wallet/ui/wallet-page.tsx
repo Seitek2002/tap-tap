@@ -13,6 +13,7 @@ import {
   useWalletQuery,
 } from "@/entities/user";
 
+import { formatDateRu } from "@/shared/lib/format-date-ru";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -23,26 +24,6 @@ import {
   PREMIUM_PRICE_PER_DAY,
   TOP_UP_PRESETS,
 } from "../model/wallet";
-
-const MONTHS_GENITIVE = [
-  "января",
-  "февраля",
-  "марта",
-  "апреля",
-  "мая",
-  "июня",
-  "июля",
-  "августа",
-  "сентября",
-  "октября",
-  "ноября",
-  "декабря",
-];
-
-const formatExpiry = (timestamp: number) => {
-  const date = new Date(timestamp);
-  return `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]} ${date.getFullYear()}`;
-};
 
 export const WalletPage = () => {
   const navigate = useNavigate();
@@ -152,7 +133,7 @@ export const WalletPage = () => {
             {isPremium && premiumUntil !== null && (
               <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-linear-to-r from-primary to-[#F5A623] px-3 py-1.5 text-xs font-bold">
                 <Sparkles className="size-3.5" />
-                Premium до {formatExpiry(premiumUntil)}
+                Premium до {formatDateRu(premiumUntil)}
               </p>
             )}
           </div>

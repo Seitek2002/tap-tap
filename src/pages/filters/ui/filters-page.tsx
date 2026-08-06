@@ -656,6 +656,19 @@ export const FiltersPage = () => {
         </div>
       </div>
 
+      {/* Явной кнопки применения раньше не было — фильтры сохранялись только
+          неявно, при уходе с экрана стрелкой назад. Кнопка ниже делает то же
+          самое (сохранить + закрыть), просто как понятное явное действие. */}
+      <div className="px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="w-full rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
+        >
+          Применить
+        </button>
+      </div>
+
       {/* Шит: «Партнёр ищет» — одиночный выбор */}
       <Modal isOpen={isSeekingOpen} onClose={() => setIsSeekingOpen(false)}>
         <h2 className="text-center text-lg font-bold">Партнёр ищет</h2>

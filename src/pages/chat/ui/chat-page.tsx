@@ -22,6 +22,7 @@ import { REPORT_REASONS } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { useClickAway } from "@/shared/lib/use-click-away";
 import { cn } from "@/shared/lib/utils";
+import { ImageWithSkeleton } from "@/shared/ui/image-with-skeleton";
 import { Modal } from "@/shared/ui/modal";
 import { PullToRefresh } from "@/shared/ui/pull-to-refresh";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -279,11 +280,11 @@ export const ChatPage = () => {
           <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {likesAndMatches.map((photo, index) => (
               <div key={index} className="relative mb-2 w-16 shrink-0">
-                <img
+                <ImageWithSkeleton
                   src={photo}
                   alt=""
                   className={cn(
-                    "size-16 rounded-full object-cover",
+                    "size-16 rounded-full",
                     index === 0
                       ? "border-2 border-primary"
                       : "border-2 border-white",

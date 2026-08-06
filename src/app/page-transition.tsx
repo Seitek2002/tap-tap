@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, Suspense, useState } from "react";
 import { Navigate, useLocation, useOutlet } from "react-router";
 
 import { AnimatePresence, motion } from "motion/react";
@@ -10,6 +10,7 @@ import { useMeQuery } from "@/entities/user";
 
 import { ANKETA_STEPS, ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
+import { Spinner } from "@/shared/ui/spinner";
 
 // "/" — это WelcomePage (см. router.tsx), ROUTES.welcome сейчас нигде не
 // смонтирован. Обе страницы не требуют токена, все остальные — требуют.
@@ -38,6 +39,16 @@ const FrozenOutlet = () => {
   const [frozen] = useState(outlet);
   return frozen;
 };
+
+// Страницы теперь грузятся по одной, через React.lazy (см. router.tsx) —
+// пока чанк конкретной страницы качается, этот фоллбэк показывается вместо
+// неё. Один Suspense здесь покрывает все роуты сразу, отдельный на каждый
+// не нужен.
+const RouteFallback = () => (
+  <div className="flex h-dvh items-center justify-center bg-[#FAF9FD]">
+    <Spinner className="size-8 text-primary" />
+  </div>
+);
 
 // Нативный «push»-переход: новая страница въезжает справа, старая — слегка
 // уезжает влево (параллакс), как в iOS/Android. Без учёта направления
@@ -121,7 +132,9 @@ export const PageTransition = () => {
             exit={{ x: "-30%" }}
             transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
           >
-            <FrozenOutlet />
+            <Suspense fallback={<RouteFallback />}>
+              <FrozenOutlet />
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </div>
