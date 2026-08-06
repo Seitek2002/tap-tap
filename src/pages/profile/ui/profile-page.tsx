@@ -333,7 +333,14 @@ export const ProfilePage = () => {
           </div>
           <span
             className="absolute top-1/2 -translate-y-1/2 rounded-full bg-[#1C1E24] px-2 py-1 text-[10px] font-bold text-white"
-            style={{ left: `calc(${profile.completion}% + 4px)` }}
+            style={{
+              // min() не даёт бейджу вылезти за правый край полосы на 100% —
+              // без этого "+ 4px" сдвигал его за границу контейнера, и
+              // верстка страницы ловила горизонтальный скролл. 3rem — с
+              // запасом под фактическую ширину бейджа "100%" (замерено
+              // ~43.5px при px-2 и text-[10px] font-bold).
+              left: `min(calc(${profile.completion}% + 4px), calc(100% - 3rem))`,
+            }}
           >
             {profile.completion}%
           </span>

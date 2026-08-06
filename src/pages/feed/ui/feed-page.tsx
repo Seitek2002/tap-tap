@@ -13,10 +13,12 @@ import {
   useLikeMutation,
   useReportUserMutation,
   useUndoMutation,
+  useWalletQuery,
 } from "@/entities/user";
 
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
+import { guideSeen } from "@/shared/lib/guide-seen";
 import {
   NotificationType,
   triggerNotificationHaptic,
@@ -44,24 +46,43 @@ const MOCK_TOAST_MATCH_ON_LIKE_NUMBER = 3;
 export const FeedPage = () => {
   const navigate = useNavigate();
   const feedQuery = useFeedQuery(!isMockMode());
+  const walletQuery = useWalletQuery(!isMockMode());
   const likeMutation = useLikeMutation();
   const dislikeMutation = useDislikeMutation();
   const undoMutation = useUndoMutation();
   const blockMutation = useBlockUserMutation();
   const reportMutation = useReportUserMutation();
+  const isPremium = !isMockMode() && (walletQuery.data?.isPremium ?? false);
 
-  const [stack, setStack] = useState<Profile[]>(() =>
-    isMockMode() ? [GUIDE_PROFILE, ...PROFILES] : [GUIDE_PROFILE],
-  );
-  const hasSeededFeed = useRef(isMockMode());
+  const showGuide = !guideSeen.get();
+  const [stack, setStack] = useState<Profile[]>(() => {
+    const guide = showGuide ? [GUIDE_PROFILE] : [];
+    return isMockMode() ? [...guide, ...PROFILES] : guide;
+  });
+  // Свайпнутые в этой сессии — чтобы фоновый рефетч ленты (см. useFeedQuery,
+  // staleTime: 0) не вернул в стек карточку, которую только что убрали
+  // локально, пока бэк ещё не успел это отразить в ответе.
+  const swipedIdsRef = useRef<Set<number>>(new Set());
 
+  // Каждый раз, когда приходят свежие данные ленты (первая загрузка,
+  // фоновый рефетч, инвалидация после лайка/дизлайка/андо в другом месте) —
+  // подмешиваем в стек новых кандидатов и убираем тех, кого бэк больше не
+  // отдаёт (лайкнули/дизлайкнули/заблокировали), не трогая порядок уже
+  // показанных карточек и не возвращая то, что свайпнули только что.
   useEffect(() => {
-    if (hasSeededFeed.current || !feedQuery.data) return;
-    hasSeededFeed.current = true;
-    setStack((prev) => [
-      ...prev,
-      ...feedQuery.data.map(mapFeedCandidateToProfile),
-    ]);
+    if (!feedQuery.data) return;
+    const fresh = feedQuery.data
+      .map(mapFeedCandidateToProfile)
+      .filter((profile) => !swipedIdsRef.current.has(profile.id));
+    const freshIds = new Set(fresh.map((profile) => profile.id));
+    setStack((prev) => {
+      const prevIds = new Set(prev.map((profile) => profile.id));
+      const kept = prev.filter(
+        (profile) => profile.isGuide || freshIds.has(profile.id),
+      );
+      const added = fresh.filter((profile) => !prevIds.has(profile.id));
+      return [...kept, ...added];
+    });
   }, [feedQuery.data]);
 
   const [history, setHistory] = useState<
@@ -78,7 +99,7 @@ export const FeedPage = () => {
     from: "left" | "right";
     id: number;
   } | null>(null);
-  const likesLocked = likeCount >= LIKE_LIMIT;
+  const likesLocked = !isPremium && likeCount >= LIKE_LIMIT;
 
   const handleSwipe = async (direction: "left" | "right", id: number) => {
     const swiped = stack.find((profile) => profile.id === id);
@@ -86,7 +107,11 @@ export const FeedPage = () => {
     if (swiped) setHistory((prev) => [...prev, { direction, profile: swiped }]);
 
     // Гайд-карточка не реальный человек — на бэке для неё ничего не свайпаем.
-    if (id === GUIDE_PROFILE.id) return;
+    if (id === GUIDE_PROFILE.id) {
+      guideSeen.set();
+      return;
+    }
+    swipedIdsRef.current.add(id);
 
     if (isMockMode()) {
       if (direction === "right") {
@@ -141,6 +166,7 @@ export const FeedPage = () => {
       }
     }
 
+    swipedIdsRef.current.delete(last.profile.id);
     setHistory((prev) => prev.slice(0, -1));
     setStack((prev) => [last.profile, ...prev]);
     setReturning({ from: last.direction, id: last.profile.id });

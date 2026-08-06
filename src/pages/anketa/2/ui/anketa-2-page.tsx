@@ -10,6 +10,7 @@ import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Modal } from "@/shared/ui/modal";
 import { Progress } from "@/shared/ui/progress";
 import { RangeSlider, Slider } from "@/shared/ui/slider";
+import { Spinner } from "@/shared/ui/spinner";
 
 // Карта (с Leaflet) грузится лениво — только после включения геолокации,
 // чтобы тяжёлая библиотека не попадала в стартовый бандл.
@@ -31,6 +32,7 @@ export const Anketa2Page = () => {
   const [distance, setDistance] = useState(80);
   const [coords, setCoords] = useState<Coords | null>(null);
   const [isGeoOpen, setIsGeoOpen] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   const commitAndNext = () => {
     setField("age_range_min", age[0]);
@@ -42,6 +44,7 @@ export const Anketa2Page = () => {
 
   const requestGeolocation = () => {
     if (!navigator.geolocation) return;
+    setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         // Координаты получены — включаем слайдер и карту.
@@ -49,10 +52,12 @@ export const Anketa2Page = () => {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        setIsLocating(false);
         setIsGeoOpen(false);
       },
       () => {
         // Отказ/ошибка — оставляем слайдер выключенным, шит закрываем.
+        setIsLocating(false);
         setIsGeoOpen(false);
       },
     );
@@ -150,12 +155,21 @@ export const Anketa2Page = () => {
       </div>
 
       {/* Шит «Включи геолокацию» */}
-      <Modal isOpen={isGeoOpen} onClose={() => setIsGeoOpen(false)}>
+      <Modal
+        isOpen={isGeoOpen}
+        onClose={() => {
+          if (isLocating) return;
+          setIsGeoOpen(false);
+        }}
+      >
         <div className="text-center">
-          <h2 className="text-xl font-bold">Включи геолокацию</h2>
+          <h2 className="text-xl font-bold">
+            {isLocating ? "Собираем данные..." : "Включи геолокацию"}
+          </h2>
           <p className="mx-auto mt-2 max-w-xs text-sm text-[#6B7280]">
-            Это поможет показывать тебе людей поближе к тебе и рекомендовать
-            тем, кто рядом
+            {isLocating
+              ? "Обрабатываем гео-данные, это займёт пару секунд"
+              : "Это поможет показывать тебе людей поближе к тебе и рекомендовать тем, кто рядом"}
           </p>
 
           <img
@@ -166,11 +180,16 @@ export const Anketa2Page = () => {
 
           <button
             type="button"
+            disabled={isLocating}
             onClick={requestGeolocation}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99]"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-sm font-semibold text-white transition-transform active:scale-[0.99] disabled:opacity-50"
           >
-            <Navigation className="size-5" />
-            Включить геолокацию
+            {isLocating ? (
+              <Spinner className="size-5 text-white" />
+            ) : (
+              <Navigation className="size-5" />
+            )}
+            {isLocating ? "Собираем данные..." : "Включить геолокацию"}
           </button>
         </div>
       </Modal>

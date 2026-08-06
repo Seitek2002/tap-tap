@@ -41,6 +41,7 @@ export const UserSchema = z.object({
   love_language: z.string(),
   marital_status: z.string(),
   name: z.string(),
+  onboarding_completed: z.number(),
   online: z.number(),
   pets: z.string(),
   phone: z.string(),
@@ -89,6 +90,7 @@ export type ProfileUpdate = Partial<
     | "longitude"
     | "love_language"
     | "name"
+    | "onboarding_completed"
     | "pets"
     | "religion"
     | "show_car"
@@ -107,6 +109,7 @@ export const MeSchema = z.object({
   gender: z.string(),
   id: z.number(),
   name: z.string(),
+  onboarding_completed: z.number(),
   phone: z.string(),
   photos: z.array(z.string()),
   premium: z.boolean(),

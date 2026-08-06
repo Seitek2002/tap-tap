@@ -4,13 +4,22 @@ import { Navigate, useLocation, useOutlet } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 
 import { useSessionStore } from "@/entities/session";
+import { useMeQuery } from "@/entities/user";
 
-import { ROUTES } from "@/shared/config";
+import { ANKETA_STEPS, ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 
 // "/" — это WelcomePage (см. router.tsx), ROUTES.welcome сейчас нигде не
 // смонтирован. Обе страницы не требуют токена, все остальные — требуют.
 const PUBLIC_PATHS = new Set<string>(["/", ROUTES.auth]);
+
+// Анкета + номер/OTP — сюда можно попасть с токеном на руках, но ещё не
+// закончив регистрацию; гейт "анкета не пройдена" не должен уводить отсюда
+// сам себя же (иначе бесконечный редирект на первый шаг).
+const ANKETA_PATHS = new Set<string>([
+  ...ANKETA_STEPS,
+  ROUTES.numberVerification,
+]);
 
 // <Outlet/> сам по себе всегда синхронен с текущим location — при смене
 // маршрута он мгновенно переключается на новый элемент, и «заморозить»
@@ -32,6 +41,9 @@ export const PageTransition = () => {
   const location = useLocation();
   const token = useSessionStore((state) => state.token);
   const isPublicPath = PUBLIC_PATHS.has(location.pathname);
+  const isAnketaPath = ANKETA_PATHS.has(location.pathname);
+  const meQuery = useMeQuery(!isMockMode() && Boolean(token));
+  const isOnboardingComplete = meQuery.data?.onboarding_completed === 1;
 
   // auth-page.tsx получает токен и тут же зовёт navigate() на
   // number-verification — но react-router оседает на новом location не
@@ -61,7 +73,31 @@ export const PageTransition = () => {
   if (!isMockMode()) {
     if (!token && !isPublicPath) return <Navigate to="/" replace />;
     if (token && isPublicPath && !awaitingPostAuthNavigation) {
-      return <Navigate to={ROUTES.feed} replace />;
+      // meQuery.data ещё не пришёл — isOnboardingComplete на этом рендере
+      // ложно false (не "точно не пройдена", а "пока не знаем"). Увести на
+      // anketa-1 по этому неверному значению нельзя: anketa-1 сам входит в
+      // isAnketaPath, и следующая проверка ниже уже не смогла бы поправить
+      // ошибочный увод оттуда — человек застрял бы там навсегда.
+      if (!meQuery.data) return null;
+      return (
+        <Navigate
+          to={isOnboardingComplete ? ROUTES.feed : ROUTES.anketa1}
+          replace
+        />
+      );
+    }
+    // Токен есть, анкета не пройдена, но человек уже сбежал с неё на другую
+    // защищённую страницу (например, стёр весь путь из адресной строки) —
+    // возвращаем в анкету. Ждём meQuery.data, чтобы не увести по ложному
+    // срабатыванию на пустом первом рендере, пока /api/auth/me ещё грузится.
+    if (
+      token &&
+      !isPublicPath &&
+      !isAnketaPath &&
+      meQuery.data &&
+      !isOnboardingComplete
+    ) {
+      return <Navigate to={ROUTES.anketa1} replace />;
     }
   }
 

@@ -119,6 +119,9 @@ export const SettingsPage = () => {
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   // Реальный режим: "Рекомендации" и "Невидимка" — это сохранённые /api/filters
   // и /api/profile, заливаем их в локальный черновик один раз, как только оба
   // ответа пришли.
@@ -217,6 +220,7 @@ export const SettingsPage = () => {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     await logout();
     navigate("/");
   };
@@ -450,7 +454,7 @@ export const SettingsPage = () => {
           <button
             type="button"
             data-haptic="heavy"
-            onClick={() => void handleLogout()}
+            onClick={() => setIsLogoutConfirmOpen(true)}
             className="w-full py-4 font-medium text-red-500"
           >
             Выйти
@@ -644,6 +648,35 @@ export const SettingsPage = () => {
           className="mt-5 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
         >
           Готово
+        </button>
+      </Modal>
+
+      <Modal
+        isOpen={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+      >
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h2 className="text-lg font-bold">Выйти из аккаунта?</h2>
+          <p className="text-sm text-[#6B7280]">
+            Придётся снова войти по номеру телефона, чтобы продолжить
+          </p>
+        </div>
+        <button
+          type="button"
+          data-haptic="heavy"
+          disabled={isLoggingOut}
+          onClick={() => void handleLogout()}
+          className="mt-6 w-full rounded-full bg-red-500 py-4 font-bold text-white disabled:opacity-60"
+        >
+          {isLoggingOut ? "Выходим..." : "Да, выйти"}
+        </button>
+        <button
+          type="button"
+          disabled={isLoggingOut}
+          onClick={() => setIsLogoutConfirmOpen(false)}
+          className="mt-4 w-full text-center text-sm font-semibold text-[#6B7280]"
+        >
+          Отмена
         </button>
       </Modal>
 

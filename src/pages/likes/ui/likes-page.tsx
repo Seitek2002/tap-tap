@@ -2,7 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
-import { Heart, Lock, X } from "lucide-react";
+import { Heart, HeartCrack, Lock, X } from "lucide-react";
 import { motion } from "motion/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
@@ -244,36 +244,46 @@ export const LikesPage = () => {
             ))}
           </div>
         ) : tab === "likedYou" ? (
-          <>
-            {!isPremium && (
-              <p className="mt-6 text-xs text-[#6B7280] text-center">
-                Активируй Премиум чтобы посмотреть все лайки
+          likedYou.length === 0 ? (
+            <div className="mt-16 flex flex-col items-center px-8 text-center">
+              <HeartCrack className="size-10 text-[#6B7280]" />
+              <h2 className="mt-4 text-lg font-bold">Пока никто не лайкнул</h2>
+              <p className="mt-2 max-w-xs text-sm text-[#6B7280]">
+                Как только кто-то тебя лайкнет — ты увидишь его здесь
               </p>
-            )}
-
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
-              {likedYou.map((profile, index) =>
-                isPremium || index < UNLOCKED_LIKES_COUNT ? (
-                  <LikeActionCard
-                    key={profile.id}
-                    profile={profile}
-                    onDismiss={
-                      isMockMode()
-                        ? undefined
-                        : () => void handleDismiss(profile)
-                    }
-                    onLike={
-                      isMockMode()
-                        ? undefined
-                        : () => void handleLikeBack(profile)
-                    }
-                  />
-                ) : (
-                  <LockedCard key={profile.id} profile={profile} />
-                ),
-              )}
             </div>
-          </>
+          ) : (
+            <>
+              {!isPremium && (
+                <p className="mt-6 text-xs text-[#6B7280] text-center">
+                  Активируй Премиум чтобы посмотреть все лайки
+                </p>
+              )}
+
+              <div className="mt-4 grid grid-cols-2 gap-2.5">
+                {likedYou.map((profile, index) =>
+                  isPremium || index < UNLOCKED_LIKES_COUNT ? (
+                    <LikeActionCard
+                      key={profile.id}
+                      profile={profile}
+                      onDismiss={
+                        isMockMode()
+                          ? undefined
+                          : () => void handleDismiss(profile)
+                      }
+                      onLike={
+                        isMockMode()
+                          ? undefined
+                          : () => void handleLikeBack(profile)
+                      }
+                    />
+                  ) : (
+                    <LockedCard key={profile.id} profile={profile} />
+                  ),
+                )}
+              </div>
+            </>
+          )
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-2.5">
             {yourLikes.map((profile) => (
@@ -288,7 +298,7 @@ export const LikesPage = () => {
           (translateY), а это делает его containing block'ом для любых
           fixed-потомков — кнопка со своим bottom-20 внезапно съезжала
           относительно уже сдвинутого контейнера, а не вьюпорта. */}
-      {tab === "likedYou" && !isPremium && (
+      {tab === "likedYou" && !isPremium && likedYou.length > 0 && (
         <div className="px-4 pb-4 fixed bottom-20 w-full left-0">
           <button
             type="button"

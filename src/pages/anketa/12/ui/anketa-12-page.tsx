@@ -2,6 +2,7 @@ import { type ChangeEvent, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Camera,
   Check,
@@ -42,6 +43,7 @@ const TIPS = [
 
 export const Anketa12Page = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { goNext, progress } = useAnketaFlow();
   const draft = useAnketaDraftStore((state) => state.draft);
   const resetDraft = useAnketaDraftStore((state) => state.reset);
@@ -121,9 +123,13 @@ export const Anketa12Page = () => {
     setIsSubmitting(true);
     try {
       await submitAnketa(
-        draft,
+        { ...draft, onboarding_completed: 1 },
         files.filter((file): file is File => file !== null),
       );
+      // PageTransition решает, пускать ли дальше анкеты, по кэшу
+      // GET /api/auth/me — без сброса он ещё минуту думал бы, что анкета не
+      // пройдена, и здесь же отправлял бы обратно на anketa-1.
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       resetDraft();
       goNext();
     } catch {
