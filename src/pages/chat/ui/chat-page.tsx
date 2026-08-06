@@ -10,11 +10,14 @@ import { BottomNav } from "@/widgets/bottom-nav";
 import {
   useBlockUserMutation,
   useChatsQuery,
+  useLikedMeQuery,
   useReportUserMutation,
   useUnmatchMutation,
 } from "@/entities/user";
 
+import { resolveUploadUrl } from "@/shared/api";
 import emptyChatIllustration from "@/shared/assets/images/empty-chat-illustration.png";
+import person1 from "@/shared/assets/images/person-1.jpg";
 import { REPORT_REASONS } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { useClickAway } from "@/shared/lib/use-click-away";
@@ -65,6 +68,7 @@ export const ChatPage = () => {
   }, []);
 
   const chatsQuery = useChatsQuery(!isMockMode());
+  const likedMeQuery = useLikedMeQuery(!isMockMode());
   const unmatchMutation = useUnmatchMutation();
   const blockMutation = useBlockUserMutation();
   const reportMutation = useReportUserMutation();
@@ -75,6 +79,16 @@ export const ChatPage = () => {
     ? mockChats
     : (chatsQuery.data ?? []).map(mapChatListItemToChat);
   const isLoadingChats = isMockMode() ? isMockLoading : chatsQuery.isLoading;
+
+  // "Лайки и пары" — превью тех, кто лайкнул тебя (полный список и разлайк
+  // живут на странице /likes, здесь только витрина + счётчик).
+  const likesAndMatches = isMockMode()
+    ? LIKES_AND_MATCHES
+    : (likedMeQuery.data ?? []).map((user) =>
+        user.photos[0] ? resolveUploadUrl(user.photos[0]) : person1,
+      );
+  const likesCount = isMockMode() ? 99 : likesAndMatches.length;
+  const likesCountLabel = likesCount > 99 ? "99+" : String(likesCount);
 
   const [unmatchChatId, setUnmatchChatId] = useState<null | number>(null);
   const [blockChatId, setBlockChatId] = useState<null | number>(null);
@@ -259,31 +273,33 @@ export const ChatPage = () => {
       </header>
 
       {/* Лайки и пары */}
-      <div className="px-4 pb-2">
-        <h2 className="text-base font-medium text-[#1C1E24]">Лайки и пары</h2>
-        <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {LIKES_AND_MATCHES.map((photo, index) => (
-            <div key={index} className="relative mb-2 w-16 shrink-0">
-              <img
-                src={photo}
-                alt=""
-                className={cn(
-                  "size-16 rounded-full object-cover",
-                  index === 0
-                    ? "border-2 border-primary"
-                    : "border-2 border-white",
+      {likesAndMatches.length > 0 && (
+        <div className="px-4 pb-2">
+          <h2 className="text-base font-medium text-[#1C1E24]">Лайки и пары</h2>
+          <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {likesAndMatches.map((photo, index) => (
+              <div key={index} className="relative mb-2 w-16 shrink-0">
+                <img
+                  src={photo}
+                  alt=""
+                  className={cn(
+                    "size-16 rounded-full object-cover",
+                    index === 0
+                      ? "border-2 border-primary"
+                      : "border-2 border-white",
+                  )}
+                />
+                {index === 0 && (
+                  <span className="absolute border-2 border-[#faf9fd] -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold whitespace-nowrap text-white">
+                    <Heart className="size-2.5 fill-current" />
+                    {likesCountLabel}
+                  </span>
                 )}
-              />
-              {index === 0 && (
-                <span className="absolute border-2 border-[#faf9fd] -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold whitespace-nowrap text-white">
-                  <Heart className="size-2.5 fill-current" />
-                  99+
-                </span>
-              )}
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Сообщения */}
       <div className="flex items-center justify-between px-4 pt-2 pb-1">

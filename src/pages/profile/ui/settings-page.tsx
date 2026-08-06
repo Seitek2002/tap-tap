@@ -6,6 +6,7 @@ import { Check, ChevronRight } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
+import { useOptionsQuery } from "@/entities/option";
 import { deleteAccount, logout } from "@/entities/session";
 import {
   useFiltersQuery,
@@ -95,6 +96,10 @@ export const SettingsPage = () => {
   const updateFiltersMutation = useUpdateFiltersMutation();
   const profileQuery = useProfileQuery(!isMockMode());
   const updateProfileMutation = useUpdateProfileMutation();
+  // car_model — тот же справочник, что и alcohol/religion/etc (см.
+  // /api/options), а не захардкоженный список: раньше "Указать машину"
+  // был единственным боттомшитом с фиксированными 3 вариантами.
+  const { data: options } = useOptionsQuery({ car_model: CAR_OPTIONS });
 
   const [ageRange, setAgeRange] = useState(DEFAULT_AGE_RANGE);
   const [distance, setDistance] = useState(DEFAULT_DISTANCE_KM);
@@ -609,7 +614,7 @@ export const SettingsPage = () => {
         <h2 className="text-center text-lg font-bold">Какая у тебя машина?</h2>
 
         <div className="mt-4 divide-y divide-[#E4E7EC]">
-          {CAR_OPTIONS.map((option) => {
+          {options.car_model.map((option) => {
             const selected = carModel === option;
             return (
               <button
