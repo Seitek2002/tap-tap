@@ -33,6 +33,9 @@ export type OwnProfileView = {
   name: string;
   optionValues: Record<ProfileOptionFieldKey, string[]>;
   photo: string;
+  // Все фото (уже резолвнутые URL) — для управления в модалке "Добавь
+  // больше фото", не только первое (см. `photo` выше, только для шапки).
+  photos: string[];
   study: string;
 };
 
@@ -77,6 +80,7 @@ export function mapUserToOwnProfile(user: User): OwnProfileView {
       sport: user.sport ? [user.sport] : [],
     },
     photo: user.photos[0] ? resolveUploadUrl(user.photos[0]) : FALLBACK_PHOTO,
+    photos: user.photos.map(resolveUploadUrl),
     study: user.education_place,
   };
 }

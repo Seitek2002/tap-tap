@@ -3,13 +3,16 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
+import { useOptionsQuery } from "@/entities/option";
 import { useAnketaDraftStore } from "@/entities/user";
 
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
-const INTERESTS = [
+// Дефолты — используются как initialData, пока реальный ответ /api/options
+// ещё не пришёл (тот же список, редактируемый из /admin/options).
+const INTERESTS_FALLBACK = [
   "🎳 Боулинг",
   "🧘 Йога",
   "⛰️ Горы",
@@ -49,6 +52,8 @@ export const Anketa8Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
+  const { data: options } = useOptionsQuery({ interests: INTERESTS_FALLBACK });
+  const INTERESTS = options.interests ?? INTERESTS_FALLBACK;
   // Пусто, а не набор "для примера" — иначе каждый новый пользователь
   // молча получал бы эти интересы в профиле без своего выбора (влияет на
   // сортировку по совпадению интересов в ленте, см. feed.js byInterests).

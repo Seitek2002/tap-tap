@@ -1,9 +1,17 @@
-import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import {
   Briefcase,
+  Camera,
   Check,
   ChevronRight,
   Dumbbell,
@@ -17,6 +25,7 @@ import {
   Smile,
   Sparkles,
   Wine,
+  X,
 } from "lucide-react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
@@ -24,13 +33,18 @@ import { BottomNav } from "@/widgets/bottom-nav";
 import { useOptionsQuery } from "@/entities/option";
 import {
   type ProfileUpdate,
+  useDeleteProfilePhotoMutation,
   useProfileQuery,
   useUpdateProfileMutation,
+  useUploadProfilePhotoMutation,
+  useWalletQuery,
 } from "@/entities/user";
 
+import { ApiError } from "@/shared/api";
 import bestPhotoIllustration from "@/shared/assets/images/best-photo-illustration.png";
 import { ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
+import { photoUploadWarningSeen } from "@/shared/lib/seen-flags";
 import { cn } from "@/shared/lib/utils";
 import { Checkbox, Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
@@ -44,7 +58,7 @@ import {
   BACKEND_OPTION_KEY,
   DEFAULT_INTERESTS,
   DEFAULT_PROFILE_OPTION_VALUES,
-  INTERESTS,
+  INTERESTS_FALLBACK,
   MORE_PHOTOS_PREVIEW,
   OWN_PROFILE,
   PREMIUM_FEATURES,
@@ -52,6 +66,12 @@ import {
   type ProfileOptionFieldKey,
 } from "../model/profile";
 import { BioQuoteIcon } from "./bio-quote-icon";
+
+// То же самое, что FREE_PHOTO_LIMIT/PREMIUM_PHOTO_LIMIT в bakai-server
+// src/routes/profile.js — бэк всё равно источник истины (отклонит лишнее),
+// эти константы только для локального UI (сколько слотов рисовать).
+const FREE_PHOTO_LIMIT = 3;
+const PREMIUM_PHOTO_LIMIT = 10;
 
 const FIELD_ICONS: Record<ProfileOptionFieldKey, ReactNode> = {
   alcohol: <Wine className="size-4" />,
@@ -72,12 +92,15 @@ function optionFieldToUpdate(
 
 // Дефолты — те же списки, что в PROFILE_OPTION_FIELDS. Служат initialData,
 // пока реальный ответ /api/options ещё не пришёл.
-const OPTIONS_FALLBACK: Record<string, string[]> = Object.fromEntries(
-  PROFILE_OPTION_FIELDS.map((field) => [
-    BACKEND_OPTION_KEY[field.key] ?? field.key,
-    [...field.options],
-  ]),
-);
+const OPTIONS_FALLBACK: Record<string, string[]> = {
+  ...Object.fromEntries(
+    PROFILE_OPTION_FIELDS.map((field) => [
+      BACKEND_OPTION_KEY[field.key] ?? field.key,
+      [...field.options],
+    ]),
+  ),
+  interests: [...INTERESTS_FALLBACK],
+};
 
 const Section = ({
   children,
@@ -145,6 +168,48 @@ export const ProfilePage = () => {
   const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [isBestPhotoOpen, setIsBestPhotoOpen] = useState(false);
   const [bestPhotoEnabled, setBestPhotoEnabled] = useState(false);
+
+  const walletQuery = useWalletQuery(!isMockMode());
+  const isPremium = !isMockMode() && (walletQuery.data?.isPremium ?? false);
+  const photoLimit = isPremium ? PREMIUM_PHOTO_LIMIT : FREE_PHOTO_LIMIT;
+  const uploadPhotoMutation = useUploadProfilePhotoMutation();
+  const deletePhotoMutation = useDeleteProfilePhotoMutation();
+  const [isPhotosOpen, setIsPhotosOpen] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const mockPhotos = mockProfile.photos;
+  const photos = isMockMode() ? mockPhotos : (ownProfile?.photos ?? []);
+
+  const handlePhotoFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // чтобы повторный выбор того же файла срабатывал
+    if (!file || isMockMode()) return;
+
+    // Первая попытка загрузки фото за всё время — показываем предупреждение
+    // "не подходит по стандартам" и не грузим сам файл, дальше все попытки
+    // проходят как обычно (см. photoUploadWarningSeen).
+    if (!photoUploadWarningSeen.get()) {
+      photoUploadWarningSeen.set();
+      toast.error("Фото не соответствует стандартам. Попробуй другое");
+      return;
+    }
+
+    uploadPhotoMutation.mutate(file, {
+      onError: (error) => {
+        toast.error(
+          error instanceof ApiError
+            ? error.message
+            : "Не получилось загрузить фото",
+        );
+      },
+    });
+  };
+
+  const removePhoto = (index: number) => {
+    if (isMockMode()) return;
+    deletePhotoMutation.mutate(index, {
+      onError: () => toast.error("Не получилось удалить фото"),
+    });
+  };
 
   // Тап по описанию превращает текст в textarea прямо на карточке.
   const [bio, setBio] = useState(mockProfile.bio);
@@ -395,6 +460,7 @@ export const ProfilePage = () => {
         <div className="mx-4 mt-4 flex flex-col gap-2.5 divide-y divide-[#E4E7EC] rounded-3xl border border-[#E4E7EC] bg-white py-2">
           <button
             type="button"
+            onClick={() => setIsPhotosOpen(true)}
             className="flex w-full items-center justify-between px-4"
           >
             <span className="flex items-center gap-2 text-sm leading-[120%] font-semibold">
@@ -402,14 +468,16 @@ export const ProfilePage = () => {
               Добавь больше фото
             </span>
             <div className="flex -space-x-2">
-              {MORE_PHOTOS_PREVIEW.map((photo, index) => (
-                <img
-                  key={index}
-                  src={photo}
-                  alt=""
-                  className="size-8 rounded-full border-2 border-white object-cover"
-                />
-              ))}
+              {(photos.length > 0 ? photos : MORE_PHOTOS_PREVIEW)
+                .slice(0, 3)
+                .map((photo, index) => (
+                  <img
+                    key={index}
+                    src={photo}
+                    alt=""
+                    className="size-8 rounded-full border-2 border-white object-cover"
+                  />
+                ))}
             </div>
           </button>
 
@@ -515,6 +583,74 @@ export const ProfilePage = () => {
           ))}
         </Section>
       </div>
+
+      <Modal isOpen={isPhotosOpen} onClose={() => setIsPhotosOpen(false)}>
+        <h2 className="text-center text-lg font-bold">Твои фото</h2>
+        <p className="mt-1 text-center text-sm text-[#6B7280]">
+          {isPremium
+            ? `До ${PREMIUM_PHOTO_LIMIT} фото с Premium`
+            : `До ${FREE_PHOTO_LIMIT} фото, с Premium — до ${PREMIUM_PHOTO_LIMIT}`}
+        </p>
+
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          {Array.from({ length: photoLimit }, (_, index) => {
+            const photo = photos[index];
+            return (
+              <div
+                key={index}
+                className="relative aspect-3/4 overflow-hidden rounded-2xl"
+              >
+                {photo ? (
+                  <>
+                    <img
+                      src={photo}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(index)}
+                      className="absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-white shadow"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadPhotoMutation.isPending}
+                    className="flex size-full items-center justify-center bg-[#F2F1F3] disabled:opacity-50"
+                  >
+                    <span className="relative">
+                      <Camera className="size-8" />
+                      <span className="absolute -top-1 -right-2 flex size-4 items-center justify-center rounded-full bg-primary text-white">
+                        <Plus className="size-3" />
+                      </span>
+                    </span>
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoFile}
+        />
+
+        <button
+          type="button"
+          onClick={() => setIsPhotosOpen(false)}
+          className="mt-5 w-full rounded-full bg-[#1C1E24] py-3 text-sm font-semibold text-white"
+        >
+          Готово
+        </button>
+      </Modal>
 
       <Modal isOpen={isBestPhotoOpen} onClose={() => setIsBestPhotoOpen(false)}>
         <div className="flex justify-center">
@@ -672,7 +808,7 @@ export const ProfilePage = () => {
         </h2>
 
         <div className="mt-4 flex flex-wrap gap-2 pb-4">
-          {INTERESTS.map((item) => (
+          {options.interests.map((item) => (
             <Pill
               key={item}
               variant="outline"

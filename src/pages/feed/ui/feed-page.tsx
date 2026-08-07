@@ -11,19 +11,21 @@ import {
   useDislikeMutation,
   useFeedQuery,
   useLikeMutation,
+  useMeQuery,
   useReportUserMutation,
   useUndoMutation,
   useWalletQuery,
 } from "@/entities/user";
 
+import { resolveUploadUrl } from "@/shared/api";
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
-import { guideSeen } from "@/shared/lib/guide-seen";
 import {
   NotificationType,
   triggerNotificationHaptic,
 } from "@/shared/lib/haptics";
 import { isMockMode } from "@/shared/lib/mock-mode";
+import { guideSeen } from "@/shared/lib/seen-flags";
 
 import { mapFeedCandidateToProfile } from "../model/map-feed-candidate";
 import { GUIDE_PROFILE, PROFILES, type Profile } from "../model/profiles";
@@ -47,6 +49,10 @@ export const FeedPage = () => {
   const navigate = useNavigate();
   const feedQuery = useFeedQuery(!isMockMode());
   const walletQuery = useWalletQuery(!isMockMode());
+  const meQuery = useMeQuery(!isMockMode());
+  const myPhoto = meQuery.data?.photos[0]
+    ? resolveUploadUrl(meQuery.data.photos[0])
+    : null;
   const likeMutation = useLikeMutation();
   const dislikeMutation = useDislikeMutation();
   const undoMutation = useUndoMutation();
@@ -276,6 +282,7 @@ export const FeedPage = () => {
 
       <MatchOverlay
         chatId={matched?.chatId ?? null}
+        myPhoto={myPhoto}
         profile={matched?.profile ?? null}
         onClose={() => setMatched(null)}
       />

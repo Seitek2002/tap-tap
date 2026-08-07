@@ -11,7 +11,6 @@ import goalSerious from "@/shared/assets/images/goal-serious.png";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { cn } from "@/shared/lib/utils";
 import { Radio } from "@/shared/ui/input";
-import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
 const GOALS = [
@@ -20,22 +19,14 @@ const GOALS = [
   { icon: goalFamily, label: "Построить семью", value: "family" },
 ];
 
-const AUDIENCE = [
-  { label: "Женщин", value: "women" },
-  { label: "Мужчин", value: "men" },
-  { label: "Всех", value: "all" },
-];
-
 export const Anketa4Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
   const [goal, setGoal] = useState("");
-  const [audience, setAudience] = useState("women");
 
   const commitAndNext = () => {
     setField("goals", goal);
-    setField("show_gender_preference", audience);
     goNext();
   };
 
@@ -89,27 +80,6 @@ export const Anketa4Page = () => {
               </div>
             );
           })}
-        </div>
-
-        {/* Аудитория — сегмент-селектор (тоже одиночный выбор) */}
-        <div className="mt-8">
-          <h2 className="text-center font-bold">Кого тебе показывать?</h2>
-          <p className="mt-1 text-center text-xs text-[#6B7280]">
-            Можно изменить в любой момент
-          </p>
-
-          <div className="mt-3 gap-2.5 flex flex-col items-center">
-            {AUDIENCE.map((item) => (
-              <Pill
-                key={item.value}
-                selected={audience === item.value}
-                onClick={() => setAudience(item.value)}
-                className="py-3 w-[195px] text-sm"
-              >
-                {item.label}
-              </Pill>
-            ))}
-          </div>
         </div>
       </div>
 

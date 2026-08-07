@@ -15,6 +15,11 @@ import type { Profile } from "../model/profiles";
 
 type MatchOverlayProps = {
   chatId: null | number;
+  // Своё фото текущего пользователя — до появления этого пропа тут всегда
+  // была захардкожена одна и та же стоковая картинка вместо настоящего фото
+  // того, у кого случился мэтч. null/undefined (мок-режим, фото не задано) —
+  // остаётся заглушка.
+  myPhoto?: null | string;
   onClose: () => void;
   profile: null | Profile;
 };
@@ -23,6 +28,7 @@ const SUGGESTIONS = ["Сходим на ужин?", "Мне нравятся т�
 
 export const MatchOverlay = ({
   chatId,
+  myPhoto,
   onClose,
   profile,
 }: MatchOverlayProps) => {
@@ -117,7 +123,11 @@ export const MatchOverlay = ({
                 type: "spring",
               }}
             >
-              <img src={personEmir} alt="" className="size-full object-cover" />
+              <img
+                src={myPhoto ?? personEmir}
+                alt=""
+                className="size-full object-cover"
+              />
             </motion.div>
 
             <motion.img

@@ -20,6 +20,7 @@ import notGoodImg1 from "@/shared/assets/images/not-good-img-1.jpg";
 import notGoodImg2 from "@/shared/assets/images/not-good-img-2.jpg";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { isAndroid } from "@/shared/lib/platform";
+import { photoUploadWarningSeen } from "@/shared/lib/seen-flags";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Modal } from "@/shared/ui/modal";
 import { Progress } from "@/shared/ui/progress";
@@ -88,6 +89,15 @@ export const Anketa12Page = () => {
     const index = targetSlot.current;
     event.target.value = ""; // чтобы повторный выбор того же файла срабатывал
     if (!file || index === null) return;
+
+    // Первая попытка загрузки фото за всё время — показываем предупреждение
+    // "не подходит по стандартам" и не принимаем сам файл, дальше все попытки
+    // проходят как обычно (см. photoUploadWarningSeen).
+    if (!photoUploadWarningSeen.get()) {
+      photoUploadWarningSeen.set();
+      toast.error("Фото не соответствует стандартам. Попробуй другое");
+      return;
+    }
 
     const url = URL.createObjectURL(file);
     setPhotos((prev) =>

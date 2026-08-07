@@ -22,12 +22,6 @@ import { RangeSlider, Slider } from "@/shared/ui/slider";
 import { Toggle } from "@/shared/ui/toggle";
 import { ZodiacBadge } from "@/shared/ui/zodiac-badge";
 
-const AUDIENCE = [
-  { label: "Мужчины", value: "men" },
-  { label: "Женщины", value: "women" },
-  { label: "Все", value: "all" },
-];
-
 // hasJob/hasCar/hasCredit жили с defaultOn: true — премиальные критерии
 // незаметно включались сами по себе для всех, кто ни разу не открывал
 // "Больше фильтров", и молча вырезали из ленты кандидатов без машины/с
@@ -241,6 +235,7 @@ const OPTIONS_FALLBACK: Record<string, string[]> = {
       [...field.options],
     ]),
   ),
+  interests: [...INTERESTS],
   zodiac: [...ZODIAC_SIGNS],
 };
 
@@ -266,7 +261,9 @@ const DEFAULT_PREFS: FilterPreferences = {
   ageMax: 28,
   ageMin: 18,
   alcohol: DEFAULT_OPTION_VALUES.alcohol[0] ?? "",
-  audience: "men",
+  // Раньше "men" — выбор пола собеседника убран из фильтров (см. anketa-4,
+  // тот же убранный контрол), "all" — никого не отсекать по полу по умолчанию.
+  audience: "all",
   children: DEFAULT_OPTION_VALUES.children[0] ?? "",
   education: DEFAULT_OPTION_VALUES.education[0] ?? "",
   hasBio: DEFAULT_TOGGLES.hasBio,
@@ -302,7 +299,10 @@ export const FiltersPage = () => {
   const filtersQuery = useFiltersQuery(!isMockMode());
   const updateFiltersMutation = useUpdateFiltersMutation();
   const resetFiltersMutation = useResetFiltersMutation();
-  const [audience, setAudience] = useState("men");
+  // Выбор пола собеседника убран из фильтров (см. anketa-4) — "all" не
+  // отсекает никого по полу, значение всё равно нужно бэку (см. схему
+  // FilterPreferences), просто больше не редактируется пользователем.
+  const [audience] = useState("all");
   const [age, setAge] = useState<[number, number]>([18, 28]);
   const [distance, setDistance] = useState(80);
   // 140 — нижняя граница слайдера же (см. min= у Slider ниже), а не
@@ -328,7 +328,6 @@ export const FiltersPage = () => {
   // тот сбрасывает не к одному фиксированному набору для всех, а к тем же
   // анкетным дефолтам, что отдаёт DELETE /api/filters (см. bakai-server).
   const applyPrefs = (prefs: FilterPreferences) => {
-    setAudience(prefs.audience);
     setAge([prefs.ageMin, prefs.ageMax]);
     setDistance(prefs.maxDistance);
     setHeight(prefs.minHeight);
@@ -408,7 +407,6 @@ export const FiltersPage = () => {
   // ответа и применяем его через applyPrefs, а не пишем DEFAULT_PREFS сразу.
   const clearFilters = async () => {
     if (isMockMode()) {
-      setAudience(DEFAULT_PREFS.audience);
       setAge([DEFAULT_PREFS.ageMin, DEFAULT_PREFS.ageMax]);
       setDistance(DEFAULT_PREFS.maxDistance);
       setHeight(DEFAULT_PREFS.minHeight);
@@ -500,30 +498,6 @@ export const FiltersPage = () => {
 
       {/* Прокручиваемая часть */}
       <div className="flex-1 overflow-y-auto px-4 pb-8">
-        {/* Тебя интересуют */}
-        <div className="rounded-3xl bg-white p-4">
-          <h2 className="text-sm font-bold">Тебя интересуют</h2>
-          {/* Сегмент-контрол (как antd Segmented): общий фон, выбранная
-              опция — плавающая пилюля внутри, а не отдельные чипы с зазором. */}
-          <div className="mt-3 flex gap-1 rounded-full bg-[#F2F1F3] p-1">
-            {AUDIENCE.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setAudience(item.value)}
-                className={cn(
-                  "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
-                  audience === item.value
-                    ? "bg-[#1C1E24] text-white"
-                    : "text-[#6B7280]",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Возраст + расстояние */}
         <div className="mt-3 space-y-6 rounded-3xl bg-white p-4">
           <div>
@@ -712,7 +686,7 @@ export const FiltersPage = () => {
         <h2 className="text-lg font-bold">Выбери интересы партнера</h2>
 
         <div className="mt-4 flex flex-wrap gap-2 pb-4">
-          {INTERESTS.map((item) => (
+          {options.interests.map((item) => (
             <Pill
               key={item}
               variant="outline"

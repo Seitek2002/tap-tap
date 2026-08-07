@@ -161,6 +161,13 @@ export const SwipeCard = ({
   const rotate = useTransform(x, [-200, 200], [-12, 12]);
   const likeOpacity = useTransform(x, [20, 120], [0, 1]);
   const nopeOpacity = useTransform(x, [-120, -20], [1, 0]);
+  // Подсветка карточки по стороне свайпа — зелёный вправо (лайк), красный
+  // влево (дизлайк), прозрачная в нейтральном положении.
+  const tintColor = useTransform(
+    x,
+    [-160, 0, 160],
+    ["rgba(239,68,68,0.35)", "rgba(0,0,0,0)", "rgba(34,197,94,0.35)"],
+  );
 
   // Прогресс скролла карточки: 0 — сверху (над фото), 1 — уже в деталях.
   const scrollProgress = useMotionValue(0);
@@ -260,6 +267,11 @@ export const SwipeCard = ({
           onClick={nextPhoto}
           aria-label="Следующее фото"
           className="absolute inset-y-0 right-0 w-1/2"
+        />
+
+        <motion.div
+          style={{ backgroundColor: tintColor }}
+          className="pointer-events-none absolute inset-0"
         />
 
         {/* Индикаторы фото + ещё */}

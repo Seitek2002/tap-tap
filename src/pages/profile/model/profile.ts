@@ -3,6 +3,9 @@ import personDastan from "@/shared/assets/images/person-dastan.png";
 import personNight from "@/shared/assets/images/person-night.png";
 import personZalkar from "@/shared/assets/images/person-zalkar.png";
 
+// Превью для «Добавь больше фото» — просто заглушки из уже имеющихся ассетов.
+export const MORE_PHOTOS_PREVIEW = [person1, personDastan, personZalkar];
+
 export const OWN_PROFILE = {
   age: 19,
   bio: "Люблю путешествия, уютные вечера и людей с хорошим чувством юмора",
@@ -10,12 +13,10 @@ export const OWN_PROFILE = {
   location: "Бишкек, Кыргызстан",
   name: "Тимур",
   photo: personNight,
+  photos: MORE_PHOTOS_PREVIEW,
   study: "ККС (Кыргызско-Корейский Колледж)",
   work: "Проект менеджер",
 };
-
-// Превью для «Добавь больше фото» — просто заглушки из уже имеющихся ассетов.
-export const MORE_PHOTOS_PREVIEW = [person1, personDastan, personZalkar];
 
 export const PREMIUM_FEATURES = [
   { bold: false, label: "Узнай, кто тебя лайкнул" },
@@ -23,9 +24,11 @@ export const PREMIUM_FEATURES = [
   { bold: true, label: "Указать машину" },
 ];
 
-// Тот же список, что в фильтрах партнёра (pages/filters) — независимый мок
-// под свой контекст (свои интересы, а не предпочтения по партнёру).
-export const INTERESTS = [
+// Дефолты — используются как initialData для useOptionsQuery, пока реальный
+// ответ /api/options ещё не пришёл (тот же список, редактируемый из
+// /admin/options — раньше был захардкожен здесь и ещё в двух местах на
+// фронте в трёх идентичных копиях).
+export const INTERESTS_FALLBACK = [
   "🎳 Боулинг",
   "🧘 Йога",
   "⛰️ Горы",
