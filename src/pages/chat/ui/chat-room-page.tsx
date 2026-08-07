@@ -111,12 +111,17 @@ const MessageBubble = ({
 
   // Мелкое действие (отправка) — спиннер, а не скелетон: это статус-строка
   // под уже отрисованным сообщением, а не заглушка на месте контента.
+  // "Просмотрено" — статус ИМЕННО отправленного сообщения (собеседник
+  // прочитал то, что отправил я), поэтому только у исходящих: message.seen
+  // технически true и для входящих (это read самого сообщения, а не то,
+  // кто его отправил), но показывать под чужим сообщением "просмотрено"
+  // было бы бессмысленно — это не мой статус.
   const status = message.sending ? (
     <span className="flex items-center gap-1 text-xs text-[#6B7280]">
       <Spinner className="size-3" />
       Отправка...
     </span>
-  ) : message.seen ? (
+  ) : isOutgoing && message.seen ? (
     <span className="flex items-center gap-1 text-xs text-[#6B7280]">
       <Check className="text-primary size-3.5" />
       Просмотрено
@@ -362,7 +367,7 @@ export const ChatRoomPage = () => {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, partnerTyping]);
 
   // Object URL живёт, пока явно не отозван (removeAttachment) — если уйти со
   // страницы с неотправленными фото-вложениями, они не отзовутся сами собой
@@ -704,6 +709,20 @@ export const ChatRoomPage = () => {
             onImageClick={setViewerImageUrl}
           />
         ))}
+        {/* Тот же индикатор, что в шапке, но здесь — в виде облака входящего
+            сообщения, как в большинстве мессенджеров. Показывается только
+            собеседнику: partnerTyping приходит через сокет, а socket.to()
+            на бэке никогда не отправляет событие обратно тому, кто печатал. */}
+        {partnerTyping && (
+          <div className="flex w-full flex-col items-start gap-1 self-start">
+            <div className="flex items-center rounded-3xl bg-[#EFEDF6] px-4 py-3">
+              <TypingIndicator
+                className="text-[#6B7280]"
+                dotClassName="size-1.5"
+              />
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 

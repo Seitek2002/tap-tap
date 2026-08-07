@@ -100,11 +100,14 @@ const LikeActionCard = ({
         <button
           type="button"
           onClick={handleLike}
-          className="flex flex-1 items-center justify-center py-2.75 text-[#1C1E24]"
+          className="flex flex-1 items-center justify-center py-2.75 text-red-500"
           aria-label="Нравится"
         >
+          {/* Заполненное с самого начала — эта карточка и так означает "он(а)
+              уже лайкнул(а) тебя", лайкать пустое сердечко тут нет смысла
+              показывать: взаимность уже наполовину случилась. */}
           <motion.span style={{ scale }} className="flex">
-            <Heart className="size-6" />
+            <Heart className="size-6 fill-current" />
           </motion.span>
         </button>
         <div className="w-px bg-[#E4E7EC] h-[25px] my-2.5"></div>
