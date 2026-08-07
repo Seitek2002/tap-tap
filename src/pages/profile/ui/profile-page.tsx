@@ -30,10 +30,11 @@ import {
 
 import { BottomNav } from "@/widgets/bottom-nav";
 
-import { useOptionsQuery } from "@/entities/option";
+import { useFieldVisibility, useOptionsQuery } from "@/entities/option";
 import {
   type ProfileUpdate,
   useDeleteProfilePhotoMutation,
+  useMeQuery,
   useProfileQuery,
   useUpdateProfileMutation,
   useUploadProfilePhotoMutation,
@@ -168,6 +169,13 @@ export const ProfilePage = () => {
   const { data: options } = useOptionsQuery(OPTIONS_FALLBACK);
   const [isBestPhotoOpen, setIsBestPhotoOpen] = useState(false);
   const [bestPhotoEnabled, setBestPhotoEnabled] = useState(false);
+
+  const meQuery = useMeQuery(!isMockMode());
+  const { getType, isVisible } = useFieldVisibility(meQuery.data?.gender);
+  const showInterests = isVisible("interests");
+  const visibleOptionFields = PROFILE_OPTION_FIELDS.filter((field) =>
+    isVisible(BACKEND_OPTION_KEY[field.key] ?? field.key),
+  );
 
   const walletQuery = useWalletQuery(!isMockMode());
   const isPremium = !isMockMode() && (walletQuery.data?.isPremium ?? false);
@@ -496,31 +504,33 @@ export const ProfilePage = () => {
           </button>
         </div>
 
-        <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm leading-[120%] font-semibold">
-              Добавь свои интересы
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsInterestsOpen(true)}
-              aria-label="Добавить интерес"
-              className="flex size-7 items-center justify-center rounded-full bg-[#F2F1F3]"
-            >
-              <Plus className="size-4" />
-            </button>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {interests.map((interest) => (
-              <span
-                key={interest}
-                className="rounded-full bg-[#F2F1F3] px-3 py-2 text-xs leading-[120%] font-normal text-[#1C1E24]"
-              >
-                {interest}
+        {showInterests && (
+          <div className="mx-4 mt-3 rounded-3xl border border-[#E4E7EC] bg-white p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm leading-[120%] font-semibold">
+                Добавь свои интересы
               </span>
-            ))}
+              <button
+                type="button"
+                onClick={() => setIsInterestsOpen(true)}
+                aria-label="Добавить интерес"
+                className="flex size-7 items-center justify-center rounded-full bg-[#F2F1F3]"
+              >
+                <Plus className="size-4" />
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {interests.map((interest) => (
+                <span
+                  key={interest}
+                  className="rounded-full bg-[#F2F1F3] px-3 py-2 text-xs leading-[120%] font-normal text-[#1C1E24]"
+                >
+                  {interest}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mx-4 mt-3 flex h-33.25 flex-col gap-2.5 rounded-3xl border border-[#E4E7EC] bg-white px-4 py-2.5">
           <h2 className="flex items-center gap-1.5 border-b border-[#E4E7EC] pb-2.5 text-sm leading-[120%] font-semibold text-[#1C1E24]">
@@ -571,17 +581,19 @@ export const ProfilePage = () => {
           />
         </Section>
 
-        <Section title="Твоя жизнь">
-          {PROFILE_OPTION_FIELDS.map((field) => (
-            <Row
-              key={field.key}
-              icon={FIELD_ICONS[field.key]}
-              label={field.label}
-              onClick={() => setOpenField(field.key)}
-              value={optionValues[field.key].join(", ")}
-            />
-          ))}
-        </Section>
+        {visibleOptionFields.length > 0 && (
+          <Section title="Твоя жизнь">
+            {visibleOptionFields.map((field) => (
+              <Row
+                key={field.key}
+                icon={FIELD_ICONS[field.key]}
+                label={field.label}
+                onClick={() => setOpenField(field.key)}
+                value={optionValues[field.key].join(", ")}
+              />
+            ))}
+          </Section>
+        )}
       </div>
 
       <Modal isOpen={isPhotosOpen} onClose={() => setIsPhotosOpen(false)}>
@@ -763,44 +775,63 @@ export const ProfilePage = () => {
       {/* Шиты «Твоя жизнь» — вертикальный список пилюль, 1 или 2 варианта
           на выбор (см. PROFILE_OPTION_FIELDS), тот же паттерн, что и в
           pages/filters. */}
-      {PROFILE_OPTION_FIELDS.map((field) => (
-        <Modal
-          key={field.key}
-          isOpen={openField === field.key}
-          onClose={() => setOpenField(null)}
-        >
-          <h2 className="text-center text-lg font-bold">{field.title}</h2>
-
-          <div className="mt-4 space-y-2">
-            {fieldOptions(field).map((option) => {
-              const selected = optionValues[field.key].includes(option);
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => selectOption(field, option)}
-                  className={cn(
-                    "w-full rounded-full px-4 py-3.5 text-center text-sm font-medium transition-colors",
-                    selected
-                      ? "bg-primary text-white"
-                      : "bg-[#F2F1F3] text-[#1C1E24]",
-                  )}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setOpenField(null)}
-            className="mt-5 w-full rounded-full bg-[#1C1E24] py-3 text-sm font-semibold text-white"
+      {visibleOptionFields.map((field) => {
+        const fieldType = getType(BACKEND_OPTION_KEY[field.key] ?? field.key);
+        return (
+          <Modal
+            key={field.key}
+            isOpen={openField === field.key}
+            onClose={() => setOpenField(null)}
           >
-            Готово
-          </button>
-        </Modal>
-      ))}
+            <h2 className="text-center text-lg font-bold">{field.title}</h2>
+
+            {fieldType === "text" ? (
+              <Input
+                className="mt-4"
+                value={optionValues[field.key][0] ?? ""}
+                onChange={(event) =>
+                  setOptionValues((prev) => ({
+                    ...prev,
+                    [field.key]: [event.target.value],
+                  }))
+                }
+                onBlur={() =>
+                  persistOptionField(field.key, optionValues[field.key])
+                }
+              />
+            ) : (
+              <div className="mt-4 space-y-2">
+                {fieldOptions(field).map((option) => {
+                  const selected = optionValues[field.key].includes(option);
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => selectOption(field, option)}
+                      className={cn(
+                        "w-full rounded-full px-4 py-3.5 text-center text-sm font-medium transition-colors",
+                        selected
+                          ? "bg-primary text-white"
+                          : "bg-[#F2F1F3] text-[#1C1E24]",
+                      )}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setOpenField(null)}
+              className="mt-5 w-full rounded-full bg-[#1C1E24] py-3 text-sm font-semibold text-white"
+            >
+              Готово
+            </button>
+          </Modal>
+        );
+      })}
 
       <Modal isOpen={isInterestsOpen} onClose={() => setIsInterestsOpen(false)}>
         <h2 className="text-lg font-bold">

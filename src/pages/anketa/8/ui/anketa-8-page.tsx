@@ -3,10 +3,14 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
-import { useOptionsQuery } from "@/entities/option";
-import { useAnketaDraftStore } from "@/entities/user";
+import { useFieldVisibility, useOptionsQuery } from "@/entities/option";
+import { useAnketaDraftStore, useMeQuery } from "@/entities/user";
 
-import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
+import { isMockMode } from "@/shared/lib/mock-mode";
+import {
+  useAnketaFlow,
+  useSkipEmptyAnketaStep,
+} from "@/shared/lib/use-anketa-flow";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
@@ -59,6 +63,15 @@ export const Anketa8Page = () => {
   // сортировку по совпадению интересов в ленте, см. feed.js byInterests).
   const [selected, setSelected] = useState<string[]>([]);
 
+  const meQuery = useMeQuery(!isMockMode());
+  const { isVisible } = useFieldVisibility(meQuery.data?.gender);
+  const showInterests = isVisible("interests");
+  useSkipEmptyAnketaStep(
+    isMockMode() || Boolean(meQuery.data),
+    !showInterests,
+    goNext,
+  );
+
   const toggle = (value: string) =>
     setSelected((prev) =>
       prev.includes(value)
@@ -100,16 +113,17 @@ export const Anketa8Page = () => {
 
         {/* Интересы — мультивыбор контурными пилюлями */}
         <div className="mt-6 flex flex-wrap gap-2">
-          {INTERESTS.map((item) => (
-            <Pill
-              key={item}
-              variant="outline"
-              selected={selected.includes(item)}
-              onClick={() => toggle(item)}
-            >
-              {item}
-            </Pill>
-          ))}
+          {showInterests &&
+            INTERESTS.map((item) => (
+              <Pill
+                key={item}
+                variant="outline"
+                selected={selected.includes(item)}
+                onClick={() => toggle(item)}
+              >
+                {item}
+              </Pill>
+            ))}
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { ANKETA_STEPS, ROUTES } from "@/shared/config";
@@ -24,4 +25,21 @@ export function useAnketaFlow() {
   };
 
   return { goNext, progress, step, total };
+}
+
+/**
+ * Пропускает текущий шаг анкеты (goNext), если все его вопросы скрыты
+ * настройками /admin/options для этого пользователя. `ready` — известен ли
+ * уже реальный пол пользователя: до этого isEmpty может быть ложно true
+ * (гендерный вопрос сравнивается с ещё не загруженным полем), пропускать
+ * шаг по этому значению нельзя.
+ */
+export function useSkipEmptyAnketaStep(
+  ready: boolean,
+  isEmpty: boolean,
+  goNext: () => void,
+) {
+  useEffect(() => {
+    if (ready && isEmpty) goNext();
+  }, [ready, isEmpty, goNext]);
 }

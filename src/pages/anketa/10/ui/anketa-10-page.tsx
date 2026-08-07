@@ -3,11 +3,18 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
-import { useOptionsQuery } from "@/entities/option";
-import { useAnketaDraftStore } from "@/entities/user";
+import {
+  ConfigurableField,
+  useFieldVisibility,
+  useOptionsQuery,
+} from "@/entities/option";
+import { useAnketaDraftStore, useMeQuery } from "@/entities/user";
 
-import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Pill } from "@/shared/ui/pill";
+import { isMockMode } from "@/shared/lib/mock-mode";
+import {
+  useAnketaFlow,
+  useSkipEmptyAnketaStep,
+} from "@/shared/lib/use-anketa-flow";
 import { Progress } from "@/shared/ui/progress";
 
 // Дефолты — на случай, пока реальный ответ /api/options ещё не пришёл.
@@ -56,30 +63,6 @@ const OPTIONS_FALLBACK = {
   ],
 };
 
-type PillGroupProps = {
-  onChange: (value: string) => void;
-  options: string[];
-  title: string;
-  value: string;
-};
-
-const PillGroup = ({ onChange, options, title, value }: PillGroupProps) => (
-  <div>
-    <h2 className="text-sm font-bold">{title}</h2>
-    <div className="mt-3 flex flex-wrap gap-2">
-      {options.map((option) => (
-        <Pill
-          key={option}
-          selected={value === option}
-          onClick={() => onChange(option)}
-        >
-          {option}
-        </Pill>
-      ))}
-    </div>
-  </div>
-);
-
 export const Anketa10Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
@@ -90,11 +73,23 @@ export const Anketa10Page = () => {
   const [animals, setAnimals] = useState("У меня аллергия");
   const [religion, setReligion] = useState("Буддизм");
 
+  const meQuery = useMeQuery(!isMockMode());
+  const { getType, isVisible } = useFieldVisibility(meQuery.data?.gender);
+  const showChildren = isVisible("children");
+  const showLoveLanguage = isVisible("love_language");
+  const showPets = isVisible("pets");
+  const showReligion = isVisible("religion");
+  useSkipEmptyAnketaStep(
+    isMockMode() || Boolean(meQuery.data),
+    !showChildren && !showLoveLanguage && !showPets && !showReligion,
+    goNext,
+  );
+
   const commitAndNext = () => {
-    setField("children", children);
-    setField("love_language", loveLanguage);
-    setField("pets", animals);
-    setField("religion", religion);
+    if (showChildren) setField("children", children);
+    if (showLoveLanguage) setField("love_language", loveLanguage);
+    if (showPets) setField("pets", animals);
+    if (showReligion) setField("religion", religion);
     goNext();
   };
 
@@ -128,33 +123,51 @@ export const Anketa10Page = () => {
         </p>
 
         <div className="mt-6 space-y-6">
-          <PillGroup
-            title="Как относишься к детям?"
-            options={options.children}
-            value={children}
-            onChange={setChildren}
-          />
-          <div className="border-t border-[#E4E7EC]" />
-          <PillGroup
-            title="Какой у тебя язык любви?"
-            options={options.love_language}
-            value={loveLanguage}
-            onChange={setLoveLanguage}
-          />
-          <div className="border-t border-[#E4E7EC]" />
-          <PillGroup
-            title="Каких животных ты любишь?"
-            options={options.pets}
-            value={animals}
-            onChange={setAnimals}
-          />
-          <div className="border-t border-[#E4E7EC]" />
-          <PillGroup
-            title="Твоя религия"
-            options={options.religion}
-            value={religion}
-            onChange={setReligion}
-          />
+          {showChildren && (
+            <ConfigurableField
+              title="Как относишься к детям?"
+              type={getType("children")}
+              options={options.children}
+              value={children}
+              onChange={setChildren}
+            />
+          )}
+          {showChildren && (showLoveLanguage || showPets || showReligion) && (
+            <div className="border-t border-[#E4E7EC]" />
+          )}
+          {showLoveLanguage && (
+            <ConfigurableField
+              title="Какой у тебя язык любви?"
+              type={getType("love_language")}
+              options={options.love_language}
+              value={loveLanguage}
+              onChange={setLoveLanguage}
+            />
+          )}
+          {showLoveLanguage && (showPets || showReligion) && (
+            <div className="border-t border-[#E4E7EC]" />
+          )}
+          {showPets && (
+            <ConfigurableField
+              title="Каких животных ты любишь?"
+              type={getType("pets")}
+              options={options.pets}
+              value={animals}
+              onChange={setAnimals}
+            />
+          )}
+          {showPets && showReligion && (
+            <div className="border-t border-[#E4E7EC]" />
+          )}
+          {showReligion && (
+            <ConfigurableField
+              title="Твоя религия"
+              type={getType("religion")}
+              options={options.religion}
+              value={religion}
+              onChange={setReligion}
+            />
+          )}
         </div>
       </div>
 

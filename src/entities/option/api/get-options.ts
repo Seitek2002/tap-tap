@@ -13,6 +13,11 @@ export function useOptionsQuery(fallback: Options, enabled = true) {
   const query = useQuery({
     enabled,
     initialData: fallback,
+    // Без этого initialData считался бы "только что загруженным" и вместе
+    // с staleTime мог бы вовсе не сходить за реальным ответом — если бы
+    // фолбэк совпал с бэком хоть раз, обновления с /admin/options могли
+    // не долетать до этой вкладки, пока не истечёт staleTime.
+    initialDataUpdatedAt: 0,
     queryFn: async () =>
       OptionsSchema.parse(await api.get<Options>("/api/options")),
     queryKey: ["options"],

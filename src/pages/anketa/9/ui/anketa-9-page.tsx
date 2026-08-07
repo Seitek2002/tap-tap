@@ -3,11 +3,18 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
-import { useOptionsQuery } from "@/entities/option";
-import { useAnketaDraftStore } from "@/entities/user";
+import {
+  ConfigurableField,
+  useFieldVisibility,
+  useOptionsQuery,
+} from "@/entities/option";
+import { useAnketaDraftStore, useMeQuery } from "@/entities/user";
 
-import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
-import { Pill } from "@/shared/ui/pill";
+import { isMockMode } from "@/shared/lib/mock-mode";
+import {
+  useAnketaFlow,
+  useSkipEmptyAnketaStep,
+} from "@/shared/lib/use-anketa-flow";
 import { Progress } from "@/shared/ui/progress";
 
 // Дефолты — на случай, пока реальный ответ /api/options ещё не пришёл.
@@ -34,30 +41,6 @@ const OPTIONS_FALLBACK = {
   sport: ["Каждый день", "Иногда", "Очень редко"],
 };
 
-type PillGroupProps = {
-  onChange: (value: string) => void;
-  options: string[];
-  title: string;
-  value: string;
-};
-
-const PillGroup = ({ onChange, options, title, value }: PillGroupProps) => (
-  <div>
-    <h2 className="text-sm font-bold">{title}</h2>
-    <div className="mt-3 flex flex-wrap gap-2">
-      {options.map((option) => (
-        <Pill
-          key={option}
-          selected={value === option}
-          onClick={() => onChange(option)}
-        >
-          {option}
-        </Pill>
-      ))}
-    </div>
-  </div>
-);
-
 export const Anketa9Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
@@ -67,10 +50,21 @@ export const Anketa9Page = () => {
   const [smoking, setSmoking] = useState("Активно курю");
   const [sport, setSport] = useState("Иногда");
 
+  const meQuery = useMeQuery(!isMockMode());
+  const { getType, isVisible } = useFieldVisibility(meQuery.data?.gender);
+  const showAlcohol = isVisible("alcohol");
+  const showSmoking = isVisible("smoking");
+  const showSport = isVisible("sport");
+  useSkipEmptyAnketaStep(
+    isMockMode() || Boolean(meQuery.data),
+    !showAlcohol && !showSmoking && !showSport,
+    goNext,
+  );
+
   const commitAndNext = () => {
-    setField("alcohol", alcohol);
-    setField("smoking", smoking);
-    setField("sport", sport);
+    if (showAlcohol) setField("alcohol", alcohol);
+    if (showSmoking) setField("smoking", smoking);
+    if (showSport) setField("sport", sport);
     goNext();
   };
 
@@ -102,26 +96,39 @@ export const Anketa9Page = () => {
         <p className="mt-1 text-sm text-[#6B7280]">Мелочи многое расскажут</p>
 
         <div className="mt-6 space-y-6">
-          <PillGroup
-            title="Какое у тебя отношение к алкоголю?"
-            options={options.alcohol}
-            value={alcohol}
-            onChange={setAlcohol}
-          />
-          <div className="border-t border-[#E4E7EC]" />
-          <PillGroup
-            title="Какое у тебя отношение к курению?"
-            options={options.smoking}
-            value={smoking}
-            onChange={setSmoking}
-          />
-          <div className="border-t border-[#E4E7EC]" />
-          <PillGroup
-            title="Ты занимаешься спортом?"
-            options={options.sport}
-            value={sport}
-            onChange={setSport}
-          />
+          {showAlcohol && (
+            <ConfigurableField
+              title="Какое у тебя отношение к алкоголю?"
+              type={getType("alcohol")}
+              options={options.alcohol}
+              value={alcohol}
+              onChange={setAlcohol}
+            />
+          )}
+          {showAlcohol && (showSmoking || showSport) && (
+            <div className="border-t border-[#E4E7EC]" />
+          )}
+          {showSmoking && (
+            <ConfigurableField
+              title="Какое у тебя отношение к курению?"
+              type={getType("smoking")}
+              options={options.smoking}
+              value={smoking}
+              onChange={setSmoking}
+            />
+          )}
+          {showSmoking && showSport && (
+            <div className="border-t border-[#E4E7EC]" />
+          )}
+          {showSport && (
+            <ConfigurableField
+              title="Ты занимаешься спортом?"
+              type={getType("sport")}
+              options={options.sport}
+              value={sport}
+              onChange={setSport}
+            />
+          )}
         </div>
       </div>
 

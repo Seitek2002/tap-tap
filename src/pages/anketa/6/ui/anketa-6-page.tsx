@@ -3,12 +3,16 @@ import { useNavigate } from "react-router";
 
 import { ChevronLeft } from "lucide-react";
 
-import { useOptionsQuery } from "@/entities/option";
-import { useAnketaDraftStore } from "@/entities/user";
+import {
+  ConfigurableField,
+  useFieldVisibility,
+  useOptionsQuery,
+} from "@/entities/option";
+import { useAnketaDraftStore, useMeQuery } from "@/entities/user";
 
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Input } from "@/shared/ui/input";
-import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
 
 // Дефолты — на случай, пока реальный ответ /api/options ещё не пришёл.
@@ -35,8 +39,12 @@ export const Anketa6Page = () => {
   const [degree, setDegree] = useState("Магистратура");
   const [educationPlace, setEducationPlace] = useState("");
 
+  const meQuery = useMeQuery(!isMockMode());
+  const { getType, isVisible } = useFieldVisibility(meQuery.data?.gender);
+  const showDegree = isVisible("education_degree");
+
   const commitAndNext = () => {
-    setField("education", degree);
+    if (showDegree) setField("education", degree);
     setField("education_place", educationPlace);
     goNext();
   };
@@ -70,21 +78,18 @@ export const Anketa6Page = () => {
           Людям будет проще понять твои намерения
         </p>
 
-        {/* Степень — одиночный выбор пилюлями */}
-        <div className="mt-6">
-          <h2 className="mb-3 text-sm font-bold">Степень</h2>
-          <div className="flex flex-wrap gap-2">
-            {options.education_degree.map((item) => (
-              <Pill
-                key={item}
-                selected={degree === item}
-                onClick={() => setDegree(item)}
-              >
-                {item}
-              </Pill>
-            ))}
+        {/* Степень */}
+        {showDegree && (
+          <div className="mt-6">
+            <ConfigurableField
+              title="Степень"
+              type={getType("education_degree")}
+              options={options.education_degree}
+              value={degree}
+              onChange={setDegree}
+            />
           </div>
-        </div>
+        )}
 
         {/* Учебное заведение */}
         <div className="mt-8">
