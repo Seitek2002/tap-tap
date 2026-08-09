@@ -127,9 +127,12 @@ export const ChatRow = ({
               className="size-14 rounded-full"
             />
             {/* Один статус-бэйдж сверху, не два одновременно — непрочитанное
-                важнее и перекрывает индикатор онлайна. */}
-            {chat.unread ? (
-              <span className="absolute top-0 right-0 size-3 rounded-full bg-red-500 ring-2 ring-[#FAF9FD]" />
+                важнее и перекрывает индикатор онлайна. Число, а не просто
+                точка — сколько именно сообщений ждут, а не только факт. */}
+            {chat.unread > 0 ? (
+              <span className="absolute top-0 right-0 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-[#FAF9FD]">
+                {chat.unread > 99 ? "99+" : chat.unread}
+              </span>
             ) : (
               chat.online && (
                 <span className="absolute top-0 right-0 size-3 rounded-full bg-green-500 ring-2 ring-[#FAF9FD]" />

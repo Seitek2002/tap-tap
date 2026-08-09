@@ -12,7 +12,7 @@ export type Chat = {
   online: boolean;
   partnerId: number;
   photo: string;
-  unread: boolean;
+  unread: number;
   yourTurn: boolean;
 };
 
@@ -33,7 +33,7 @@ export const CHATS: Chat[] = [
     online: true,
     partnerId: 1,
     photo: person1,
-    unread: true,
+    unread: 2,
     yourTurn: false,
   },
   {
@@ -43,7 +43,7 @@ export const CHATS: Chat[] = [
     online: false,
     partnerId: 2,
     photo: personNight,
-    unread: true,
+    unread: 12,
     yourTurn: false,
   },
   {
@@ -53,7 +53,7 @@ export const CHATS: Chat[] = [
     online: true,
     partnerId: 3,
     photo: personZalkar,
-    unread: false,
+    unread: 0,
     yourTurn: true,
   },
   {
@@ -63,7 +63,7 @@ export const CHATS: Chat[] = [
     online: false,
     partnerId: 4,
     photo: personDastan,
-    unread: false,
+    unread: 0,
     yourTurn: false,
   },
   {
@@ -73,7 +73,7 @@ export const CHATS: Chat[] = [
     online: false,
     partnerId: 5,
     photo: personEmir,
-    unread: false,
+    unread: 0,
     yourTurn: false,
   },
   {
@@ -83,7 +83,7 @@ export const CHATS: Chat[] = [
     online: true,
     partnerId: 6,
     photo: personSeitek,
-    unread: false,
+    unread: 0,
     yourTurn: true,
   },
 ];

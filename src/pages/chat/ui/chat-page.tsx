@@ -142,7 +142,7 @@ export const ChatPage = () => {
     ) {
       return false;
     }
-    if (filter === "unread") return chat.unread;
+    if (filter === "unread") return chat.unread > 0;
     if (filter === "online") return chat.online;
     if (filter === "waiting") return chat.yourTurn;
     return true;

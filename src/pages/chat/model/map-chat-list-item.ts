@@ -18,7 +18,7 @@ export function mapChatListItemToChat(item: ChatListItem): Chat {
     photo: item.partner.photo
       ? resolveUploadUrl(item.partner.photo)
       : FALLBACK_PHOTO,
-    unread: item.unread > 0,
+    unread: item.unread,
     yourTurn: item.yourTurn,
   };
 }
