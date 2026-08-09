@@ -12,8 +12,9 @@ import { ANKETA_STEPS, ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { Spinner } from "@/shared/ui/spinner";
 
-// "/" — это WelcomePage (см. router.tsx), ROUTES.welcome сейчас нигде не
-// смонтирован. Обе страницы не требуют токена, все остальные — требуют.
+// "/" — это OnboardingPage (см. router.tsx), сам решает, показать карусель
+// или сразу увести на ROUTES.auth (см. onboardingSeen). Обе страницы не
+// требуют токена, все остальные — требуют.
 const PUBLIC_PATHS = new Set<string>(["/", ROUTES.auth]);
 
 // Анкета + номер/OTP — сюда можно попасть с токеном на руках, но ещё не
@@ -84,8 +85,8 @@ export const PageTransition = () => {
     setAwaitingPostAuthNavigation(false);
   }
 
-  // Проверка сессии: есть токен → нечего делать на welcome/auth, в ленту;
-  // нет токена → нечего делать нигде, кроме welcome/auth. В mock-режиме
+  // Проверка сессии: есть токен → нечего делать на онбординге/auth, в ленту;
+  // нет токена → нечего делать нигде, кроме онбординга/auth. В mock-режиме
   // бэка нет вообще — сессии неоткуда взяться, гейт просто выключен.
   let content: ReactNode;
   if (!isMockMode() && !token && !isPublicPath) {

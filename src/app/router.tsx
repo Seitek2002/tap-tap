@@ -32,13 +32,13 @@ import {
   NearbyProfilePage,
   NotificationsPage,
   NumberVerificationPage,
+  OnboardingPage,
   PremiumPage,
   PrivacyPage,
   ProfilePage,
   SettingsPage,
   SupportPage,
   WalletPage,
-  WelcomePage,
 } from "./lazy-pages";
 import { PageTransition } from "./page-transition";
 
@@ -50,7 +50,7 @@ import { PageTransition } from "./page-transition";
 
 // createHashRouter, а не browser: в Capacitor WebView перезагрузка на любом
 // маршруте не улетает в 404 и не требует серверного rewrite.
-// Проверка сессии (есть токен → в ленту, иначе → на welcome) — в
+// Проверка сессии (есть токен → в ленту, иначе → на онбординг/логин) — в
 // PageTransition, он оборачивает все роуты ниже.
 // Корневой pathless layout-роут — не участвует в матчинге URL, только
 // оборачивает все страницы в PageTransition для анимации между ними.
@@ -58,7 +58,7 @@ export const router = createHashRouter([
   {
     children: [
       {
-        element: <WelcomePage />,
+        element: <OnboardingPage />,
         path: "/",
       },
       {

@@ -18,3 +18,7 @@ export const guideSeen = createSeenFlag("taptap_guide_seen");
 export const photoUploadWarningSeen = createSeenFlag(
   "taptap_photo_upload_warning_seen",
 );
+
+// Карусель из 3 экранов на "/" (см. onboarding-page.tsx) — показывается один
+// раз на устройстве, дальше "/" сразу ведёт на регистрацию/вход.
+export const onboardingSeen = createSeenFlag("taptap_onboarding_seen");

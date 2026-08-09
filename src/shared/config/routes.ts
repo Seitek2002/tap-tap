@@ -34,7 +34,6 @@ export const ROUTES = {
   profileSettings: "/profile/settings",
   profileSupport: "/profile/support",
   wallet: "/wallet",
-  welcome: "/welcome",
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];

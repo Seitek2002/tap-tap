@@ -77,6 +77,9 @@ export const NumberVerificationPage = lazy(() =>
     default: m.NumberVerificationPage,
   })),
 );
+export const OnboardingPage = lazy(() =>
+  import("@/pages/onboarding").then((m) => ({ default: m.OnboardingPage })),
+);
 export const PremiumPage = lazy(() =>
   import("@/pages/premium").then((m) => ({ default: m.PremiumPage })),
 );
@@ -113,7 +116,4 @@ export const SupportPage = lazy(() =>
 );
 export const WalletPage = lazy(() =>
   import("@/pages/wallet").then((m) => ({ default: m.WalletPage })),
-);
-export const WelcomePage = lazy(() =>
-  import("@/pages/welcome").then((m) => ({ default: m.WelcomePage })),
 );
