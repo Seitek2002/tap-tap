@@ -36,13 +36,13 @@ const TOGGLES = [
   { defaultOn: false, key: "hasCredit", label: "Хорошая кредитная история" },
 ] as const;
 
-// code — то же значение, что candidate.goals на бэке (см. GET /api/feed),
-// нужен чтобы сохранять/применять фильтр "Ищет" без перевода строк туда-обратно.
-const SEEKING_OPTIONS = [
-  { code: "chat", emoji: "💬", label: "Просто общаться" },
-  { code: "serious", emoji: "💕", label: "Серьезные отношения" },
-  { code: "family", emoji: "💜", label: "Построить семью" },
-] as const;
+// Тот же список (и то же значение, что candidate.goals на бэке, см. GET
+// /api/feed), что и на анкете-4 — редактируется из /admin/options.
+const SEEKING_FALLBACK = [
+  "💬 Просто общаться",
+  "💕 Серьёзные отношения",
+  "💜 Построить семью",
+];
 
 // Пусто — критерий не участвует в отборе (см. комментарий у DEFAULT_INTERESTS).
 const DEFAULT_SEEKING = "";
@@ -235,6 +235,7 @@ const OPTIONS_FALLBACK: Record<string, string[]> = {
       [...field.options],
     ]),
   ),
+  goals: [...SEEKING_FALLBACK],
   interests: [...INTERESTS],
   zodiac: [...ZODIAC_SIGNS],
 };
@@ -338,10 +339,7 @@ export const FiltersPage = () => {
       hasJob: prefs.hasJob,
       hasPhoto: prefs.hasPhoto,
     });
-    setSeeking(
-      SEEKING_OPTIONS.find((option) => option.code === prefs.seeking)?.label ??
-        DEFAULT_SEEKING,
-    );
+    setSeeking(prefs.seeking || DEFAULT_SEEKING);
     setInterests(prefs.interests);
     setZodiac(prefs.zodiac);
     setOptionValues({
@@ -443,8 +441,7 @@ export const FiltersPage = () => {
     minHeight: height,
     pets: optionValues.pets,
     religion: optionValues.religion[0] ?? "",
-    seeking:
-      SEEKING_OPTIONS.find((option) => option.label === seeking)?.code ?? "",
+    seeking,
     smoking: optionValues.smoking[0] ?? "",
     sport: optionValues.sport[0] ?? "",
     zodiac,
@@ -648,25 +645,24 @@ export const FiltersPage = () => {
         <h2 className="text-center text-lg font-bold">Партнёр ищет</h2>
 
         <div className="mt-4 space-y-2">
-          {SEEKING_OPTIONS.map((option) => {
-            const selected = seeking === option.label;
+          {options.goals.map((option) => {
+            const selected = seeking === option;
             return (
               <button
-                key={option.label}
+                key={option}
                 type="button"
                 onClick={() => {
-                  setSeeking(option.label);
+                  setSeeking(option);
                   setIsSeekingOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center gap-2.5 rounded-full px-4 py-3.5 text-sm font-medium transition-colors",
+                  "w-full rounded-full px-4 py-3.5 text-center text-sm font-medium transition-colors",
                   selected
                     ? "bg-primary text-white"
                     : "bg-[#F2F1F3] text-[#1C1E24]",
                 )}
               >
-                <span className="text-lg">{option.emoji}</span>
-                {option.label}
+                {option}
               </button>
             );
           })}

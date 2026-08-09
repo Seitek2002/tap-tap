@@ -35,7 +35,7 @@ import {
   DEFAULT_SHOW_TO,
   LANGUAGE_OPTIONS,
   PREMIUM_SETTINGS_FEATURES,
-  SEEKING_OPTIONS,
+  SEEKING_FALLBACK,
   SETTINGS_ACCOUNT,
   SHOW_TO_OPTIONS,
   SHOW_TO_TO_AUDIENCE,
@@ -99,7 +99,10 @@ export const SettingsPage = () => {
   // car_model — тот же справочник, что и alcohol/religion/etc (см.
   // /api/options), а не захардкоженный список: раньше "Указать машину"
   // был единственным боттомшитом с фиксированными 3 вариантами.
-  const { data: options } = useOptionsQuery({ car_model: CAR_OPTIONS });
+  const { data: options } = useOptionsQuery({
+    car_model: CAR_OPTIONS,
+    goals: SEEKING_FALLBACK,
+  });
 
   const [ageRange, setAgeRange] = useState(DEFAULT_AGE_RANGE);
   const [distance, setDistance] = useState(DEFAULT_DISTANCE_KM);
@@ -144,10 +147,7 @@ export const SettingsPage = () => {
     setAgeRange([prefs.ageMin, prefs.ageMax]);
     setDistance(prefs.maxDistance);
     setShowTo(AUDIENCE_TO_SHOW_TO[prefs.audience] ?? DEFAULT_SHOW_TO);
-    setSeeking(
-      SEEKING_OPTIONS.find((option) => option.code === prefs.seeking)?.label ??
-        DEFAULT_SEEKING,
-    );
+    setSeeking(prefs.seeking || DEFAULT_SEEKING);
     setHideStatus(profileQuery.data.hide_online_status === 1);
     setHideActivity(profileQuery.data.hide_last_seen === 1);
     setCarModel(profileQuery.data.car_model || CAR_OPTIONS[0]);
@@ -180,9 +180,7 @@ export const SettingsPage = () => {
         ageMin: ageRange[0],
         audience: SHOW_TO_TO_AUDIENCE[showTo] ?? "all",
         maxDistance: distance,
-        seeking:
-          SEEKING_OPTIONS.find((option) => option.label === seeking)?.code ??
-          "",
+        seeking,
       });
       toast.success("Изменения сохранены");
       navigate(-1);
@@ -515,25 +513,24 @@ export const SettingsPage = () => {
         <h2 className="text-center text-lg font-bold">Ты ищешь</h2>
 
         <div className="mt-4 space-y-2">
-          {SEEKING_OPTIONS.map((option) => {
-            const selected = seeking === option.label;
+          {options.goals.map((option) => {
+            const selected = seeking === option;
             return (
               <button
-                key={option.label}
+                key={option}
                 type="button"
                 onClick={() => {
-                  setSeeking(option.label);
+                  setSeeking(option);
                   setIsSeekingOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center gap-2.5 rounded-full px-4 py-3.5 text-sm font-medium transition-colors",
+                  "w-full rounded-full px-4 py-3.5 text-center text-sm font-medium transition-colors",
                   selected
                     ? "bg-primary text-white"
                     : "bg-[#F2F1F3] text-[#1C1E24]",
                 )}
               >
-                <span className="text-lg">{option.emoji}</span>
-                {option.label}
+                {option}
               </button>
             );
           })}

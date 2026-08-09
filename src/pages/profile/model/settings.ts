@@ -23,15 +23,15 @@ export const AUDIENCE_TO_SHOW_TO: Record<string, string> = {
   women: "Женщин",
 };
 
-// code — то же значение, что candidate.goals на бэке (см. pages/filters) —
-// нужен, чтобы сохранять/применять "Ты ищешь" через тот же /api/filters.
-export const SEEKING_OPTIONS = [
-  { code: "chat", emoji: "💬", label: "Просто общаться" },
-  { code: "serious", emoji: "💕", label: "Серьезные отношения" },
-  { code: "family", emoji: "💜", label: "Построить семью" },
-] as const;
+// Тот же список (и то же значение candidate.goals на бэке, см.
+// pages/filters), что и на анкете-4 — редактируется из /admin/options.
+export const SEEKING_FALLBACK = [
+  "💬 Просто общаться",
+  "💕 Серьёзные отношения",
+  "💜 Построить семью",
+];
 
-export const DEFAULT_SEEKING = SEEKING_OPTIONS[0].label;
+export const DEFAULT_SEEKING = SEEKING_FALLBACK[0];
 
 export const DEFAULT_LANGUAGE = "Русский";
 export const LANGUAGE_OPTIONS = ["Русский", "Кыргызский", "English"];
