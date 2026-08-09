@@ -227,7 +227,7 @@ export const ChatMessageSchema = z.object({
   created_at: z.string(),
   file_name: z.string().nullable().optional(),
   id: z.number(),
-  kind: z.enum(["text", "image", "file"]).optional().default("text"),
+  kind: z.enum(["text", "image", "voice", "file"]).optional().default("text"),
   read: z.number(),
   sender_id: z.number(),
   text: z.string(),

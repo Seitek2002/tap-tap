@@ -20,6 +20,8 @@ import {
   Plus,
   Send,
   Smile,
+  Square,
+  Trash2,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -38,7 +40,11 @@ import {
 import { resolveUploadUrl } from "@/shared/api";
 import person1 from "@/shared/assets/images/person-1.jpg";
 import { REPORT_REASONS, ROUTES } from "@/shared/config";
-import { formatDateRu, formatLastSeen } from "@/shared/lib/format";
+import {
+  formatDateRu,
+  formatDuration,
+  formatLastSeen,
+} from "@/shared/lib/format";
 import {
   NotificationType,
   triggerNotificationHaptic,
@@ -54,8 +60,13 @@ import { Spinner } from "@/shared/ui/spinner";
 
 import { CHATS } from "../model/chats";
 import { INITIAL_MESSAGES, type Message } from "../model/messages";
+import {
+  MAX_VOICE_RECORDING_SEC,
+  useAudioRecorder,
+} from "../model/use-audio-recorder";
 import { PhotoViewer } from "./photo-viewer";
 import { TypingIndicator } from "./typing-indicator";
+import { VoiceMessagePlayer } from "./voice-message-player";
 
 // Пока у собеседника нет ни одного загруженного фото.
 const FALLBACK_PHOTO = person1;
@@ -63,7 +74,9 @@ const FALLBACK_PHOTO = person1;
 // Вложения выбраны, но ещё не отправлены — лежат рядом с инпутом до нажатия
 // на иконку отправки, как в Telegram/WhatsApp. Можно накопить несколько штук.
 type PendingAttachment = { file: File; id: number } & (
-  { fileName: string; kind: "file" } | { imageUrl: string; kind: "image" }
+  | { audioUrl: string; durationSec: number; kind: "voice" }
+  | { fileName: string; kind: "file" }
+  | { imageUrl: string; kind: "image" }
 );
 
 // Ограничение типов вложений в чате: только картинки и документы (задача
@@ -148,6 +161,33 @@ const MessageBubble = ({
             <ImageIcon className="size-8" />
           </div>
         )}
+        {status}
+      </div>
+    );
+  }
+
+  if (message.kind === "voice" && message.voiceUrl) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col gap-1 w-full",
+          isOutgoing ? "self-end items-end" : "self-start items-start",
+        )}
+      >
+        <div
+          className={cn(
+            "w-56 max-w-[75%] rounded-2xl px-3 py-3",
+            isOutgoing
+              ? "bg-primary text-white"
+              : "self-start bg-[#EFEDF6] text-[#1C1E24]",
+          )}
+        >
+          <VoiceMessagePlayer
+            src={message.voiceUrl}
+            initialDurationSec={message.durationSec}
+            tone={isOutgoing ? "white" : "primary"}
+          />
+        </div>
         {status}
       </div>
     );
@@ -311,6 +351,16 @@ export const ChatRoomPage = () => {
             type,
           };
         }
+        if (message.kind === "voice" && message.attachment_url) {
+          return {
+            created_at: message.created_at,
+            id: message.id,
+            kind: "voice",
+            seen,
+            type,
+            voiceUrl: resolveUploadUrl(message.attachment_url),
+          };
+        }
         if (message.kind === "file" && message.attachment_url) {
           return {
             created_at: message.created_at,
@@ -382,6 +432,8 @@ export const ChatRoomPage = () => {
       for (const attachment of pendingAttachmentsRef.current) {
         if (attachment.kind === "image") {
           URL.revokeObjectURL(attachment.imageUrl);
+        } else if (attachment.kind === "voice") {
+          URL.revokeObjectURL(attachment.audioUrl);
         }
       }
     };
@@ -405,6 +457,15 @@ export const ChatRoomPage = () => {
           kind: "image",
           sending: true,
           type: "outgoing",
+        });
+      } else if (attachment.kind === "voice") {
+        newMessages.push({
+          durationSec: attachment.durationSec,
+          id: nextId,
+          kind: "voice",
+          sending: true,
+          type: "outgoing",
+          voiceUrl: attachment.audioUrl,
         });
       } else {
         newMessages.push({
@@ -465,6 +526,8 @@ export const ChatRoomPage = () => {
           await uploadAttachmentMutation.mutateAsync(attachment.file);
           if (attachment.kind === "image") {
             URL.revokeObjectURL(attachment.imageUrl);
+          } else if (attachment.kind === "voice") {
+            URL.revokeObjectURL(attachment.audioUrl);
           }
         }
       } catch {
@@ -531,10 +594,42 @@ export const ChatRoomPage = () => {
   const removeAttachment = (id: number) => {
     setPendingAttachments((prev) => {
       const attachment = prev.find((item) => item.id === id);
-      if (attachment?.kind === "image")
+      if (attachment?.kind === "image") {
         URL.revokeObjectURL(attachment.imageUrl);
+      } else if (attachment?.kind === "voice") {
+        URL.revokeObjectURL(attachment.audioUrl);
+      }
       return prev.filter((item) => item.id !== id);
     });
+  };
+
+  const audioRecorder = useAudioRecorder((blob, durationSec) => {
+    const file = new globalThis.File([blob], "voice-message", {
+      type: blob.type,
+    });
+    const audioUrl = URL.createObjectURL(blob);
+    setPendingAttachments((prev) => {
+      if (prev.length >= MAX_ATTACHMENTS) {
+        URL.revokeObjectURL(audioUrl);
+        triggerNotificationHaptic(NotificationType.Error);
+        toast.error(
+          `Можно прикрепить не больше ${MAX_ATTACHMENTS} файлов за раз`,
+        );
+        return prev;
+      }
+      return [
+        ...prev,
+        { audioUrl, durationSec, file, id: prev.length + 1, kind: "voice" },
+      ];
+    });
+  });
+
+  const handleMicClick = async () => {
+    try {
+      await audioRecorder.start();
+    } catch {
+      toast.error("Нужен доступ к микрофону");
+    }
   };
 
   // Android: свой шит с выбором источника. iOS/прочее: нативный пикер сам
@@ -736,6 +831,14 @@ export const ChatRoomPage = () => {
                     alt=""
                     className="size-16 rounded-xl object-cover"
                   />
+                ) : attachment.kind === "voice" ? (
+                  <div className="flex h-16 w-44 items-center rounded-xl bg-[#F2F1F3] px-3">
+                    <VoiceMessagePlayer
+                      className="w-full"
+                      src={attachment.audioUrl}
+                      initialDurationSec={attachment.durationSec}
+                    />
+                  </div>
                 ) : (
                   <div className="flex size-16 flex-col items-center justify-center gap-0.5 rounded-xl bg-[#F2F1F3] p-1">
                     <File className="text-primary size-5" />
@@ -756,91 +859,119 @@ export const ChatRoomPage = () => {
             ))}
           </div>
         )}
-        <form
-          onSubmit={(event) => void sendMessage(event)}
-          className="flex items-center gap-2 px-4 py-3"
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ALLOWED_FILE_TYPES_ACCEPT}
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            capture="environment"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={openAttachMenu}
-            aria-label="Прикрепить файл"
-            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
+        {audioRecorder.status === "recording" ? (
+          <div className="flex items-center gap-3 px-4 py-3">
+            <button
+              type="button"
+              onClick={audioRecorder.cancel}
+              aria-label="Отменить запись"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#F2F1F3] text-[#6B7280]"
+            >
+              <Trash2 className="size-5" />
+            </button>
+            <span className="flex flex-1 items-center gap-2 text-sm font-medium text-red-500">
+              <span className="size-2 animate-pulse rounded-full bg-red-500" />
+              Запись голосового... {formatDuration(
+                audioRecorder.durationSec,
+              )} / {formatDuration(MAX_VOICE_RECORDING_SEC)}
+            </span>
+            <button
+              type="button"
+              onClick={audioRecorder.stop}
+              aria-label="Остановить запись"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-red-500 text-white"
+            >
+              <Square className="size-5" />
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={(event) => void sendMessage(event)}
+            className="flex items-center gap-2 px-4 py-3"
           >
-            <Plus className="size-5" />
-          </button>
-          <input
-            value={draft}
-            onChange={handleDraftChange}
-            placeholder="Напиши сообщение"
-            className="h-11 min-w-0 flex-1 rounded-full bg-[#F2F1F6] px-4 text-sm outline-none placeholder:text-[#9CA3AF]"
-          />
-          <button
-            type="button"
-            aria-label="Эмодзи"
-            className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
-          >
-            <Smile className="size-6" />
-          </button>
-          <AnimatePresence mode="wait" initial={false}>
-            {draft.trim() || pendingAttachments.length > 0 ? (
-              <motion.button
-                key="send"
-                type="submit"
-                disabled={isSendingAttachments}
-                data-haptic="medium"
-                aria-label="Отправить"
-                initial={{ opacity: 0, scale: 0.4 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.4 }}
-                transition={{ damping: 22, stiffness: 500, type: "spring" }}
-                className="flex h-9 w-15.5 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white disabled:opacity-50"
-              >
-                {isSendingAttachments ? (
-                  <Spinner className="size-4" />
-                ) : (
-                  <Send className="size-5" />
-                )}
-              </motion.button>
-            ) : (
-              <motion.button
-                key="mic"
-                type="button"
-                aria-label="Голосовое сообщение"
-                initial={{ opacity: 0, scale: 0.4 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.4 }}
-                transition={{ damping: 22, stiffness: 500, type: "spring" }}
-                className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
-              >
-                <Mic className="size-6" />
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </form>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ALLOWED_FILE_TYPES_ACCEPT}
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              capture="environment"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={openAttachMenu}
+              aria-label="Прикрепить файл"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white"
+            >
+              <Plus className="size-5" />
+            </button>
+            <input
+              value={draft}
+              onChange={handleDraftChange}
+              placeholder="Напиши сообщение"
+              className="h-11 min-w-0 flex-1 rounded-full bg-[#F2F1F6] px-4 text-sm outline-none placeholder:text-[#9CA3AF]"
+            />
+            <button
+              type="button"
+              aria-label="Эмодзи"
+              className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
+            >
+              <Smile className="size-6" />
+            </button>
+            <AnimatePresence mode="wait" initial={false}>
+              {draft.trim() || pendingAttachments.length > 0 ? (
+                <motion.button
+                  key="send"
+                  type="submit"
+                  disabled={isSendingAttachments}
+                  data-haptic="medium"
+                  aria-label="Отправить"
+                  initial={{ opacity: 0, scale: 0.4 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.4 }}
+                  transition={{ damping: 22, stiffness: 500, type: "spring" }}
+                  className="flex h-9 w-15.5 shrink-0 items-center justify-center rounded-full bg-[#1C1E24] text-white disabled:opacity-50"
+                >
+                  {isSendingAttachments ? (
+                    <Spinner className="size-4" />
+                  ) : (
+                    <Send className="size-5" />
+                  )}
+                </motion.button>
+              ) : (
+                <motion.button
+                  key="mic"
+                  type="button"
+                  onClick={() => void handleMicClick()}
+                  aria-label="Голосовое сообщение"
+                  initial={{ opacity: 0, scale: 0.4 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.4 }}
+                  transition={{ damping: 22, stiffness: 500, type: "spring" }}
+                  className="flex size-9 shrink-0 items-center justify-center text-[#6B7280]"
+                >
+                  <Mic className="size-6" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </form>
+        )}
       </div>
 
       <Modal

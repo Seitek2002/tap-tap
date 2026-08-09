@@ -3,17 +3,21 @@ export type Message = {
   // времени) — используется, чтобы показать реальную дату начала переписки
   // вместо заглушки (см. formatDateRu в chat-room-page.tsx).
   created_at?: string;
+  // Длительность голосового — известна сразу после записи (см.
+  // useAudioRecorder), не нужно ждать loadedmetadata у <audio> для неё.
+  durationSec?: number;
   fileName?: string;
   // Реальный URL вложения — есть только у сообщений с бэка, не у
   // моковых/ещё не загруженных.
   fileUrl?: string;
   id: number;
   imageUrl?: string;
-  kind: "file" | "image" | "text";
+  kind: "file" | "image" | "text" | "voice";
   seen?: boolean;
   sending?: boolean;
   text?: string;
   type: "incoming" | "outgoing";
+  voiceUrl?: string;
 };
 
 export const INITIAL_MESSAGES: Message[] = [
