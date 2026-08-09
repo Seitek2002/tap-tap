@@ -52,7 +52,9 @@ export const Anketa1Page = () => {
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
   const [accepted, setAccepted] = useState(false);
-  const [name, setName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [patronymic, setPatronymic] = useState("");
   const [birthDate, setBirthDate] = useState("");
 
   // Семейное положение больше не спрашиваем на этом экране — бек сам
@@ -63,7 +65,9 @@ export const Anketa1Page = () => {
   const isMarried = profileQuery.data?.marital_status === "married";
 
   const commitAndNext = () => {
-    setField("name", name);
+    setField("name", firstName.trim());
+    setField("last_name", lastName.trim());
+    setField("patronymic", patronymic.trim());
 
     const parsed = parseBirthDate(birthDate);
     if (parsed) {
@@ -100,10 +104,22 @@ export const Anketa1Page = () => {
         {/* Поля анкеты */}
         <div className="mt-6 space-y-5">
           <Input
-            label="ФИО"
-            placeholder="Асанов Асан Асанович"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
+            label="Фамилия"
+            placeholder="Асанов"
+            value={lastName}
+            onChange={(event) => setLastName(event.target.value)}
+          />
+          <Input
+            label="Имя"
+            placeholder="Асан"
+            value={firstName}
+            onChange={(event) => setFirstName(event.target.value)}
+          />
+          <Input
+            label="Отчество (необязательно)"
+            placeholder="Асанович"
+            value={patronymic}
+            onChange={(event) => setPatronymic(event.target.value)}
           />
           <Input
             label="Дата рождения"

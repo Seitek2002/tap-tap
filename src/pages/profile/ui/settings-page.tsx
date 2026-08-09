@@ -239,9 +239,17 @@ export const SettingsPage = () => {
     }
   };
 
+  // Полное ФИО — только тут, в остальном приложении (лента, чат, лайки)
+  // другие видят исключительно profileQuery.data.name (имя без фамилии).
   const displayName = isMockMode()
     ? SETTINGS_ACCOUNT.name
-    : (profileQuery.data?.name ?? "");
+    : [
+        profileQuery.data?.last_name,
+        profileQuery.data?.name,
+        profileQuery.data?.patronymic,
+      ]
+        .filter(Boolean)
+        .join(" ");
   const displayPhone = isMockMode()
     ? SETTINGS_ACCOUNT.phone
     : (profileQuery.data?.phone ?? "");

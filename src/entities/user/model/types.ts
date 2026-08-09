@@ -36,6 +36,11 @@ export const UserSchema = z.object({
   hide_online_status: z.number(),
   id: z.number(),
   interests: z.array(z.coerce.string()),
+  // Фамилия/отчество — только для себя (см. "Твоё имя" в настройках), другим
+  // пользователям нигде не показываются и не отдаются: везде, где виден
+  // профиль другому человеку (лента, чат, лайки, уведомление о паре), с
+  // бэка приходит только name — то есть просто имя.
+  last_name: z.string(),
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
   love_language: z.string(),
@@ -43,6 +48,7 @@ export const UserSchema = z.object({
   name: z.string(),
   onboarding_completed: z.number(),
   online: z.number(),
+  patronymic: z.string(),
   pets: z.string(),
   phone: z.string(),
   photos: z.array(z.string()),
@@ -90,11 +96,13 @@ export type ProfileUpdate = Partial<
     | "hide_last_seen"
     | "hide_online_status"
     | "interests"
+    | "last_name"
     | "latitude"
     | "longitude"
     | "love_language"
     | "name"
     | "onboarding_completed"
+    | "patronymic"
     | "pets"
     | "religion"
     | "show_best_photo"
