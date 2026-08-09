@@ -8,6 +8,8 @@ import { BottomNav } from "@/widgets/bottom-nav";
 
 import {
   useBlockUserMutation,
+  useBoostMutation,
+  useBoostQuery,
   useDislikeMutation,
   useFeedQuery,
   useLikeMutation,
@@ -17,7 +19,7 @@ import {
   useWalletQuery,
 } from "@/entities/user";
 
-import { resolveUploadUrl } from "@/shared/api";
+import { ApiError, resolveUploadUrl } from "@/shared/api";
 import boostIcon from "@/shared/assets/icons/boost.svg";
 import { ROUTES } from "@/shared/config";
 import {
@@ -40,6 +42,10 @@ import { SwipeCardSkeleton } from "./swipe-card-skeleton";
 // Источник истины всё равно бэк: если он ответит limitReached, override.
 const LIKE_LIMIT = 4;
 
+// mock-режим (без бэка): длительность буста — тот же дефолт, что на бэке
+// (см. boost_duration_seconds в /admin/options).
+const MOCK_BOOST_DURATION_SECONDS = 30;
+
 // Демо-режим (без бэка): раньше матч был на N-ном по счёту лайке — для
 // mock-режима эта имитация возвращается, чтобы было что показать.
 const MOCK_MATCH_ON_LIKE_NUMBER = 2;
@@ -58,7 +64,65 @@ export const FeedPage = () => {
   const undoMutation = useUndoMutation();
   const blockMutation = useBlockUserMutation();
   const reportMutation = useReportUserMutation();
+  const boostQuery = useBoostQuery(!isMockMode());
+  const boostMutation = useBoostMutation();
   const isPremium = !isMockMode() && (walletQuery.data?.isPremium ?? false);
+
+  // Секунды до конца буста — реальное число, а не производное от Date.now()
+  // прямо в рендере (в теле компонента это нечистая функция): Date.now()
+  // вызывается только внутри эффекта/обработчика клика, тело рендера его не
+  // трогает вообще.
+  const [boostSecondsLeft, setBoostSecondsLeft] = useState(0);
+
+  // До какого момента бустнут — источник истины бэк (см. GET /api/boost),
+  // восстанавливаем сюда при загрузке страницы, чтобы обновление страницы
+  // не сбрасывало таймер на кнопке. В мок-режиме бэка нет вообще.
+  const hasHydratedBoost = useRef(isMockMode());
+  useEffect(() => {
+    if (hasHydratedBoost.current || !boostQuery.data) return;
+    hasHydratedBoost.current = true;
+    const until = boostQuery.data.boostedUntil;
+    setBoostSecondsLeft(
+      until ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : 0,
+    );
+  }, [boostQuery.data]);
+
+  const isBoosting = boostSecondsLeft > 0;
+
+  // Тикающий отсчёт — раз в секунду просто уменьшаем текущее значение на 1,
+  // а не пересчитываем заново от Date.now(): эффект перезапускается только
+  // при переходе "не бустим" → "бустим" (и обратно), не на каждый тик.
+  useEffect(() => {
+    if (!isBoosting) return;
+    const interval = setInterval(() => {
+      setBoostSecondsLeft((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isBoosting]);
+
+  const handleBoost = async () => {
+    if (isBoosting) return;
+
+    if (isMockMode()) {
+      setBoostSecondsLeft(MOCK_BOOST_DURATION_SECONDS);
+      toast.success("Теперь ты первый в ленте у остальных!");
+      return;
+    }
+
+    try {
+      const result = await boostMutation.mutateAsync();
+      setBoostSecondsLeft(
+        Math.max(0, Math.ceil((result.boostedUntil - Date.now()) / 1000)),
+      );
+      toast.success("Теперь ты первый в ленте у остальных!");
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Не получилось активировать буст",
+      );
+    }
+  };
 
   const showGuide = !guideSeen.get();
   const [stack, setStack] = useState<Profile[]>(() => {
@@ -221,10 +285,12 @@ export const FeedPage = () => {
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            className="flex items-center rounded-full bg-[#1C1E24] px-2.5 py-1 text-xs font-semibold text-white"
+            disabled={isBoosting}
+            onClick={() => void handleBoost()}
+            className="flex items-center gap-1 rounded-full bg-[#1C1E24] px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
           >
             <img src={boostIcon} alt="" />
-            Boost
+            {isBoosting ? `${boostSecondsLeft}с` : "Boost"}
           </button>
           <button
             type="button"

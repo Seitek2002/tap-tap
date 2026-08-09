@@ -1,5 +1,6 @@
 export { useBlockContactMutation } from "./api/block-contact";
 export { useBlockUserMutation } from "./api/block-user";
+export { useBoostMutation } from "./api/boost";
 export { useBuyPremiumMutation } from "./api/buy-premium";
 export { useDeleteProfilePhotoMutation } from "./api/delete-profile-photo";
 export { useDislikeMutation } from "./api/dislike";
@@ -7,6 +8,7 @@ export { useChatQuery } from "./api/get-chat";
 export { useChatMessagesQuery } from "./api/get-chat-messages";
 export { useChatsQuery } from "./api/get-chats";
 export { useBlockedContactsQuery } from "./api/get-blocks";
+export { useBoostQuery } from "./api/get-boost";
 export { useFeedQuery } from "./api/get-feed";
 export { useFiltersQuery } from "./api/get-filters";
 export { useLikedByMeQuery, useLikedMeQuery } from "./api/get-likes";
@@ -35,6 +37,8 @@ export { useMatchNotifications } from "./model/use-match-notifications";
 export type {
   BlockedContact,
   BlockResult,
+  BoostResult,
+  BoostStatus,
   BuyPremiumResult,
   ChatDetail,
   ChatListItem,

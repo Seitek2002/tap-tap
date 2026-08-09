@@ -311,6 +311,23 @@ export const BuyPremiumResultSchema = z.object({
 
 export type BuyPremiumResult = z.infer<typeof BuyPremiumResultSchema>;
 
+// GET /api/boost — статус буста (для восстановления таймера на кнопке
+// после обновления страницы) + POST /api/boost — {error, boostedUntil} при
+// уже активном бусте (обрабатывается через ApiError, не эту схему).
+export const BoostStatusSchema = z.object({
+  boostedUntil: z.number().nullable(),
+  durationSeconds: z.number(),
+});
+
+export type BoostStatus = z.infer<typeof BoostStatusSchema>;
+
+export const BoostResultSchema = z.object({
+  boostedUntil: z.number(),
+  ok: z.boolean(),
+});
+
+export type BoostResult = z.infer<typeof BoostResultSchema>;
+
 // DELETE /api/swipes/unmatch/:userId
 export const UnmatchResultSchema = z.object({
   hadChat: z.boolean().optional(),
