@@ -13,7 +13,7 @@ import {
   useWalletQuery,
 } from "@/entities/user";
 
-import { formatDateRu } from "@/shared/lib/format-date-ru";
+import { formatDateRu } from "@/shared/lib/format";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { cn } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";

@@ -38,8 +38,7 @@ import {
 import { resolveUploadUrl } from "@/shared/api";
 import person1 from "@/shared/assets/images/person-1.jpg";
 import { REPORT_REASONS, ROUTES } from "@/shared/config";
-import { formatDateRu } from "@/shared/lib/format-date-ru";
-import { formatLastSeen } from "@/shared/lib/format-last-seen";
+import { formatDateRu, formatLastSeen } from "@/shared/lib/format";
 import {
   NotificationType,
   triggerNotificationHaptic,

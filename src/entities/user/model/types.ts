@@ -58,6 +58,9 @@ export const UserSchema = z.object({
   show_gender_preference: z.string(),
   smoking: z.string(),
   sport: z.string(),
+  // Голосовая визитка (anketa-7) — управляется отдельным POST/DELETE
+  // /api/profile/voice-bio, а не общим PUT (тем же паттерном, что photos).
+  voice_bio_url: z.string().nullable(),
   workplace: z.string(),
   zodiac: z.string(),
 });

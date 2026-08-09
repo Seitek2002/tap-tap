@@ -1,13 +1,25 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
-import { ChevronLeft, Mic } from "lucide-react";
+import { ChevronLeft, Mic, Square, Trash2 } from "lucide-react";
 
-import { useAnketaDraftStore } from "@/entities/user";
+import {
+  useAnketaDraftStore,
+  useUploadVoiceBioMutation,
+} from "@/entities/user";
 
+import { formatDuration } from "@/shared/lib/format";
+import { isMockMode } from "@/shared/lib/mock-mode";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
+import {
+  MAX_VOICE_RECORDING_SEC,
+  useAudioRecorder,
+} from "@/shared/lib/use-audio-recorder";
+import { cn } from "@/shared/lib/utils";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
+import { VoicePlayer } from "@/shared/ui/voice-player";
 
 const QUESTIONS = [
   "💪 Ты занимаешься спортом?",
@@ -21,6 +33,28 @@ export const Anketa7Page = () => {
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
   const [bio, setBio] = useState("");
+  const uploadVoiceBioMutation = useUploadVoiceBioMutation();
+
+  const { audioUrl, durationSec, reset, start, status, stop } =
+    useAudioRecorder((blob) => {
+      if (isMockMode()) return;
+      const file = new File([blob], "voice-bio", { type: blob.type });
+      uploadVoiceBioMutation.mutate(file, {
+        onError: () => toast.error("Не получилось сохранить голосовое"),
+      });
+    });
+
+  const handleMicClick = async () => {
+    if (status === "recording") {
+      stop();
+      return;
+    }
+    try {
+      await start();
+    } catch {
+      toast.error("Не получилось получить доступ к микрофону");
+    }
+  };
 
   const commitAndNext = () => {
     setField("bio", bio);
@@ -90,13 +124,43 @@ export const Anketa7Page = () => {
             ))}
           </div>
 
-          <div className="mt-5 flex justify-center">
-            <button
-              type="button"
-              className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform active:scale-95"
-            >
-              <Mic className="size-6" />
-            </button>
+          <div className="mt-5 flex flex-col items-center gap-2">
+            {status === "recorded" && audioUrl ? (
+              <div className="flex w-full items-center gap-3 rounded-2xl bg-[#F2F1F3] px-4 py-3">
+                <VoicePlayer className="flex-1" src={audioUrl} />
+                <button
+                  type="button"
+                  onClick={reset}
+                  aria-label="Удалить и записать заново"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[#6B7280]"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void handleMicClick()}
+                className={cn(
+                  "flex size-16 items-center justify-center rounded-full transition-transform active:scale-95",
+                  status === "recording"
+                    ? "bg-red-500 text-white"
+                    : "bg-primary/10 text-primary",
+                )}
+              >
+                {status === "recording" ? (
+                  <Square className="size-5" />
+                ) : (
+                  <Mic className="size-6" />
+                )}
+              </button>
+            )}
+            {status === "recording" && (
+              <span className="text-sm font-medium text-red-500">
+                {formatDuration(durationSec)} /{" "}
+                {formatDuration(MAX_VOICE_RECORDING_SEC)}
+              </span>
+            )}
           </div>
         </div>
       </div>

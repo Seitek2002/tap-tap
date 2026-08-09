@@ -20,6 +20,13 @@ const isSameDay = (a: Date, b: Date) =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
+/** «12 июля 2026» — используется и в чате (дата начала переписки), и в
+ * кошельке (дата истечения Premium). */
+export function formatDateRu(input: Date | number | string): string {
+  const date = new Date(input);
+  return `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 /** "сегодня в 14:30" / "вчера в 09:05" / "12 июля в 12:56" (+год, если не текущий). */
 export function formatLastSeen(timestamp: null | number): string {
   if (timestamp === null) return "давно";
@@ -37,4 +44,12 @@ export function formatLastSeen(timestamp: null | number): string {
   const yearSuffix =
     date.getFullYear() !== now.getFullYear() ? ` ${date.getFullYear()}` : "";
   return `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]}${yearSuffix} в ${time}`;
+}
+
+/** "1:05" — прошедшее время записи/проигрывания голосового (анкета-7,
+ * голосовые сообщения в чате). */
+export function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${pad(s)}`;
 }
