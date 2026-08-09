@@ -171,7 +171,11 @@ export const FeedPage = () => {
   } | null>(null);
   const likesLocked = !isPremium && likeCount >= LIKE_LIMIT;
 
-  const handleSwipe = async (direction: "left" | "right", id: number) => {
+  const handleSwipe = async (
+    direction: "left" | "right",
+    id: number,
+    photoIndex: number,
+  ) => {
     const swiped = stack.find((profile) => profile.id === id);
     setStack((prev) => prev.filter((profile) => profile.id !== id));
     if (swiped) setHistory((prev) => [...prev, { direction, profile: swiped }]);
@@ -210,7 +214,7 @@ export const FeedPage = () => {
     }
 
     try {
-      const result = await likeMutation.mutateAsync(id);
+      const result = await likeMutation.mutateAsync({ photoIndex, userId: id });
       if (result.limitReached) {
         setIsLimitReached(true);
         return;
@@ -331,7 +335,9 @@ export const FeedPage = () => {
                   onLikeBlocked={() => setIsLimitReached(true)}
                   onReport={(id, reason) => void handleReport(id, reason)}
                   onRewind={() => void handleRewind()}
-                  onSwipe={(direction, id) => void handleSwipe(direction, id)}
+                  onSwipe={(direction, id, photoIndex) =>
+                    void handleSwipe(direction, id, photoIndex)
+                  }
                 />
               ))
           )}

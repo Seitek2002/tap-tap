@@ -36,6 +36,7 @@ export type OwnProfileView = {
   // Все фото (уже резолвнутые URL) — для управления в модалке "Добавь
   // больше фото", не только первое (см. `photo` выше, только для шапки).
   photos: string[];
+  showBestPhoto: boolean;
   study: string;
 };
 
@@ -81,6 +82,7 @@ export function mapUserToOwnProfile(user: User): OwnProfileView {
     },
     photo: user.photos[0] ? resolveUploadUrl(user.photos[0]) : FALLBACK_PHOTO,
     photos: user.photos.map(resolveUploadUrl),
+    showBestPhoto: Boolean(user.show_best_photo),
     study: user.education_place,
   };
 }

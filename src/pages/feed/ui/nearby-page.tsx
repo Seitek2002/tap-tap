@@ -162,7 +162,7 @@ export const NearbyPage = () => {
 
     if (isMockMode()) return;
     try {
-      const result = await likeMutation.mutateAsync(id);
+      const result = await likeMutation.mutateAsync({ userId: id });
       if (result.limitReached) {
         setLikedIds((prev) => prev.filter((item) => item !== id));
         toast.error("Дневной лимит лайков исчерпан");

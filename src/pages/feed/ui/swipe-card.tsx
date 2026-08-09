@@ -56,7 +56,7 @@ type SwipeCardProps = {
   onLikeBlocked: () => void;
   onReport: (id: number, reason: string) => Promise<void> | void;
   onRewind: () => void;
-  onSwipe: (direction: SwipeDirection, id: number) => void;
+  onSwipe: (direction: SwipeDirection, id: number, photoIndex: number) => void;
   profile: Profile;
 };
 
@@ -208,7 +208,7 @@ export const SwipeCard = ({
     triggerHaptic(ImpactStyle.Medium);
     animate(x, direction === "right" ? 700 : -700, {
       duration: 0.3,
-      onComplete: () => onSwipe(direction, profile.id),
+      onComplete: () => onSwipe(direction, profile.id, photoIndex),
     });
   };
 

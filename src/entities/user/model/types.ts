@@ -50,6 +50,10 @@ export const UserSchema = z.object({
   religion: z.string(),
   // Показывать ли car_model другим (боттомшит "Указать машину") — не влияет
   // на has_car, который остаётся источником истины для фильтров партнёра.
+  // "Показывать лучшее фото" — переставлять ли самое лайкнутое фото первым
+  // при показе другим (см. reorderPhotosByLikes на бэке); не влияет на
+  // порядок, который сам видит на странице редактирования профиля.
+  show_best_photo: z.number(),
   show_car: z.number(),
   show_gender_preference: z.string(),
   smoking: z.string(),
@@ -93,6 +97,7 @@ export type ProfileUpdate = Partial<
     | "onboarding_completed"
     | "pets"
     | "religion"
+    | "show_best_photo"
     | "show_car"
     | "show_gender_preference"
     | "smoking"

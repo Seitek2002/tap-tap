@@ -169,7 +169,7 @@ export const LikesPage = () => {
 
   const handleLikeBack = async (profile: LikeProfile) => {
     try {
-      const result = await likeMutation.mutateAsync(profile.id);
+      const result = await likeMutation.mutateAsync({ userId: profile.id });
       setActedIds((prev) => new Set(prev).add(profile.id));
       if (result.match) {
         toast.success(`Это пара с ${profile.name}! Загляни в чат 💜`);

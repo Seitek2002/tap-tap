@@ -272,6 +272,7 @@ export const ProfilePage = () => {
     setStudy(ownProfile.study);
     setInterests(ownProfile.interests);
     setOptionValues(ownProfile.optionValues);
+    setBestPhotoEnabled(ownProfile.showBestPhoto);
   }, [ownProfile]);
 
   const fieldOptions = (field: (typeof PROFILE_OPTION_FIELDS)[number]) =>
@@ -681,7 +682,12 @@ export const ProfilePage = () => {
           <span className="font-medium">Показывать лучшее фото</span>
           <Toggle
             checked={bestPhotoEnabled}
-            onChange={(event) => setBestPhotoEnabled(event.target.checked)}
+            onChange={(event) => {
+              const enabled = event.target.checked;
+              setBestPhotoEnabled(enabled);
+              if (isMockMode()) return;
+              saveProfile({ show_best_photo: enabled ? 1 : 0 });
+            }}
           />
         </div>
 

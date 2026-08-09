@@ -8,9 +8,20 @@ export function useLikeMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (userId: number) =>
+    // photoIndex — какое фото смотрели в карточке в момент лайка (см.
+    // photoIndex в swipe-card.tsx); по умолчанию 0 там, где листания фото
+    // нет (likes-page, nearby-page).
+    mutationFn: async ({
+      photoIndex = 0,
+      userId,
+    }: {
+      photoIndex?: number;
+      userId: number;
+    }) =>
       LikeResultSchema.parse(
-        await api.post<LikeResult>(`/api/swipes/like/${userId}`),
+        await api.post<LikeResult>(`/api/swipes/like/${userId}`, {
+          photoIndex,
+        }),
       ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["feed"] });
