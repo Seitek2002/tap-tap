@@ -25,7 +25,11 @@ export const BottomNav = () => {
           <button
             key={label}
             type="button"
-            onClick={route ? () => navigate(route) : undefined}
+            onClick={
+              route
+                ? () => navigate(route, { state: { skipTransition: true } })
+                : undefined
+            }
             className={cn(
               "flex flex-col items-center gap-1 text-xs",
               active ? "text-primary" : "text-[#6B7280]",

@@ -53,6 +53,13 @@ const RouteFallback = () => (
 // к нативному, чем мгновенная подмена.
 export const PageTransition = () => {
   const location = useLocation();
+  // Переходы между вкладками нижнего навбара — мгновенная смена без
+  // слайда (см. BottomNav) — навбар всегда виден на экране, слайд туда-
+  // сюда между соседними вкладками только мешает, в отличие от перехода
+  // на вложенную страницу, куда естественно "въезжать" сбоку.
+  const skipTransition = Boolean(
+    (location.state as { skipTransition?: boolean } | null)?.skipTransition,
+  );
   const token = useSessionStore((state) => state.token);
   const isPublicPath = PUBLIC_PATHS.has(location.pathname);
   const isAnketaPath = ANKETA_PATHS.has(location.pathname);
@@ -124,10 +131,14 @@ export const PageTransition = () => {
           <motion.div
             key={location.pathname}
             className="absolute inset-0"
-            initial={{ x: "100%" }}
+            initial={skipTransition ? false : { x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "-30%" }}
-            transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+            exit={skipTransition ? { x: 0 } : { x: "-30%" }}
+            transition={
+              skipTransition
+                ? { duration: 0 }
+                : { duration: 0.28, ease: [0.32, 0.72, 0, 1] }
+            }
           >
             <Suspense fallback={<RouteFallback />}>
               <FrozenOutlet />
