@@ -3,7 +3,6 @@ export { useBlockUserMutation } from "./api/block-user";
 export { useBoostMutation } from "./api/boost";
 export { useBuyPremiumMutation } from "./api/buy-premium";
 export { useDeleteProfilePhotoMutation } from "./api/delete-profile-photo";
-export { useDeleteVoiceBioMutation } from "./api/delete-voice-bio";
 export { useDislikeMutation } from "./api/dislike";
 export { useChatQuery } from "./api/get-chat";
 export { useChatMessagesQuery } from "./api/get-chat-messages";
@@ -32,7 +31,6 @@ export { useUpdateNotificationPreferencesMutation } from "./api/update-notificat
 export { useUpdateProfileMutation } from "./api/update-profile";
 export { useUploadChatAttachmentMutation } from "./api/upload-chat-attachment";
 export { useUploadProfilePhotoMutation } from "./api/upload-profile-photo";
-export { useUploadVoiceBioMutation } from "./api/upload-voice-bio";
 export { useAnketaDraftStore } from "./model/anketa-draft-store";
 export { useChatSocket } from "./model/use-chat-socket";
 export { useMatchNotifications } from "./model/use-match-notifications";

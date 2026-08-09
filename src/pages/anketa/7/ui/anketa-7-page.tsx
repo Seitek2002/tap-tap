@@ -2,24 +2,18 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
-import { ChevronLeft, Mic, Square, Trash2 } from "lucide-react";
+import { ChevronLeft, Mic, Square } from "lucide-react";
 
-import {
-  useAnketaDraftStore,
-  useUploadVoiceBioMutation,
-} from "@/entities/user";
+import { useAnketaDraftStore } from "@/entities/user";
 
-import { formatDuration } from "@/shared/lib/format";
-import { isMockMode } from "@/shared/lib/mock-mode";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import {
-  MAX_VOICE_RECORDING_SEC,
-  useAudioRecorder,
-} from "@/shared/lib/use-audio-recorder";
+  isSpeechRecognitionSupported,
+  useSpeechRecognition,
+} from "@/shared/lib/use-speech-recognition";
 import { cn } from "@/shared/lib/utils";
 import { Pill } from "@/shared/ui/pill";
 import { Progress } from "@/shared/ui/progress";
-import { VoicePlayer } from "@/shared/ui/voice-player";
 
 const QUESTIONS = [
   "💪 Ты занимаешься спортом?",
@@ -28,31 +22,43 @@ const QUESTIONS = [
   "🧿 Какая у тебя религия?",
 ];
 
+// Ошибки, на которые не стоит реагировать тостом — либо ожидаемые (тишина
+// между фразами, наша же остановка), либо признак "браузер не умеет".
+const SILENT_SPEECH_ERRORS = new Set(["aborted", "no-speech"]);
+
 export const Anketa7Page = () => {
   const navigate = useNavigate();
   const { goNext, progress } = useAnketaFlow();
   const setField = useAnketaDraftStore((state) => state.setField);
   const [bio, setBio] = useState("");
-  const uploadVoiceBioMutation = useUploadVoiceBioMutation();
+  const speechSupported = isSpeechRecognitionSupported();
 
-  const { audioUrl, durationSec, reset, start, status, stop } =
-    useAudioRecorder((blob) => {
-      if (isMockMode()) return;
-      const file = new File([blob], "voice-bio", { type: blob.type });
-      uploadVoiceBioMutation.mutate(file, {
-        onError: () => toast.error("Не получилось сохранить голосовое"),
-      });
-    });
+  // Голосовой ВВОД, а не голосовое сообщение — распознанный текст сразу
+  // дописывается в то же поле "о себе" выше, отдельного аудио никуда не
+  // сохраняем.
+  const { start, status, stop } = useSpeechRecognition(
+    (transcript) => {
+      setBio((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    },
+    (error) => {
+      if (SILENT_SPEECH_ERRORS.has(error)) return;
+      toast.error(
+        error === "not-allowed"
+          ? "Нужен доступ к микрофону"
+          : "Не получилось распознать речь",
+      );
+    },
+  );
 
-  const handleMicClick = async () => {
-    if (status === "recording") {
+  const handleMicClick = () => {
+    if (status === "listening") {
       stop();
       return;
     }
     try {
-      await start();
+      start();
     } catch {
-      toast.error("Не получилось получить доступ к микрофону");
+      toast.error("Голосовой ввод не поддерживается на этом устройстве");
     }
   };
 
@@ -99,70 +105,56 @@ export const Anketa7Page = () => {
           className="mt-6 w-full resize-none rounded-2xl border border-border-soft bg-white px-4 py-3.5 text-sm text-[#1C1E24] outline-none placeholder:text-[#6B7280]"
         />
 
-        {/* Голосовое */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#F2F1F3]">
-              <Mic className="size-4 text-[#6B7280]" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#1C1E24]">
-                Расскажи о себе в голосовом
-              </h3>
-              <p className="mt-0.5 text-xs text-[#6B7280]">
-                Ответь на несколько вопросов, это поможет другим лучше узнать
-                тебя
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {QUESTIONS.map((question) => (
-              <Pill key={question} className="text-xs">
-                {question}
-              </Pill>
-            ))}
-          </div>
-
-          <div className="mt-5 flex flex-col items-center gap-2">
-            {status === "recorded" && audioUrl ? (
-              <div className="flex w-full items-center gap-3 rounded-2xl bg-[#F2F1F3] px-4 py-3">
-                <VoicePlayer className="flex-1" src={audioUrl} />
-                <button
-                  type="button"
-                  onClick={reset}
-                  aria-label="Удалить и записать заново"
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-[#6B7280]"
-                >
-                  <Trash2 className="size-4" />
-                </button>
+        {/* Голосовой ввод */}
+        {speechSupported && (
+          <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#F2F1F3]">
+                <Mic className="size-4 text-[#6B7280]" />
               </div>
-            ) : (
+              <div>
+                <h3 className="text-sm font-bold text-[#1C1E24]">
+                  Расскажи о себе голосом
+                </h3>
+                <p className="mt-0.5 text-xs text-[#6B7280]">
+                  Скажи вслух — мы превратим это в текст в поле выше
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {QUESTIONS.map((question) => (
+                <Pill key={question} className="text-xs">
+                  {question}
+                </Pill>
+              ))}
+            </div>
+
+            <div className="mt-5 flex flex-col items-center gap-2">
               <button
                 type="button"
-                onClick={() => void handleMicClick()}
+                onClick={handleMicClick}
                 className={cn(
                   "flex size-16 items-center justify-center rounded-full transition-transform active:scale-95",
-                  status === "recording"
-                    ? "bg-red-500 text-white"
+                  status === "listening"
+                    ? "animate-pulse bg-red-500 text-white"
                     : "bg-primary/10 text-primary",
                 )}
               >
-                {status === "recording" ? (
+                {status === "listening" ? (
                   <Square className="size-5" />
                 ) : (
                   <Mic className="size-6" />
                 )}
               </button>
-            )}
-            {status === "recording" && (
-              <span className="text-sm font-medium text-red-500">
-                {formatDuration(durationSec)} /{" "}
-                {formatDuration(MAX_VOICE_RECORDING_SEC)}
-              </span>
-            )}
+              {status === "listening" && (
+                <span className="text-sm font-medium text-red-500">
+                  Слушаю...
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Нижняя панель */}

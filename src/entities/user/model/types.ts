@@ -48,19 +48,16 @@ export const UserSchema = z.object({
   photos: z.array(z.string()),
   premium_until: z.number().nullable(),
   religion: z.string(),
-  // Показывать ли car_model другим (боттомшит "Указать машину") — не влияет
-  // на has_car, который остаётся источником истины для фильтров партнёра.
   // "Показывать лучшее фото" — переставлять ли самое лайкнутое фото первым
   // при показе другим (см. reorderPhotosByLikes на бэке); не влияет на
   // порядок, который сам видит на странице редактирования профиля.
   show_best_photo: z.number(),
+  // Показывать ли car_model другим (боттомшит "Указать машину") — не влияет
+  // на has_car, который остаётся источником истины для фильтров партнёра.
   show_car: z.number(),
   show_gender_preference: z.string(),
   smoking: z.string(),
   sport: z.string(),
-  // Голосовая визитка (anketa-7) — управляется отдельным POST/DELETE
-  // /api/profile/voice-bio, а не общим PUT (тем же паттерном, что photos).
-  voice_bio_url: z.string().nullable(),
   workplace: z.string(),
   zodiac: z.string(),
 });
