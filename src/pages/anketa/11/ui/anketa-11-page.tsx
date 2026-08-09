@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { ChevronLeft, Eye, ShieldCheck, Sparkles } from "lucide-react";
 
 import carPremium from "@/shared/assets/images/car-premium.png";
-import { ROUTES } from "@/shared/config";
 import { useAnketaFlow } from "@/shared/lib/use-anketa-flow";
 import { Progress } from "@/shared/ui/progress";
 
@@ -75,16 +74,21 @@ export const Anketa11Page = () => {
         </div>
       </div>
 
-      {/* Нижняя панель — Premium */}
+      {/* Нижняя панель — Premium уже включён всем при регистрации (см.
+          POST /api/auth/register), тут просто напоминание о плюшках и
+          переход дальше — раньше кнопка уводила на /premium, откуда "назад"
+          возвращал сюда же, и можно было зациклиться. */}
       <div className="px-4 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
-          onClick={() => navigate(ROUTES.premium)}
+          onClick={goNext}
           className="relative flex w-full items-center justify-center rounded-full bg-gradient-to-r from-primary to-[#F5A623] py-3 text-white transition-transform active:scale-[0.99]"
         >
           <span className="text-center">
-            <span className="block font-semibold">Получить Premium</span>
-            <span className="block text-xs text-white/90">9 сом в день</span>
+            <span className="block font-semibold">Продолжить</span>
+            <span className="block text-xs text-white/90">
+              Premium уже активен на первые дни
+            </span>
           </span>
           <Sparkles className="absolute right-6 size-6" />
         </button>
