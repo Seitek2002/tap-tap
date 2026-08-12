@@ -2,6 +2,7 @@ export { useBlockContactMutation } from "./api/block-contact";
 export { useBlockUserMutation } from "./api/block-user";
 export { useBoostMutation } from "./api/boost";
 export { useBuyPremiumMutation } from "./api/buy-premium";
+export { useCancelPremiumMutation } from "./api/cancel-premium";
 export { useDeleteProfilePhotoMutation } from "./api/delete-profile-photo";
 export { useDislikeMutation } from "./api/dislike";
 export { useChatQuery } from "./api/get-chat";
@@ -40,6 +41,7 @@ export type {
   BoostResult,
   BoostStatus,
   BuyPremiumResult,
+  CancelPremiumResult,
   ChatDetail,
   ChatListItem,
   ChatMessage,

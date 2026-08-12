@@ -324,6 +324,18 @@ export const BuyPremiumResultSchema = z.object({
 
 export type BuyPremiumResult = z.infer<typeof BuyPremiumResultSchema>;
 
+// POST /api/wallet/cancel-premium — premiumUntil nullable (в отличие от
+// покупки, тут может стать null); isPremium всё равно true для женщин,
+// им премиум не отключить (см. isUserPremium на бэке).
+export const CancelPremiumResultSchema = z.object({
+  balance: z.number(),
+  isPremium: z.boolean(),
+  ok: z.boolean(),
+  premiumUntil: z.number().nullable(),
+});
+
+export type CancelPremiumResult = z.infer<typeof CancelPremiumResultSchema>;
+
 // GET /api/boost — статус буста (для восстановления таймера на кнопке
 // после обновления страницы) + POST /api/boost — {error, boostedUntil} при
 // уже активном бусте (обрабатывается через ApiError, не эту схему).

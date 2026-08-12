@@ -1,14 +1,16 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 import { Check, ChevronLeft, X } from "lucide-react";
 
-import { useWalletQuery } from "@/entities/user";
+import { useCancelPremiumMutation, useWalletQuery } from "@/entities/user";
 
 import premiumCrown from "@/shared/assets/images/premium-crown.png";
 import { ROUTES } from "@/shared/config";
 import { isMockMode } from "@/shared/lib/mock-mode";
 import { Modal } from "@/shared/ui/modal";
+import { Spinner } from "@/shared/ui/spinner";
 
 import { PREMIUM_FEATURES, PREMIUM_PRICE_PER_DAY } from "../model/premium";
 
@@ -20,6 +22,31 @@ export const PremiumManagePage = () => {
   const walletQuery = useWalletQuery(!isMockMode());
   const isPremium = isMockMode() || (walletQuery.data?.isPremium ?? false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const cancelPremiumMutation = useCancelPremiumMutation();
+
+  const handleConfirmCancel = async () => {
+    if (isCancelling) return;
+
+    if (isMockMode()) {
+      toast.success("Подписка отменена");
+      setIsCancelOpen(false);
+      navigate(ROUTES.premium, { replace: true });
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      await cancelPremiumMutation.mutateAsync();
+      toast.success("Подписка отменена");
+      setIsCancelOpen(false);
+      navigate(ROUTES.premium, { replace: true });
+    } catch {
+      toast.error("Не получилось отменить подписку");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   // Страница управления подпиской без активной подписки не имеет смысла —
   // уводим туда, где её можно оформить (та же кнопка, что в настройках,
@@ -84,18 +111,33 @@ export const PremiumManagePage = () => {
         </button>
       </div>
 
-      {/* TODO: содержимое модалки — по макету, который пришлёт заказчик. */}
       <Modal isOpen={isCancelOpen} onClose={() => setIsCancelOpen(false)}>
-        <h2 className="text-center text-lg font-bold">Отменить подписку?</h2>
+        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#EDE9FE]">
+          <div className="flex size-9 items-center justify-center rounded-full border-2 border-primary/40">
+            <X className="text-primary size-4" />
+          </div>
+        </div>
+
+        <h2 className="mt-3 text-center text-lg font-bold">
+          Отменить подписку?
+        </h2>
         <p className="mt-1 text-center text-sm text-[#6B7280]">
-          Ты потеряешь доступ ко всем возможностям Premium
+          Ты больше не можешь пользоваться преимуществами Premium. Списание
+          прекратится сразу после отмены
         </p>
+
+        <div className="mt-4 flex items-center gap-2 rounded-2xl bg-[#FBEBCE] p-3 text-sm text-[#1C1E24]">
+          <span className="shrink-0 text-lg">👑</span>
+          Ты потеряешь доступ ко всем Premium-функциям
+        </div>
+
         <button
           type="button"
-          onClick={() => setIsCancelOpen(false)}
-          className="mt-4 w-full rounded-full bg-[#1C1E24] py-4 font-bold text-white"
+          disabled={isCancelling}
+          onClick={() => void handleConfirmCancel()}
+          className="mt-4 flex w-full items-center justify-center rounded-full bg-[#1C1E24] py-4 font-bold text-white disabled:opacity-60"
         >
-          Оставить подписку
+          {isCancelling ? <Spinner className="size-5" /> : "Отменить подписку"}
         </button>
       </Modal>
     </div>
