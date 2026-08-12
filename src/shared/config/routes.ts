@@ -24,6 +24,7 @@ export const ROUTES = {
   nearbyProfile: "/nearby/:profileId",
   numberVerification: "/number-verification",
   premium: "/premium",
+  premiumManage: "/premium/manage",
   profile: "/profile",
   profileAbout: "/profile/about",
   profileAddContactManually: "/profile/add-contact",

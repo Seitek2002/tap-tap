@@ -33,6 +33,7 @@ import {
   NotificationsPage,
   NumberVerificationPage,
   OnboardingPage,
+  PremiumManagePage,
   PremiumPage,
   PrivacyPage,
   ProfilePage,
@@ -200,6 +201,10 @@ export const router = createHashRouter([
       {
         element: <PremiumPage />,
         path: ROUTES.premium,
+      },
+      {
+        element: <PremiumManagePage />,
+        path: ROUTES.premiumManage,
       },
     ],
     element: <PageTransition />,

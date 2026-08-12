@@ -83,6 +83,9 @@ export const OnboardingPage = lazy(() =>
 export const PremiumPage = lazy(() =>
   import("@/pages/premium").then((m) => ({ default: m.PremiumPage })),
 );
+export const PremiumManagePage = lazy(() =>
+  import("@/pages/premium").then((m) => ({ default: m.PremiumManagePage })),
+);
 export const AboutPage = lazy(() =>
   import("@/pages/profile").then((m) => ({ default: m.AboutPage })),
 );

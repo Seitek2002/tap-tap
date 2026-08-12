@@ -219,7 +219,7 @@ export const SettingsPage = () => {
   };
 
   const handlePremiumClick = () => {
-    navigate(ROUTES.premium);
+    navigate(ROUTES.premiumManage);
   };
 
   const handleLogout = async () => {
