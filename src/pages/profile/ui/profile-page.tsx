@@ -377,17 +377,27 @@ export const ProfilePage = () => {
     <div className="flex h-dvh flex-col bg-[#FAF9FD] text-[#1C1E24]">
       <div className="flex-1 overflow-y-auto pb-4">
         <header className="flex items-center gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))]">
-          <img
-            src={profile.photo}
-            alt=""
-            className="size-14 rounded-full object-cover"
-          />
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold">
-              {profile.name}, {profile.age}
-            </h1>
-            <p className="text-sm text-[#6B7280]">{profile.location}</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (isMockMode() || !meQuery.data) return;
+              navigate(`/nearby/${meQuery.data.id}`);
+            }}
+            aria-label="Посмотреть, как профиль выглядит для других"
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          >
+            <img
+              src={profile.photo}
+              alt=""
+              className="size-14 shrink-0 rounded-full object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-bold">
+                {profile.name}, {profile.age}
+              </h1>
+              <p className="text-sm text-[#6B7280]">{profile.location}</p>
+            </div>
+          </button>
           <button
             type="button"
             onClick={() => navigate(ROUTES.profileSettings)}

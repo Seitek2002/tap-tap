@@ -758,27 +758,33 @@ export const ChatRoomPage = () => {
         >
           <ChevronLeft className="size-5" />
         </button>
-        <ImageWithSkeleton
-          src={displayPhoto}
-          alt=""
-          loading="eager"
-          className="size-11 shrink-0 rounded-full"
-        />
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate font-bold">{displayName}</h1>
-          <p className="flex items-center gap-1 text-sm text-[#6B7280]">
-            {partnerTyping ? (
-              <>
-                Печатает
-                <TypingIndicator />
-              </>
-            ) : isOnline ? (
-              "В сети"
-            ) : (
-              `Был(а) в сети ${formatLastSeen(lastSeenAt)}`
-            )}
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/chat/${chatId}/profile`)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <ImageWithSkeleton
+            src={displayPhoto}
+            alt=""
+            loading="eager"
+            className="size-11 shrink-0 rounded-full"
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate font-bold">{displayName}</h1>
+            <p className="flex items-center gap-1 text-sm text-[#6B7280]">
+              {partnerTyping ? (
+                <>
+                  Печатает
+                  <TypingIndicator />
+                </>
+              ) : isOnline ? (
+                "В сети"
+              ) : (
+                `Был(а) в сети ${formatLastSeen(lastSeenAt)}`
+              )}
+            </p>
+          </div>
+        </button>
         <button
           type="button"
           onClick={() => setIsMenuOpen(true)}

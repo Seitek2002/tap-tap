@@ -6,6 +6,7 @@ import { ChevronDown, MapPin, Quote, Star, X } from "lucide-react";
 
 import {
   useBlockUserMutation,
+  useMeQuery,
   usePublicProfileQuery,
   useReportUserMutation,
 } from "@/entities/user";
@@ -64,6 +65,11 @@ export const NearbyProfilePage = () => {
   const mockDetails = numericId ? NEARBY_PROFILE_DETAILS[numericId] : undefined;
 
   const profileQuery = usePublicProfileQuery(isMockMode() ? null : numericId);
+  // Сюда же ведёт «посмотреть, как я выгляжу для других» с profile-page.tsx
+  // (см. header там) — свой же профиль, открытый через тот же экран, что и
+  // чужие; пожаловаться/заблокировать самого себя бессмысленно.
+  const meQuery = useMeQuery(!isMockMode());
+  const isOwnProfile = !isMockMode() && meQuery.data?.id === numericId;
   const blockMutation = useBlockUserMutation();
   const reportMutation = useReportUserMutation();
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -219,13 +225,15 @@ export const NearbyProfilePage = () => {
           <Chips items={details.habits} />
         </Section>
 
-        <button
-          type="button"
-          onClick={() => setIsReportOpen(true)}
-          className="mt-4 w-full rounded-2xl bg-red-50 py-4 text-center text-sm font-semibold text-red-500"
-        >
-          Пожаловаться и заблокировать
-        </button>
+        {!isOwnProfile && (
+          <button
+            type="button"
+            onClick={() => setIsReportOpen(true)}
+            className="mt-4 w-full rounded-2xl bg-red-50 py-4 text-center text-sm font-semibold text-red-500"
+          >
+            Пожаловаться и заблокировать
+          </button>
+        )}
       </div>
 
       <Modal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)}>
