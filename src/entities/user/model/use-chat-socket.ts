@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { connectSocket } from "@/shared/api";
 
 import {
@@ -24,6 +26,7 @@ type PartnerStatus = { lastSeenAt: null | number; online: boolean };
  * что произошло, пока страница открыта.
  */
 export function useChatSocket(chatId: null | number, partnerId: null | number) {
+  const queryClient = useQueryClient();
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const [partnerTyping, setPartnerTyping] = useState(false);
   const [partnerStatus, setPartnerStatus] = useState<null | PartnerStatus>(
@@ -41,6 +44,13 @@ export function useChatSocket(chatId: null | number, partnerId: null | number) {
       const parsed = ChatMessageSchema.safeParse(payload);
       if (parsed.success && parsed.data.chat_id === chatId) {
         setLiveMessages((prev) => [...prev, parsed.data]);
+        // liveMessages живёт только пока смонтирован этот хук — при выходе
+        // из чата и повторном заходе он пропадает, а REST-кэш сообщений
+        // (staleTime 60с, см. query-client.ts) отдал бы старый список без
+        // этого сообщения. Инвалидация помечает его протухшим, так что
+        // следующий заход (или уже открытая страница списка чатов) подтянет
+        // актуальные данные, а не только что добавленное сюда сообщение.
+        void queryClient.invalidateQueries({ queryKey: ["chats"] });
       }
     };
 
@@ -98,7 +108,7 @@ export function useChatSocket(chatId: null | number, partnerId: null | number) {
       socket.off("chat_removed", handleChatRemoved);
       clearTimeout(typingTimeoutRef.current);
     };
-  }, [chatId, partnerId]);
+  }, [chatId, partnerId, queryClient]);
 
   const sendMessage = (text: string) => {
     if (chatId === null) return;
