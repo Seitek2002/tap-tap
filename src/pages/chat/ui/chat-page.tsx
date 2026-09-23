@@ -280,16 +280,23 @@ export const ChatPage = () => {
           <div className="mt-3 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {likesAndMatches.map((photo, index) => (
               <div key={index} className="relative mb-2 w-16 shrink-0">
-                <ImageWithSkeleton
-                  src={photo}
-                  alt=""
-                  className={cn(
-                    "size-16 rounded-full",
-                    index === 0
-                      ? "border-2 border-primary"
-                      : "border-2 border-white",
-                  )}
-                />
+                {index === 0 ? (
+                  <div className="rounded-full border-2 border-primary flex justify-center items-center">
+                    <ImageWithSkeleton
+                      src={photo}
+                      alt=""
+                      className="size-16 rounded-full border-2 border-white"
+                    />
+                  </div>
+                ) : (
+                  <div className="size-16 rounded-full border-2 border-white">
+                    <ImageWithSkeleton
+                      src={photo}
+                      alt=""
+                      className="size-16 rounded-full border-2 border-white"
+                    />
+                  </div>
+                )}
                 {index === 0 && (
                   <span className="absolute border-2 border-[#faf9fd] -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold whitespace-nowrap text-white">
                     <Heart className="size-2.5 fill-current" />
