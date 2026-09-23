@@ -14,6 +14,7 @@ import {
 
 import { submitAnketa, useAnketaDraftStore } from "@/entities/user";
 
+import chevronDoubleDown from "@/shared/assets/icons/chevron-double-down.svg";
 import goodImg1 from "@/shared/assets/images/good-img-1.jpg";
 import goodImg2 from "@/shared/assets/images/good-img-2.jpg";
 import notGoodImg1 from "@/shared/assets/images/not-good-img-1.jpg";
@@ -229,38 +230,7 @@ export const Anketa12Page = () => {
           Следуй нашим рекомендациям, чтобы твой профиль смотрелся намного лучше
         </p>
         <div className="mt-2 flex justify-center text-[#6B7280]">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M7 6L12 11L17 6M7 13L12 18L17 13"
-              stroke="url(#paint0_linear_129_7042)"
-              stroke-width="1.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <defs>
-              <linearGradient
-                id="paint0_linear_129_7042"
-                x1="12"
-                y1="8"
-                x2="12"
-                y2="18"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop
-                  offset="0.400742"
-                  stop-color="#6B7280"
-                  stop-opacity="0.45"
-                />
-                <stop offset="0.436035" stop-color="#6B7280" />
-              </linearGradient>
-            </defs>
-          </svg>
+          <img src={chevronDoubleDown} alt="" className="size-6" />
         </div>
 
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
